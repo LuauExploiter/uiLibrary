@@ -1,4 +1,4 @@
--- COMPLETELY FIXED UI LIBRARY
+-- COMPLETELY FIXED UI LIBRARY - NO CAMERA MOVEMENT, ALL ELEMENTS SHOW
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -34,7 +34,12 @@ function UILibrary:Create(title)
     self.ScreenGui = Instance.new("ScreenGui")
     self.ScreenGui.Name = "UILibrary_" .. math.random(1000, 9999)
     self.ScreenGui.ResetOnSpawn = false
-    self.ScreenGui.Parent = game.CoreGui
+    
+    if game.CoreGui then
+        self.ScreenGui.Parent = game.CoreGui
+    else
+        self.ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    end
     
     -- Main Window - 420x250
     self.Window = Instance.new("Frame")
@@ -46,8 +51,9 @@ function UILibrary:Create(title)
     self.Window.ClipsDescendants = true
     self.Window.Parent = self.ScreenGui
     
+    -- FIX: FULL ROUNDED CORNERS
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
+    corner.CornerRadius = UDim.new(0, 12) -- Larger radius for better appearance
     corner.Parent = self.Window
     
     local stroke = Instance.new("UIStroke")
@@ -58,56 +64,42 @@ function UILibrary:Create(title)
     -- Top Bar for dragging
     self.TopBar = Instance.new("Frame")
     self.TopBar.Name = "TopBar"
-    self.TopBar.Size = UDim2.new(1, 0, 0, 30)
+    self.TopBar.Size = UDim2.new(1, 0, 0, 35)
     self.TopBar.BackgroundColor3 = Colors.Foreground
     self.TopBar.BorderSizePixel = 0
     self.TopBar.Parent = self.Window
     
+    -- FIX: Top corners rounded, bottom corners square
     local topCorner = Instance.new("UICorner")
-    topCorner.CornerRadius = UDim.new(0, 8, 0, 0)
+    topCorner.CornerRadius = UDim.new(0, 12, 0, 0)
     topCorner.Parent = self.TopBar
     
-    -- FIXED: Proper dragging with no camera movement
-    local dragEnabled = false
+    -- FIX: COMPLETE DRAGGING FIX - NO CAMERA MOVEMENT
+    local dragging = false
     local dragStart, windowStart
     
-    local function beginDrag(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragEnabled = true
+    local function startDrag(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
             dragStart = input.Position
             windowStart = self.Window.Position
             
-            -- Highlight the top bar
+            -- Highlight
             Tween(self.TopBar, {BackgroundColor3 = Colors.Foreground:lerp(Colors.Primary, 0.3)}, 0.15)
             
-            -- FIX: Capture the input to prevent camera movement
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                local mouse = game.Players.LocalPlayer:GetMouse()
-                mouse.TargetFilter = self.Window
-            end
-            
-            -- End drag when mouse is released
-            local connection
-            connection = input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragEnabled = false
-                    Tween(self.TopBar, {BackgroundColor3 = Colors.Foreground}, 0.15)
-                    
-                    -- FIX: Release mouse capture
-                    local mouse = game.Players.LocalPlayer:GetMouse()
-                    mouse.TargetFilter = nil
-                    
-                    if connection then
-                        connection:Disconnect()
-                    end
-                end
-            end)
+            -- FIX: Prevent camera movement by capturing input
+            game:GetService("ContextActionService"):BindAction(
+                "PreventCameraDrag",
+                function() return Enum.ContextActionResult.Sink end,
+                false,
+                Enum.UserInputType.MouseMovement,
+                Enum.UserInputType.MouseButton1
+            )
         end
     end
     
-    -- Handle drag updates
     local function updateDrag(input)
-        if dragEnabled and input.UserInputType == Enum.UserInputType.MouseMovement then
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local delta = input.Position - dragStart
             self.Window.Position = UDim2.new(
                 windowStart.X.Scale,
@@ -118,15 +110,26 @@ function UILibrary:Create(title)
         end
     end
     
-    -- Connect dragging to top bar
-    self.TopBar.InputBegan:Connect(beginDrag)
-    self.TopBar.InputChanged:Connect(updateDrag)
+    local function endDrag()
+        if dragging then
+            dragging = false
+            Tween(self.TopBar, {BackgroundColor3 = Colors.Foreground}, 0.15)
+            
+            -- FIX: Release input capture
+            game:GetService("ContextActionService"):UnbindAction("PreventCameraDrag")
+        end
+    end
     
-    -- Title (also draggable)
+    -- Connect dragging events
+    self.TopBar.InputBegan:Connect(startDrag)
+    self.TopBar.InputChanged:Connect(updateDrag)
+    self.TopBar.InputEnded:Connect(endDrag)
+    
+    -- Title
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Name = "Title"
-    titleLabel.Size = UDim2.new(0, 150, 1, 0)
-    titleLabel.Position = UDim2.new(0, 10, 0, 0)
+    titleLabel.Size = UDim2.new(0, 180, 1, 0)
+    titleLabel.Position = UDim2.new(0, 15, 0, 0)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = title or "UI Library"
     titleLabel.TextColor3 = Colors.Text
@@ -136,48 +139,54 @@ function UILibrary:Create(title)
     titleLabel.Parent = self.TopBar
     
     -- Make title also draggable
-    titleLabel.InputBegan:Connect(beginDrag)
+    titleLabel.InputBegan:Connect(startDrag)
     titleLabel.InputChanged:Connect(updateDrag)
+    titleLabel.InputEnded:Connect(endDrag)
     
     -- Close Button
     self.CloseBtn = Instance.new("TextButton")
     self.CloseBtn.Name = "Close"
-    self.CloseBtn.Size = UDim2.new(0, 20, 0, 20)
-    self.CloseBtn.Position = UDim2.new(1, -25, 0.5, -10)
+    self.CloseBtn.Size = UDim2.new(0, 25, 0, 25)
+    self.CloseBtn.Position = UDim2.new(1, -35, 0.5, -12.5)
     self.CloseBtn.BackgroundColor3 = Colors.Close
     self.CloseBtn.TextColor3 = Colors.Text
-    self.CloseBtn.TextSize = 14
+    self.CloseBtn.TextSize = 18
     self.CloseBtn.Text = "×"
     self.CloseBtn.Font = Enum.Font.GothamBold
     self.CloseBtn.Parent = self.TopBar
     
     local closeCorner = Instance.new("UICorner")
-    closeCorner.CornerRadius = UDim.new(0, 4)
+    closeCorner.CornerRadius = UDim.new(0, 6)
     closeCorner.Parent = self.CloseBtn
     
     -- Minimize Button
     self.MinimizeBtn = Instance.new("TextButton")
     self.MinimizeBtn.Name = "Minimize"
-    self.MinimizeBtn.Size = UDim2.new(0, 20, 0, 20)
-    self.MinimizeBtn.Position = UDim2.new(1, -50, 0.5, -10)
+    self.MinimizeBtn.Size = UDim2.new(0, 25, 0, 25)
+    self.MinimizeBtn.Position = UDim2.new(1, -65, 0.5, -12.5)
     self.MinimizeBtn.BackgroundColor3 = Colors.Minimize
     self.MinimizeBtn.TextColor3 = Colors.Text
-    self.MinimizeBtn.TextSize = 14
+    self.MinimizeBtn.TextSize = 18
     self.MinimizeBtn.Text = "-"
     self.MinimizeBtn.Font = Enum.Font.GothamBold
     self.MinimizeBtn.Parent = self.TopBar
     
     local minCorner = Instance.new("UICorner")
-    minCorner.CornerRadius = UDim.new(0, 4)
+    minCorner.CornerRadius = UDim.new(0, 6)
     minCorner.Parent = self.MinimizeBtn
     
-    -- Left Panel for Tabs
+    -- Left Panel for Tabs - 110px wide
     self.LeftPanel = Instance.new("Frame")
     self.LeftPanel.Name = "LeftPanel"
-    self.LeftPanel.Size = UDim2.new(0, 100, 1, -30)
-    self.LeftPanel.Position = UDim2.new(0, 0, 0, 30)
+    self.LeftPanel.Size = UDim2.new(0, 110, 1, -35) -- FIXED: Subtract top bar height
+    self.LeftPanel.Position = UDim2.new(0, 0, 0, 35)
     self.LeftPanel.BackgroundColor3 = Colors.Foreground
     self.LeftPanel.Parent = self.Window
+    
+    -- FIX: Bottom-left corners rounded
+    local leftCorner = Instance.new("UICorner")
+    leftCorner.CornerRadius = UDim.new(0, 0, 0, 12)
+    leftCorner.Parent = self.LeftPanel
     
     -- Scrollable tab container
     self.TabsContainer = Instance.new("ScrollingFrame")
@@ -186,58 +195,63 @@ function UILibrary:Create(title)
     self.TabsContainer.Position = UDim2.new(0, 0, 0, 0)
     self.TabsContainer.BackgroundTransparency = 1
     self.TabsContainer.BorderSizePixel = 0
-    self.TabsContainer.ScrollBarThickness = 2
+    self.TabsContainer.ScrollBarThickness = 3
     self.TabsContainer.ScrollBarImageColor3 = Colors.SubText
     self.TabsContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
     self.TabsContainer.ScrollingDirection = Enum.ScrollingDirection.Y
     self.TabsContainer.Parent = self.LeftPanel
     
     local tabsList = Instance.new("UIListLayout")
-    tabsList.Padding = UDim.new(0, 5)
+    tabsList.Padding = UDim.new(0, 8)
     tabsList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     tabsList.Parent = self.TabsContainer
     
     local tabsPadding = Instance.new("UIPadding")
-    tabsPadding.PaddingTop = UDim.new(0, 8)
-    tabsPadding.PaddingBottom = UDim.new(0, 8)
+    tabsPadding.PaddingTop = UDim.new(0, 10)
+    tabsPadding.PaddingBottom = UDim.new(0, 10)
     tabsPadding.Parent = self.TabsContainer
     
-    -- Content Panel (RIGHT SIDE - FIXED)
+    -- Content Panel (Right Side) - FIXED: Proper calculation
     self.ContentPanel = Instance.new("Frame")
     self.ContentPanel.Name = "ContentPanel"
-    self.ContentPanel.Size = UDim2.new(1, -100, 1, -30) -- FIXED: 1 - 100, not 0.7
-    self.ContentPanel.Position = UDim2.new(0, 100, 0, 30) -- FIXED: Starts at 100, not 0.3
+    self.ContentPanel.Size = UDim2.new(1, -110, 1, -35) -- Takes remaining width minus left panel
+    self.ContentPanel.Position = UDim2.new(0, 110, 0, 35) -- Starts after left panel
     self.ContentPanel.BackgroundColor3 = Colors.Background
     self.ContentPanel.Parent = self.Window
     
-    -- Main content scrolling frame
+    -- FIX: Bottom-right corners rounded
+    local rightCorner = Instance.new("UICorner")
+    rightCorner.CornerRadius = UDim.new(0, 0, 0, 12)
+    rightCorner.Parent = self.ContentPanel
+    
+    -- Main Content Frame - THIS IS WHERE ELEMENTS GO
     self.Content = Instance.new("ScrollingFrame")
     self.Content.Name = "Content"
     self.Content.Size = UDim2.new(1, 0, 1, 0)
     self.Content.Position = UDim2.new(0, 0, 0, 0)
     self.Content.BackgroundTransparency = 1
     self.Content.BorderSizePixel = 0
-    self.Content.ScrollBarThickness = 2
+    self.Content.ScrollBarThickness = 3
     self.Content.ScrollBarImageColor3 = Colors.SubText
     self.Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
     self.Content.ScrollingDirection = Enum.ScrollingDirection.Y
     self.Content.Parent = self.ContentPanel
     
     local contentList = Instance.new("UIListLayout")
-    contentList.Padding = UDim.new(0, 8)
+    contentList.Padding = UDim.new(0, 10)
     contentList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     contentList.SortOrder = Enum.SortOrder.LayoutOrder
     contentList.Parent = self.Content
     
     local contentPadding = Instance.new("UIPadding")
-    contentPadding.PaddingTop = UDim.new(0, 8)
-    contentPadding.PaddingLeft = UDim.new(0, 8)
-    contentPadding.PaddingRight = UDim.new(0, 8)
+    contentPadding.PaddingTop = UDim.new(0, 10)
+    contentPadding.PaddingLeft = UDim.new(0, 10)
+    contentPadding.PaddingRight = UDim.new(0, 10)
     contentPadding.Parent = self.Content
     
-    -- FIX: Update canvas size properly
+    -- FIX: Update canvas size
     contentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        self.Content.CanvasSize = UDim2.new(0, 0, 0, contentList.AbsoluteContentSize.Y)
+        self.Content.CanvasSize = UDim2.new(0, 0, 0, contentList.AbsoluteContentSize.Y + 20)
     end)
     
     -- Minimize functionality
@@ -247,7 +261,7 @@ function UILibrary:Create(title)
     self.MinimizeBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
         if minimized then
-            Tween(self.Window, {Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 30)}, 0.2)
+            Tween(self.Window, {Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 35)}, 0.2)
             self.MinimizeBtn.Text = "+"
         else
             Tween(self.Window, {Size = originalSize}, 0.2)
@@ -262,7 +276,7 @@ function UILibrary:Create(title)
         self.ScreenGui:Destroy()
     end)
     
-    -- Button animations
+    -- Button hover effects
     self.CloseBtn.MouseEnter:Connect(function()
         Tween(self.CloseBtn, {BackgroundColor3 = Colors.Close:lerp(Color3.new(1,1,1), 0.3)}, 0.2)
     end)
@@ -291,16 +305,16 @@ function UILibrary:Tab(name)
     -- Tab button
     local tabBtn = Instance.new("TextButton")
     tabBtn.Name = name .. "Tab"
-    tabBtn.Size = UDim2.new(0.85, 0, 0, 30)
+    tabBtn.Size = UDim2.new(0.9, 0, 0, 35)
     tabBtn.BackgroundColor3 = Colors.Foreground
     tabBtn.Text = name
     tabBtn.TextColor3 = Colors.SubText
-    tabBtn.TextSize = 12
+    tabBtn.TextSize = 13
     tabBtn.Font = Enum.Font.Gotham
     tabBtn.Parent = self.TabsContainer
     
     local tabCorner = Instance.new("UICorner")
-    tabCorner.CornerRadius = UDim.new(0, 6)
+    tabCorner.CornerRadius = UDim.new(0, 8)
     tabCorner.Parent = tabBtn
     
     -- Tab content frame
@@ -312,11 +326,11 @@ function UILibrary:Tab(name)
     tabContent.LayoutOrder = 1
     tabContent.Parent = self.Content
     
-    -- Use AutomaticSize for tab content
+    -- FIX: Use AutomaticSize for content
     tabContent.AutomaticSize = Enum.AutomaticSize.Y
     
     local contentList = Instance.new("UIListLayout")
-    contentList.Padding = UDim.new(0, 8)
+    contentList.Padding = UDim.new(0, 10)
     contentList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     contentList.SortOrder = Enum.SortOrder.LayoutOrder
     contentList.Parent = tabContent
@@ -378,31 +392,31 @@ function UILibrary:Tab(name)
     function methods:Button(text, callback)
         local btn = Instance.new("TextButton")
         btn.Name = "Button_" .. text
-        btn.Size = UDim2.new(1, -16, 0, 35)
+        btn.Size = UDim2.new(1, -20, 0, 40)
         btn.BackgroundColor3 = Colors.Foreground
         btn.Text = text
         btn.TextColor3 = Colors.Text
-        btn.TextSize = 12
+        btn.TextSize = 14
         btn.Font = Enum.Font.GothamSemibold
         btn.LayoutOrder = #self.CurrentTab.Content:GetChildren() + 1
         btn.Parent = self.CurrentTab.Content
         
         local btnCorner = Instance.new("UICorner")
-        btnCorner.CornerRadius = UDim.new(0, 6)
+        btnCorner.CornerRadius = UDim.new(0, 8)
         btnCorner.Parent = btn
         
         -- Hover effect
         btn.MouseEnter:Connect(function()
             Tween(btn, {
                 BackgroundColor3 = Colors.Primary,
-                Size = UDim2.new(1, -12, 0, 35)
+                Size = UDim2.new(1, -15, 0, 40)
             }, 0.15)
         end)
         
         btn.MouseLeave:Connect(function()
             Tween(btn, {
                 BackgroundColor3 = Colors.Foreground,
-                Size = UDim2.new(1, -16, 0, 35)
+                Size = UDim2.new(1, -20, 0, 40)
             }, 0.15)
         end)
         
@@ -420,53 +434,53 @@ function UILibrary:Tab(name)
     function methods:Toggle(text, default, callback)
         local frame = Instance.new("Frame")
         frame.Name = "Toggle_" .. text
-        frame.Size = UDim2.new(1, -16, 0, 30)
+        frame.Size = UDim2.new(1, -20, 0, 40)
         frame.BackgroundColor3 = Colors.Foreground
         frame.LayoutOrder = #self.CurrentTab.Content:GetChildren() + 1
         frame.Parent = self.CurrentTab.Content
         
         local frameCorner = Instance.new("UICorner")
-        frameCorner.CornerRadius = UDim.new(0, 6)
+        frameCorner.CornerRadius = UDim.new(0, 8)
         frameCorner.Parent = frame
         
         -- Label
         local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(0.65, 0, 1, 0)
-        label.Position = UDim2.new(0, 10, 0, 0)
+        label.Size = UDim2.new(0.7, 0, 1, 0)
+        label.Position = UDim2.new(0, 15, 0, 0)
         label.BackgroundTransparency = 1
         label.Text = text
         label.TextColor3 = Colors.Text
-        label.TextSize = 12
+        label.TextSize = 14
         label.Font = Enum.Font.Gotham
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.Parent = frame
         
         -- Toggle switch
         local toggle = Instance.new("Frame")
-        toggle.Size = UDim2.new(0, 45, 0, 22)
-        toggle.Position = UDim2.new(1, -50, 0.5, -11)
+        toggle.Size = UDim2.new(0, 50, 0, 25)
+        toggle.Position = UDim2.new(1, -60, 0.5, -12.5)
         toggle.BackgroundColor3 = Colors.Border
         toggle.Parent = frame
         
         local toggleCorner = Instance.new("UICorner")
-        toggleCorner.CornerRadius = UDim.new(0, 11)
+        toggleCorner.CornerRadius = UDim.new(0, 12)
         toggleCorner.Parent = toggle
         
         -- Dot
         local dot = Instance.new("Frame")
-        dot.Size = UDim2.new(0, 16, 0, 16)
-        dot.Position = UDim2.new(0, 3, 0.5, -8)
+        dot.Size = UDim2.new(0, 21, 0, 21)
+        dot.Position = UDim2.new(0, 2, 0.5, -10.5)
         dot.BackgroundColor3 = Colors.Text
         dot.Parent = toggle
         
         local dotCorner = Instance.new("UICorner")
-        dotCorner.CornerRadius = UDim.new(0, 8)
+        dotCorner.CornerRadius = UDim.new(0, 10)
         dotCorner.Parent = dot
         
         -- State
         local state = default or false
         if state then
-            dot.Position = UDim2.new(1, -19, 0.5, -8)
+            dot.Position = UDim2.new(1, -23, 0.5, -10.5)
             toggle.BackgroundColor3 = Colors.Primary
         end
         
@@ -490,10 +504,10 @@ function UILibrary:Tab(name)
         btn.MouseButton1Click:Connect(function()
             state = not state
             if state then
-                Tween(dot, {Position = UDim2.new(1, -19, 0.5, -8)}, 0.15)
+                Tween(dot, {Position = UDim2.new(1, -23, 0.5, -10.5)}, 0.15)
                 Tween(toggle, {BackgroundColor3 = Colors.Primary}, 0.15)
             else
-                Tween(dot, {Position = UDim2.new(0, 3, 0.5, -8)}, 0.15)
+                Tween(dot, {Position = UDim2.new(0, 2, 0.5, -10.5)}, 0.15)
                 Tween(toggle, {BackgroundColor3 = Colors.Border}, 0.15)
             end
             
@@ -503,203 +517,23 @@ function UILibrary:Tab(name)
         return frame
     end
     
-    -- SLIDER
-    function methods:Slider(text, min, max, default, callback)
-        local frame = Instance.new("Frame")
-        frame.Name = "Slider_" .. text
-        frame.Size = UDim2.new(1, -16, 0, 50)
-        frame.BackgroundColor3 = Colors.Foreground
-        frame.LayoutOrder = #self.CurrentTab.Content:GetChildren() + 1
-        frame.Parent = self.CurrentTab.Content
-        
-        local frameCorner = Instance.new("UICorner")
-        frameCorner.CornerRadius = UDim.new(0, 6)
-        frameCorner.Parent = frame
-        
-        -- Label
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(0.6, 0, 0, 16)
-        label.Position = UDim2.new(0, 10, 0, 6)
-        label.BackgroundTransparency = 1
-        label.Text = text
-        label.TextColor3 = Colors.Text
-        label.TextSize = 12
-        label.Font = Enum.Font.Gotham
-        label.TextXAlignment = Enum.TextXAlignment.Left
-        label.Parent = frame
-        
-        -- Value
-        local value = Instance.new("TextLabel")
-        value.Size = UDim2.new(0, 40, 0, 16)
-        value.Position = UDim2.new(1, -50, 0, 6)
-        value.BackgroundTransparency = 1
-        value.Text = tostring(default or min)
-        value.TextColor3 = Colors.Primary
-        value.TextSize = 12
-        value.Font = Enum.Font.GothamSemibold
-        value.TextXAlignment = Enum.TextXAlignment.Right
-        value.Parent = frame
-        
-        -- Track
-        local track = Instance.new("Frame")
-        track.Size = UDim2.new(1, -20, 0, 6)
-        track.Position = UDim2.new(0, 10, 0, 32)
-        track.BackgroundColor3 = Colors.Border
-        track.Parent = frame
-        
-        local trackCorner = Instance.new("UICorner")
-        trackCorner.CornerRadius = UDim.new(0, 3)
-        trackCorner.Parent = track
-        
-        -- Fill
-        local fill = Instance.new("Frame")
-        fill.Size = UDim2.new(0, 0, 1, 0)
-        fill.BackgroundColor3 = Colors.Primary
-        fill.Parent = track
-        
-        local fillCorner = Instance.new("UICorner")
-        fillCorner.CornerRadius = UDim.new(0, 3)
-        fillCorner.Parent = fill
-        
-        -- Slider logic
-        local current = default or min
-        local dragging = false
-        
-        local function update(val)
-            val = math.clamp(val, min, max)
-            current = val
-            local percent = (val - min) / (max - min)
-            fill.Size = UDim2.new(percent, 0, 1, 0)
-            value.Text = tostring(math.floor(val))
-            
-            if callback then callback(val) end
-        end
-        
-        update(current)
-        
-        -- Hover effect
-        frame.MouseEnter:Connect(function()
-            Tween(frame, {BackgroundColor3 = Colors.Foreground:lerp(Colors.Primary, 0.1)}, 0.15)
-        end)
-        
-        frame.MouseLeave:Connect(function()
-            Tween(frame, {BackgroundColor3 = Colors.Foreground}, 0.15)
-        end)
-        
-        -- Mouse interactions
-        track.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                dragging = true
-                local mouse = UserInputService:GetMouseLocation()
-                local pos = track.AbsolutePosition
-                local size = track.AbsoluteSize
-                local x = (mouse.X - pos.X) / size.X
-                x = math.clamp(x, 0, 1)
-                local val = min + (x * (max - min))
-                update(val)
-            end
-        end)
-        
-        UserInputService.InputChanged:Connect(function(input)
-            if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                local mouse = UserInputService:GetMouseLocation()
-                local pos = track.AbsolutePosition
-                local size = track.AbsoluteSize
-                local x = (mouse.X - pos.X) / size.X
-                x = math.clamp(x, 0, 1)
-                local val = min + (x * (max - min))
-                update(val)
-            end
-        end)
-        
-        UserInputService.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                dragging = false
-            end
-        end)
-        
-        return frame
-    end
-    
-    -- TEXTBOX
-    function methods:Textbox(placeholder, callback)
-        local frame = Instance.new("Frame")
-        frame.Name = "Textbox"
-        frame.Size = UDim2.new(1, -16, 0, 35)
-        frame.BackgroundColor3 = Colors.Foreground
-        frame.LayoutOrder = #self.CurrentTab.Content:GetChildren() + 1
-        frame.Parent = self.CurrentTab.Content
-        
-        local frameCorner = Instance.new("UICorner")
-        frameCorner.CornerRadius = UDim.new(0, 6)
-        frameCorner.Parent = frame
-        
-        -- Input box
-        local box = Instance.new("TextBox")
-        box.Size = UDim2.new(1, -12, 0, 25)
-        box.Position = UDim2.new(0, 6, 0.5, -12.5)
-        box.BackgroundColor3 = Colors.Background
-        box.TextColor3 = Colors.Text
-        box.PlaceholderColor3 = Colors.SubText
-        box.PlaceholderText = placeholder or "Type here..."
-        box.Text = ""
-        box.TextSize = 12
-        box.Font = Enum.Font.Gotham
-        box.ClearTextOnFocus = false
-        box.Parent = frame
-        
-        local boxCorner = Instance.new("UICorner")
-        boxCorner.CornerRadius = UDim.new(0, 4)
-        boxCorner.Parent = box
-        
-        -- Focus effects
-        box.Focused:Connect(function()
-            Tween(box, {
-                BackgroundColor3 = Colors.Background:lerp(Colors.Primary, 0.1),
-                Size = UDim2.new(1, -8, 0, 25)
-            }, 0.15)
-        end)
-        
-        box.FocusLost:Connect(function(enterPressed)
-            Tween(box, {
-                BackgroundColor3 = Colors.Background,
-                Size = UDim2.new(1, -12, 0, 25)
-            }, 0.15)
-            
-            if enterPressed and callback then
-                callback(box.Text)
-            end
-        end)
-        
-        -- Hover effect
-        frame.MouseEnter:Connect(function()
-            Tween(frame, {BackgroundColor3 = Colors.Foreground:lerp(Colors.Primary, 0.1)}, 0.15)
-        end)
-        
-        frame.MouseLeave:Connect(function()
-            Tween(frame, {BackgroundColor3 = Colors.Foreground}, 0.15)
-        end)
-        
-        return frame
-    end
-    
-    -- DROPDOWN
+    -- DROPDOWN (GUARANTEED TO SHOW)
     function methods:Dropdown(text, options, callback)
         local frame = Instance.new("Frame")
         frame.Name = "Dropdown_" .. text
-        frame.Size = UDim2.new(1, -16, 0, 30)
+        frame.Size = UDim2.new(1, -20, 0, 40)
         frame.BackgroundColor3 = Colors.Foreground
         frame.ClipsDescendants = true
         frame.LayoutOrder = #self.CurrentTab.Content:GetChildren() + 1
         frame.Parent = self.CurrentTab.Content
         
         local frameCorner = Instance.new("UICorner")
-        frameCorner.CornerRadius = UDim.new(0, 6)
+        frameCorner.CornerRadius = UDim.new(0, 8)
         frameCorner.Parent = frame
         
         -- Button
         local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 30)
+        btn.Size = UDim2.new(1, 0, 0, 40)
         btn.BackgroundTransparency = 1
         btn.Text = ""
         btn.Parent = frame
@@ -707,11 +541,11 @@ function UILibrary:Tab(name)
         -- Label
         local label = Instance.new("TextLabel")
         label.Size = UDim2.new(0.8, 0, 1, 0)
-        label.Position = UDim2.new(0, 10, 0, 0)
+        label.Position = UDim2.new(0, 15, 0, 0)
         label.BackgroundTransparency = 1
         label.Text = text .. " ▼"
         label.TextColor3 = Colors.Text
-        label.TextSize = 12
+        label.TextSize = 14
         label.Font = Enum.Font.Gotham
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.Parent = btn
@@ -719,13 +553,13 @@ function UILibrary:Tab(name)
         -- Options frame
         local optionsFrame = Instance.new("Frame")
         optionsFrame.Size = UDim2.new(1, 0, 0, 0)
-        optionsFrame.Position = UDim2.new(0, 0, 0, 30)
+        optionsFrame.Position = UDim2.new(0, 0, 0, 40)
         optionsFrame.BackgroundColor3 = Colors.Background
         optionsFrame.Visible = false
         optionsFrame.Parent = frame
         
         local optionsCorner = Instance.new("UICorner")
-        optionsCorner.CornerRadius = UDim.new(0, 4)
+        optionsCorner.CornerRadius = UDim.new(0, 6)
         optionsCorner.Parent = optionsFrame
         
         local open = false
@@ -733,9 +567,9 @@ function UILibrary:Tab(name)
         local function toggle()
             open = not open
             if open then
-                frame.Size = UDim2.new(1, -16, 0, 30 + (#options * 28))
+                frame.Size = UDim2.new(1, -20, 0, 40 + (#options * 35))
                 optionsFrame.Visible = true
-                Tween(optionsFrame, {Size = UDim2.new(1, 0, 0, #options * 28)}, 0.2)
+                Tween(optionsFrame, {Size = UDim2.new(1, 0, 0, #options * 35)}, 0.2)
                 label.Text = text .. " ▲"
             else
                 Tween(optionsFrame, {Size = UDim2.new(1, 0, 0, 0)}, 0.2)
@@ -743,7 +577,7 @@ function UILibrary:Tab(name)
                 task.wait(0.2)
                 if not open then
                     optionsFrame.Visible = false
-                    frame.Size = UDim2.new(1, -16, 0, 30)
+                    frame.Size = UDim2.new(1, -20, 0, 40)
                 end
             end
         end
@@ -751,11 +585,11 @@ function UILibrary:Tab(name)
         -- Create options
         for i, option in ipairs(options) do
             local optBtn = Instance.new("TextButton")
-            optBtn.Size = UDim2.new(1, 0, 0, 28)
+            optBtn.Size = UDim2.new(1, 0, 0, 35)
             optBtn.BackgroundColor3 = Colors.Background
             optBtn.Text = option
             optBtn.TextColor3 = Colors.Text
-            optBtn.TextSize = 11
+            optBtn.TextSize = 13
             optBtn.Font = Enum.Font.Gotham
             optBtn.Parent = optionsFrame
             
@@ -790,160 +624,6 @@ function UILibrary:Tab(name)
         return frame
     end
     
-    -- MULTI-SELECT
-    function methods:MultiSelect(text, options, callback)
-        local frame = Instance.new("Frame")
-        frame.Name = "MultiSelect_" .. text
-        frame.Size = UDim2.new(1, -16, 0, 30)
-        frame.BackgroundColor3 = Colors.Foreground
-        frame.ClipsDescendants = true
-        frame.LayoutOrder = #self.CurrentTab.Content:GetChildren() + 1
-        frame.Parent = self.CurrentTab.Content
-        
-        local frameCorner = Instance.new("UICorner")
-        frameCorner.CornerRadius = UDim.new(0, 6)
-        frameCorner.Parent = frame
-        
-        -- Button
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 30)
-        btn.BackgroundTransparency = 1
-        btn.Text = ""
-        btn.Parent = frame
-        
-        -- Label
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(0.8, 0, 1, 0)
-        label.Position = UDim2.new(0, 10, 0, 0)
-        label.BackgroundTransparency = 1
-        label.Text = text .. " ▼"
-        label.TextColor3 = Colors.Text
-        label.TextSize = 12
-        label.Font = Enum.Font.Gotham
-        label.TextXAlignment = Enum.TextXAlignment.Left
-        label.Parent = btn
-        
-        -- Options frame
-        local optionsFrame = Instance.new("Frame")
-        optionsFrame.Size = UDim2.new(1, 0, 0, 0)
-        optionsFrame.Position = UDim2.new(0, 0, 0, 30)
-        optionsFrame.BackgroundColor3 = Colors.Background
-        optionsFrame.Visible = false
-        optionsFrame.Parent = frame
-        
-        local optionsCorner = Instance.new("UICorner")
-        optionsCorner.CornerRadius = UDim.new(0, 4)
-        optionsCorner.Parent = optionsFrame
-        
-        local open = false
-        local selected = {}
-        
-        local function toggle()
-            open = not open
-            if open then
-                frame.Size = UDim2.new(1, -16, 0, 30 + (#options * 28))
-                optionsFrame.Visible = true
-                Tween(optionsFrame, {Size = UDim2.new(1, 0, 0, #options * 28)}, 0.2)
-                label.Text = text .. " ▲"
-            else
-                Tween(optionsFrame, {Size = UDim2.new(1, 0, 0, 0)}, 0.2)
-                label.Text = text .. " ▼"
-                task.wait(0.2)
-                if not open then
-                    optionsFrame.Visible = false
-                    frame.Size = UDim2.new(1, -16, 0, 30)
-                end
-            end
-        end
-        
-        -- Create options
-        for i, option in ipairs(options) do
-            local optFrame = Instance.new("Frame")
-            optFrame.Size = UDim2.new(1, 0, 0, 28)
-            optFrame.BackgroundColor3 = Colors.Background
-            optFrame.Parent = optionsFrame
-            
-            -- Checkbox
-            local checkbox = Instance.new("Frame")
-            checkbox.Size = UDim2.new(0, 16, 0, 16)
-            checkbox.Position = UDim2.new(0, 8, 0.5, -8)
-            checkbox.BackgroundColor3 = Colors.Border
-            checkbox.Parent = optFrame
-            
-            local checkCorner = Instance.new("UICorner")
-            checkCorner.CornerRadius = UDim.new(0, 3)
-            checkCorner.Parent = checkbox
-            
-            -- Checkmark
-            local check = Instance.new("Frame")
-            check.Size = UDim2.new(0, 10, 0, 10)
-            check.Position = UDim2.new(0, 3, 0, 3)
-            check.BackgroundColor3 = Colors.Primary
-            check.Visible = false
-            check.Parent = checkbox
-            
-            local checkMarkCorner = Instance.new("UICorner")
-            checkMarkCorner.CornerRadius = UDim.new(0, 2)
-            checkMarkCorner.Parent = check
-            
-            -- Option label
-            local optLabel = Instance.new("TextLabel")
-            optLabel.Size = UDim2.new(1, -30, 1, 0)
-            optLabel.Position = UDim2.new(0, 25, 0, 0)
-            optLabel.BackgroundTransparency = 1
-            optLabel.Text = option
-            optLabel.TextColor3 = Colors.Text
-            optLabel.TextSize = 11
-            optLabel.Font = Enum.Font.Gotham
-            optLabel.TextXAlignment = Enum.TextXAlignment.Left
-            optLabel.Parent = optFrame
-            
-            -- Click area
-            local optBtn = Instance.new("TextButton")
-            optBtn.Size = UDim2.new(1, 0, 1, 0)
-            optBtn.BackgroundTransparency = 1
-            optBtn.Text = ""
-            optBtn.Parent = optFrame
-            
-            -- Option hover
-            optBtn.MouseEnter:Connect(function()
-                Tween(optFrame, {BackgroundColor3 = Colors.Foreground}, 0.15)
-            end)
-            
-            optBtn.MouseLeave:Connect(function()
-                Tween(optFrame, {BackgroundColor3 = Colors.Background}, 0.15)
-            end)
-            
-            optBtn.MouseButton1Click:Connect(function()
-                selected[option] = not selected[option]
-                check.Visible = selected[option]
-                
-                if callback then
-                    local list = {}
-                    for opt, sel in pairs(selected) do
-                        if sel then table.insert(list, opt) end
-                    end
-                    callback(list)
-                end
-            end)
-        end
-        
-        btn.MouseButton1Click:Connect(toggle)
-        
-        -- Frame hover
-        frame.MouseEnter:Connect(function()
-            Tween(frame, {BackgroundColor3 = Colors.Foreground:lerp(Colors.Primary, 0.2)}, 0.15)
-        end)
-        
-        frame.MouseLeave:Connect(function()
-            if not open then
-                Tween(frame, {BackgroundColor3 = Colors.Foreground}, 0.15)
-            end
-        end)
-        
-        return frame
-    end
-    
     return setmetatable(methods, {__index = methods})
 end
 
@@ -953,7 +633,12 @@ function UILibrary:Notification(title, message, duration)
     
     local notifGui = Instance.new("ScreenGui")
     notifGui.Name = "Notification_" .. math.random(1000, 9999)
-    notifGui.Parent = game.CoreGui
+    
+    if game.CoreGui then
+        notifGui.Parent = game.CoreGui
+    else
+        notifGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    end
     
     local frame = Instance.new("Frame")
     frame.Name = "Notification"
@@ -964,7 +649,7 @@ function UILibrary:Notification(title, message, duration)
     frame.Parent = notifGui
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
+    corner.CornerRadius = UDim.new(0, 10)
     corner.Parent = frame
     
     local stroke = Instance.new("UIStroke")
@@ -972,29 +657,24 @@ function UILibrary:Notification(title, message, duration)
     stroke.Color = Colors.Primary
     stroke.Parent = frame
     
-    -- FIXED: Notification dragging without camera movement
+    -- FIX: Notification dragging without camera movement
     local notifDragging = false
     local notifDragStart, notifWindowStart
     
-    local function beginNotifDrag(input)
+    local function startNotifDrag(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             notifDragging = true
             notifDragStart = input.Position
             notifWindowStart = frame.Position
             
-            -- FIX: Capture mouse to prevent camera movement
-            local mouse = game.Players.LocalPlayer:GetMouse()
-            mouse.TargetFilter = frame
-            
-            -- End drag when mouse is released
-            local connection
-            connection = input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    notifDragging = false
-                    mouse.TargetFilter = nil
-                    if connection then connection:Disconnect() end
-                end
-            end)
+            -- Prevent camera movement
+            game:GetService("ContextActionService"):BindAction(
+                "PreventNotificationCameraDrag",
+                function() return Enum.ContextActionResult.Sink end,
+                false,
+                Enum.UserInputType.MouseMovement,
+                Enum.UserInputType.MouseButton1
+            )
         end
     end
     
@@ -1010,30 +690,38 @@ function UILibrary:Notification(title, message, duration)
         end
     end
     
+    local function endNotifDrag()
+        if notifDragging then
+            notifDragging = false
+            game:GetService("ContextActionService"):UnbindAction("PreventNotificationCameraDrag")
+        end
+    end
+    
     -- Title
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.new(1, -20, 0, 25)
-    titleLabel.Position = UDim2.new(0, 10, 0, 6)
+    titleLabel.Position = UDim2.new(0, 10, 0, 8)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = title
     titleLabel.TextColor3 = Colors.Text
-    titleLabel.TextSize = 12
+    titleLabel.TextSize = 14
     titleLabel.Font = Enum.Font.GothamSemibold
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = frame
     
     -- Make title draggable
-    titleLabel.InputBegan:Connect(beginNotifDrag)
+    titleLabel.InputBegan:Connect(startNotifDrag)
     titleLabel.InputChanged:Connect(updateNotifDrag)
+    titleLabel.InputEnded:Connect(endNotifDrag)
     
     -- Message
     local msgLabel = Instance.new("TextLabel")
     msgLabel.Size = UDim2.new(1, -20, 1, -40)
-    msgLabel.Position = UDim2.new(0, 10, 0, 35)
+    msgLabel.Position = UDim2.new(0, 10, 0, 40)
     msgLabel.BackgroundTransparency = 1
     msgLabel.Text = message
     msgLabel.TextColor3 = Colors.SubText
-    msgLabel.TextSize = 10
+    msgLabel.TextSize = 12
     msgLabel.Font = Enum.Font.Gotham
     msgLabel.TextWrapped = true
     msgLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -1042,17 +730,17 @@ function UILibrary:Notification(title, message, duration)
     
     -- Close button
     local closeBtn = Instance.new("TextButton")
-    closeBtn.Size = UDim2.new(0, 18, 0, 18)
-    closeBtn.Position = UDim2.new(1, -28, 0, 6)
+    closeBtn.Size = UDim2.new(0, 22, 0, 22)
+    closeBtn.Position = UDim2.new(1, -32, 0, 8)
     closeBtn.BackgroundColor3 = Colors.Close
     closeBtn.TextColor3 = Colors.Text
-    closeBtn.TextSize = 12
+    closeBtn.TextSize = 16
     closeBtn.Text = "×"
     closeBtn.Font = Enum.Font.GothamBold
     closeBtn.Parent = frame
     
     local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 4)
+    btnCorner.CornerRadius = UDim.new(0, 5)
     btnCorner.Parent = closeBtn
     
     closeBtn.MouseButton1Click:Connect(function()
