@@ -1,5 +1,5 @@
--- Loadstring-ready UI Library
--- Paste this in a loadstring: loadstring(game:HttpGet("URL"))()
+-- UI Library for https://raw.githubusercontent.com/LuauExploiter/uiLibrary/refs/heads/main/Library
+-- This is the ENTIRE script that should be at that URL
 
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -8,9 +8,9 @@ local RunService = game:GetService("RunService")
 local UILibrary = {}
 UILibrary.__index = UILibrary
 
--- Colors
+-- Colors - Dark theme
 local Colors = {
-    Background = Color3.fromRGB(15, 15, 20),
+    Background = Color3.fromRGB(20, 20, 25),
     Foreground = Color3.fromRGB(30, 30, 40),
     Primary = Color3.fromRGB(0, 120, 255),
     Text = Color3.fromRGB(240, 240, 245),
@@ -29,13 +29,13 @@ function UILibrary:Create(title)
     self.ScreenGui.ResetOnSpawn = false
     self.ScreenGui.Parent = game.CoreGui
     
-    -- Main Window - RECTANGULAR
+    -- Main Window - RECTANGULAR (400x500)
     self.Window = Instance.new("Frame")
     self.Window.Name = "Window"
     self.Window.Size = UDim2.new(0, 400, 0, 500)
     self.Window.Position = UDim2.new(0.5, -200, 0.5, -250)
     self.Window.BackgroundColor3 = Colors.Background
-    self.Window.ClipsDescendants = true
+    self.Window.BorderSizePixel = 0
     self.Window.Parent = self.ScreenGui
     
     -- Rounded corners
@@ -43,10 +43,16 @@ function UILibrary:Create(title)
     corner.CornerRadius = UDim.new(0, 10)
     corner.Parent = self.Window
     
-    -- Top Bar
+    -- Stroke
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 2
+    stroke.Color = Colors.Primary
+    stroke.Parent = self.Window
+    
+    -- Top Bar for dragging
     self.TopBar = Instance.new("Frame")
     self.TopBar.Name = "TopBar"
-    self.TopBar.Size = UDim2.new(1, 0, 0, 35)
+    self.TopBar.Size = UDim2.new(1, 0, 0, 40)
     self.TopBar.BackgroundColor3 = Colors.Foreground
     self.TopBar.Parent = self.Window
     
@@ -103,7 +109,7 @@ function UILibrary:Create(title)
     self.TabsContainer = Instance.new("Frame")
     self.TabsContainer.Name = "Tabs"
     self.TabsContainer.Size = UDim2.new(1, -20, 0, 30)
-    self.TabsContainer.Position = UDim2.new(0, 10, 0, 40)
+    self.TabsContainer.Position = UDim2.new(0, 10, 0, 45)
     self.TabsContainer.BackgroundTransparency = 1
     self.TabsContainer.Parent = self.Window
     
@@ -112,11 +118,11 @@ function UILibrary:Create(title)
     tabsLayout.Padding = UDim.new(0, 5)
     tabsLayout.Parent = self.TabsContainer
     
-    -- Content Area
+    -- Content Area (WHERE BUTTONS WILL APPEAR)
     self.Content = Instance.new("ScrollingFrame")
     self.Content.Name = "Content"
     self.Content.Size = UDim2.new(1, -20, 1, -80)
-    self.Content.Position = UDim2.new(0, 10, 0, 75)
+    self.Content.Position = UDim2.new(0, 10, 0, 80)
     self.Content.BackgroundTransparency = 1
     self.Content.BorderSizePixel = 0
     self.Content.ScrollBarThickness = 4
@@ -129,7 +135,7 @@ function UILibrary:Create(title)
     contentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     contentLayout.Parent = self.Content
     
-    -- Dragging System
+    -- DRAGGING SYSTEM
     local dragging = false
     local dragStart, windowStart
     
@@ -163,20 +169,20 @@ function UILibrary:Create(title)
         end
     end)
     
-    -- Button Functionality
+    -- Button functionality
     closeBtn.MouseButton1Click:Connect(function()
         self.ScreenGui:Destroy()
     end)
     
     minBtn.MouseButton1Click:Connect(function()
-        if self.Window.Size.Y.Offset == 35 then
+        if self.Window.Size.Y.Offset == 40 then
             self.Window.Size = UDim2.new(0, 400, 0, 500)
         else
-            self.Window.Size = UDim2.new(0, 400, 0, 35)
+            self.Window.Size = UDim2.new(0, 400, 0, 40)
         end
     end)
     
-    -- Store Tabs
+    -- Store tabs
     self.Tabs = {}
     self.CurrentTab = nil
     
@@ -185,7 +191,7 @@ end
 
 -- Create Tab
 function UILibrary:Tab(name)
-    -- Tab Button
+    -- Tab button
     local tabBtn = Instance.new("TextButton")
     tabBtn.Name = name .. "Tab"
     tabBtn.Size = UDim2.new(0, 70, 1, 0)
@@ -200,7 +206,7 @@ function UILibrary:Tab(name)
     tabCorner.CornerRadius = UDim.new(0, 6)
     tabCorner.Parent = tabBtn
     
-    -- Tab Content
+    -- Tab content
     local tabContent = Instance.new("Frame")
     tabContent.Name = name .. "Content"
     tabContent.Size = UDim2.new(1, 0, 0, 0)
@@ -219,7 +225,7 @@ function UILibrary:Tab(name)
         Name = name
     }
     
-    -- Set as Active Tab if First
+    -- Set as active if first tab
     if not self.CurrentTab then
         self.CurrentTab = tab
         tabBtn.BackgroundColor3 = Colors.Primary
@@ -227,7 +233,7 @@ function UILibrary:Tab(name)
         tabContent.Visible = true
     end
     
-    -- Tab Switching
+    -- Tab switching
     tabBtn.MouseButton1Click:Connect(function()
         if self.CurrentTab == tab then return end
         
@@ -245,10 +251,10 @@ function UILibrary:Tab(name)
     
     table.insert(self.Tabs, tab)
     
-    -- Element Methods
+    -- Element methods
     local methods = {}
     
-    -- Button
+    -- BUTTON
     function methods:Button(text, callback)
         local btn = Instance.new("TextButton")
         btn.Name = "Button"
@@ -271,7 +277,7 @@ function UILibrary:Tab(name)
         return btn
     end
     
-    -- Toggle
+    -- TOGGLE
     function methods:Toggle(text, default, callback)
         local frame = Instance.new("Frame")
         frame.Name = "Toggle"
@@ -295,7 +301,7 @@ function UILibrary:Tab(name)
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.Parent = frame
         
-        -- Toggle Switch
+        -- Toggle switch
         local toggle = Instance.new("Frame")
         toggle.Size = UDim2.new(0, 50, 0, 25)
         toggle.Position = UDim2.new(1, -60, 0.5, -12.5)
@@ -324,7 +330,7 @@ function UILibrary:Tab(name)
             toggle.BackgroundColor3 = Colors.Primary
         end
         
-        -- Click Area
+        -- Click area
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, 0, 1, 0)
         btn.BackgroundTransparency = 1
@@ -347,7 +353,7 @@ function UILibrary:Tab(name)
         return frame
     end
     
-    -- Slider
+    -- SLIDER
     function methods:Slider(text, min, max, default, callback)
         local frame = Instance.new("Frame")
         frame.Name = "Slider"
@@ -404,7 +410,7 @@ function UILibrary:Tab(name)
         fillCorner.CornerRadius = UDim.new(0, 3)
         fillCorner.Parent = fill
         
-        -- Slider Logic
+        -- Slider logic
         local current = default or min
         
         local function update(val)
@@ -419,7 +425,7 @@ function UILibrary:Tab(name)
         
         update(current)
         
-        -- Mouse Interactions
+        -- Mouse interactions
         track.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 then
                 local mouse = UserInputService:GetMouseLocation()
@@ -435,7 +441,7 @@ function UILibrary:Tab(name)
         return frame
     end
     
-    -- Textbox
+    -- TEXTBOX
     function methods:Textbox(placeholder, callback)
         local frame = Instance.new("Frame")
         frame.Name = "Textbox"
@@ -447,7 +453,7 @@ function UILibrary:Tab(name)
         frameCorner.CornerRadius = UDim.new(0, 8)
         frameCorner.Parent = frame
         
-        -- Input Box
+        -- Input box
         local box = Instance.new("TextBox")
         box.Size = UDim2.new(1, -20, 0, 30)
         box.Position = UDim2.new(0, 10, 0.5, -15)
@@ -474,13 +480,12 @@ function UILibrary:Tab(name)
         return frame
     end
     
-    -- Dropdown
+    -- DROPDOWN
     function methods:Dropdown(text, options, callback)
         local frame = Instance.new("Frame")
         frame.Name = "Dropdown"
         frame.Size = UDim2.new(1, -20, 0, 40)
         frame.BackgroundColor3 = Colors.Foreground
-        frame.ClipsDescendants = true
         frame.Parent = self.CurrentTab.Content
         
         local frameCorner = Instance.new("UICorner")
@@ -506,17 +511,13 @@ function UILibrary:Tab(name)
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.Parent = btn
         
-        -- Options Frame
+        -- Options
         local optionsFrame = Instance.new("Frame")
         optionsFrame.Size = UDim2.new(1, 0, 0, 0)
         optionsFrame.Position = UDim2.new(0, 0, 0, 40)
         optionsFrame.BackgroundColor3 = Colors.Background
         optionsFrame.Visible = false
         optionsFrame.Parent = frame
-        
-        local optionsCorner = Instance.new("UICorner")
-        optionsCorner.CornerRadius = UDim.new(0, 6)
-        optionsCorner.Parent = optionsFrame
         
         local open = false
         
@@ -533,7 +534,7 @@ function UILibrary:Tab(name)
             end
         end
         
-        -- Create Options
+        -- Create options
         for i, option in ipairs(options) do
             local optBtn = Instance.new("TextButton")
             optBtn.Size = UDim2.new(1, 0, 0, 35)
@@ -555,13 +556,12 @@ function UILibrary:Tab(name)
         return frame
     end
     
-    -- MultiSelect
+    -- MULTI-SELECT
     function methods:MultiSelect(text, options, callback)
         local frame = Instance.new("Frame")
         frame.Name = "MultiSelect"
         frame.Size = UDim2.new(1, -20, 0, 40)
         frame.BackgroundColor3 = Colors.Foreground
-        frame.ClipsDescendants = true
         frame.Parent = self.CurrentTab.Content
         
         local frameCorner = Instance.new("UICorner")
@@ -587,17 +587,13 @@ function UILibrary:Tab(name)
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.Parent = btn
         
-        -- Options Frame
+        -- Options frame
         local optionsFrame = Instance.new("Frame")
         optionsFrame.Size = UDim2.new(1, 0, 0, 0)
         optionsFrame.Position = UDim2.new(0, 0, 0, 40)
         optionsFrame.BackgroundColor3 = Colors.Background
         optionsFrame.Visible = false
         optionsFrame.Parent = frame
-        
-        local optionsCorner = Instance.new("UICorner")
-        optionsCorner.CornerRadius = UDim.new(0, 6)
-        optionsCorner.Parent = optionsFrame
         
         local open = false
         local selected = {}
@@ -615,7 +611,7 @@ function UILibrary:Tab(name)
             end
         end
         
-        -- Create Options
+        -- Create options
         for i, option in ipairs(options) do
             local optFrame = Instance.new("Frame")
             optFrame.Size = UDim2.new(1, 0, 0, 35)
@@ -629,10 +625,6 @@ function UILibrary:Tab(name)
             checkbox.BackgroundColor3 = Colors.SubText
             checkbox.Parent = optFrame
             
-            local checkCorner = Instance.new("UICorner")
-            checkCorner.CornerRadius = UDim.new(0, 4)
-            checkCorner.Parent = checkbox
-            
             -- Checkmark
             local check = Instance.new("Frame")
             check.Size = UDim2.new(0, 14, 0, 14)
@@ -641,11 +633,7 @@ function UILibrary:Tab(name)
             check.Visible = false
             check.Parent = checkbox
             
-            local checkMarkCorner = Instance.new("UICorner")
-            checkMarkCorner.CornerRadius = UDim.new(0, 3)
-            checkMarkCorner.Parent = check
-            
-            -- Label
+            -- Option label
             local optLabel = Instance.new("TextLabel")
             optLabel.Size = UDim2.new(1, -40, 1, 0)
             optLabel.Position = UDim2.new(0, 35, 0, 0)
@@ -657,7 +645,7 @@ function UILibrary:Tab(name)
             optLabel.TextXAlignment = Enum.TextXAlignment.Left
             optLabel.Parent = optFrame
             
-            -- Click Area
+            -- Click area
             local optBtn = Instance.new("TextButton")
             optBtn.Size = UDim2.new(1, 0, 1, 0)
             optBtn.BackgroundTransparency = 1
