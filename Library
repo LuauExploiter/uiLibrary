@@ -1,135 +1,93 @@
 
-local UI = {}
 
+local UI = {}
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-
 local LocalPlayer = Players.LocalPlayer
 local GuiParent = LocalPlayer:WaitForChild("PlayerGui")
 
 UI.Theme = {
-    Background = Color3.fromRGB(18, 18, 22),
-    FrameStroke = Color3.fromRGB(40, 40, 45),
-    ButtonPrimary = Color3.fromRGB(139, 188, 255),
-    ButtonHover = Color3.fromRGB(150, 198, 255),
-    Text = Color3.fromRGB(230, 230, 235),
-    Gradient = true,
+    Background = Color3.fromRGB(18,18,22),
+    Stroke = Color3.fromRGB(40,40,45),
+    Primary = Color3.fromRGB(139,188,255),
+    Hover = Color3.fromRGB(150,198,255),
+    Text = Color3.fromRGB(230,230,235),
     Rainbow = false
 }
 
-function UI:AddCorner(obj, radius)
+function UI:AddCorner(obj,radius)
     local c = Instance.new("UICorner", obj)
     c.CornerRadius = UDim.new(0, radius or 10)
     return c
 end
 
-function UI:Tween(obj, props, dur)
+function UI:Tween(obj,props,dur)
     TweenService:Create(obj, TweenInfo.new(dur or 0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), props):Play()
 end
 
-function UI:Create(class, props)
+function UI:Create(class,props)
     local obj = Instance.new(class)
     for k,v in pairs(props or {}) do obj[k]=v end
     return obj
 end
 
 function UI:MakeDraggable(frame, handle)
-    local dragging = false
+    local dragging=false
     local dragInput, mousePos, framePos
-
     local function update(input)
         local delta = input.Position - mousePos
         frame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X,
                                    framePos.Y.Scale, framePos.Y.Offset + delta.Y)
     end
-
     handle.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            mousePos = input.Position
-            framePos = frame.Position
+        if input.UserInputType==Enum.UserInputType.MouseButton1 then
+            dragging=true
+            mousePos=input.Position
+            framePos=frame.Position
             input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
+                if input.UserInputState==Enum.UserInputState.End then dragging=false end
             end)
         end
     end)
-
     handle.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
-        end
+        if input.UserInputType==Enum.UserInputType.MouseMovement then dragInput=input end
     end)
-
     UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            update(input)
-        end
+        if input==dragInput and dragging then update(input) end
     end)
 end
 
-function UI:Window(title, size, pos)
-    local screenGui = self:Create("ScreenGui", {Parent=GuiParent, ResetOnSpawn=false, ZIndexBehavior=Enum.ZIndexBehavior.Sibling})
-    
-    local frame = self:Create("Frame", {
-        Parent = screenGui,
-        Size = size or UDim2.new(0, 360, 0, 200),
-        Position = pos or UDim2.new(0, 50, 0, 50),
-        BackgroundColor3 = UI.Theme.Background,
-        BorderSizePixel = 0
-    })
-    self:AddCorner(frame, 16)
-
-    local stroke = self:Create("UIStroke", {Parent=frame, Color=UI.Theme.FrameStroke, Thickness=1})
-    
-    
-    local titleLabel = self:Create("TextLabel", {
-        Parent = frame,
-        Text = title or "UI Window",
-        Size = UDim2.new(1, -20, 0, 30),
-        Position = UDim2.new(0, 10, 0, 10),
-        BackgroundTransparency = 1,
-        Font = Enum.Font.GothamBold,
-        TextSize = 16,
-        TextColor3 = UI.Theme.Text,
-        TextXAlignment = Enum.TextXAlignment.Left
-    })
+function UI:Window(title,size,pos)
+    local screenGui = self:Create("ScreenGui",{Parent=GuiParent,ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling})
+    local frame = self:Create("Frame",{Parent=screenGui,Size=size or UDim2.new(0,400,0,250),Position=pos or UDim2.new(0,50,0,50),BackgroundColor3=self.Theme.Background,BorderSizePixel=0})
+    self:AddCorner(frame,16)
+    local stroke = self:Create("UIStroke",{Parent=frame,Color=self.Theme.Stroke,Thickness=1})
 
     
-    local closeBtn = self:Create("TextButton", {
-        Parent = frame,
-        Text = "X",
-        Size = UDim2.new(0, 25, 0, 25),
-        Position = UDim2.new(1, -35, 0, 10),
-        Font = Enum.Font.GothamBold,
-        TextSize = 14,
-        TextColor3 = UI.Theme.Text,
-        BackgroundColor3 = UI.Theme.ButtonPrimary
-    })
-    self:AddCorner(closeBtn, 6)
-    closeBtn.MouseEnter:Connect(function() self:Tween(closeBtn, {BackgroundColor3=UI.Theme.ButtonHover},0.15) end)
-    closeBtn.MouseLeave:Connect(function() self:Tween(closeBtn, {BackgroundColor3=UI.Theme.ButtonPrimary},0.15) end)
-    closeBtn.MouseButton1Click:Connect(function() frame.Visible = false end)
+    local titleBar = self:Create("Frame",{Parent=frame,Size=UDim2.new(1,0,0,30),BackgroundTransparency=1})
+    local titleLabel = self:Create("TextLabel",{Parent=titleBar,Text=title or "Window",Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,TextColor3=self.Theme.Text,Font=Enum.Font.GothamBold,TextSize=16,TextXAlignment=Enum.TextXAlignment.Left})
+    self:MakeDraggable(frame,titleBar)
 
     
-    self:MakeDraggable(frame, titleLabel)
+    local closeBtn = self:Create("TextButton",{Parent=titleBar,Text="X",Size=UDim2.new(0,25,0,25),Position=UDim2.new(1,-30,0,2),Font=Enum.Font.GothamBold,TextSize=14,TextColor3=self.Theme.Text,BackgroundColor3=self.Theme.Primary})
+    self:AddCorner(closeBtn,6)
+    closeBtn.MouseEnter:Connect(function() self:Tween(closeBtn,{BackgroundColor3=self.Theme.Hover},0.15) end)
+    closeBtn.MouseLeave:Connect(function() self:Tween(closeBtn,{BackgroundColor3=self.Theme.Primary},0.15) end)
+    closeBtn.MouseButton1Click:Connect(function() frame.Visible=false end)
 
     
-    local tabHolder = self:Create("Frame", {Parent=frame, Size=UDim2.new(1,0,0,30), Position=UDim2.new(0,0,0,40), BackgroundTransparency=1})
-    local contentHolder = self:Create("Frame", {Parent=frame, Size=UDim2.new(1,-20,1,-70), Position=UDim2.new(0,10,0,70), BackgroundTransparency=1})
-
+    local tabHolder = self:Create("Frame",{Parent=frame,Size=UDim2.new(1,0,0,30),Position=UDim2.new(0,0,0,30),BackgroundTransparency=1})
+    local contentHolder = self:Create("Frame",{Parent=frame,Size=UDim2.new(1,-20,1,-70),Position=UDim2.new(0,10,0,70),BackgroundTransparency=1})
     local tabs, tabButtons = {}, {}
 
     function frame:Tab(name)
-        local tabBtn = UI:Create("TextButton",{Parent=tabHolder, Size=UDim2.new(0,100,1,0), Text=name, Font=Enum.Font.GothamBold, TextSize=14, TextColor3=UI.Theme.Text, BackgroundColor3=UI.Theme.ButtonPrimary})
-        UI:AddCorner(tabBtn, 6)
-        table.insert(tabButtons, tabBtn)
-
-        local tabContent = UI:Create("Frame", {Parent=contentHolder, Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, Visible=false})
-        table.insert(tabs, tabContent)
+        local tabBtn = self:Create("TextButton",{Parent=tabHolder,Size=UDim2.new(0,100,1,0),Text=name,Font=Enum.Font.GothamBold,TextSize=14,TextColor3=UI.Theme.Text,BackgroundColor3=UI.Theme.Primary})
+        UI:AddCorner(tabBtn,6)
+        table.insert(tabButtons,tabBtn)
+        local tabContent = UI:Create("Frame",{Parent=contentHolder,Size=UDim2.new(1,0,1,0),BackgroundTransparency=1,Visible=false})
+        table.insert(tabs,tabContent)
 
         tabBtn.MouseButton1Click:Connect(function()
             for _,v in pairs(tabs) do v.Visible=false end
@@ -138,13 +96,95 @@ function UI:Window(title, size, pos)
 
         local tabAPI = {}
 
-        function tabAPI:Button(text, callback)
-            local btn = UI:Create("TextButton",{Parent=tabContent, Size=UDim2.new(1,0,0,35), Text=text, Font=Enum.Font.GothamBold, TextSize=14, TextColor3=UI.Theme.Text, BackgroundColor3=UI.Theme.ButtonPrimary})
+        
+        function tabAPI:Button(text,callback)
+            local btn = UI:Create("TextButton",{Parent=tabContent,Size=UDim2.new(1,0,0,35),Text=text,Font=Enum.Font.GothamBold,TextSize=14,TextColor3=UI.Theme.Text,BackgroundColor3=UI.Theme.Primary})
             UI:AddCorner(btn,6)
-            btn.MouseEnter:Connect(function() UI:Tween(btn, {BackgroundColor3=UI.Theme.ButtonHover},0.15) end)
-            btn.MouseLeave:Connect(function() UI:Tween(btn, {BackgroundColor3=UI.Theme.ButtonPrimary},0.15) end)
+            btn.MouseEnter:Connect(function() UI:Tween(btn,{BackgroundColor3=UI.Theme.Hover},0.15) end)
+            btn.MouseLeave:Connect(function() UI:Tween(btn,{BackgroundColor3=UI.Theme.Primary},0.15) end)
             if callback then btn.MouseButton1Click:Connect(callback) end
             return btn
+        end
+
+        
+        function tabAPI:Toggle(text,default,callback)
+            local frameToggle = UI:Create("Frame",{Parent=tabContent,Size=UDim2.new(1,0,0,35),BackgroundTransparency=1})
+            local lbl = UI:Create("TextLabel",{Parent=frameToggle,Size=UDim2.new(0.7,0,1,0),Text=text,BackgroundTransparency=1,TextColor3=UI.Theme.Text,Font=Enum.Font.Gotham,TextSize=14,TextXAlignment=Enum.TextXAlignment.Left})
+            local btn = UI:Create("TextButton",{Parent=frameToggle,Size=UDim2.new(0.25,0,0.6,0),Position=UDim2.new(0.74,0,0.2,0),Text=default and "ON" or "OFF",BackgroundColor3=default and UI.Theme.Primary or UI.Theme.Stroke,TextColor3=UI.Theme.Text})
+            UI:AddCorner(btn,6)
+            local state=default
+            btn.MouseButton1Click:Connect(function()
+                state=not state
+                btn.Text=state and "ON" or "OFF"
+                btn.BackgroundColor3=state and UI.Theme.Primary or UI.Theme.Stroke
+                if callback then pcall(callback,state) end
+            end)
+            return frameToggle
+        end
+
+        
+        function tabAPI:Slider(text,min,max,default,callback)
+            local frameSlider = UI:Create("Frame",{Parent=tabContent,Size=UDim2.new(1,0,0,50),BackgroundTransparency=1})
+            local lbl = UI:Create("TextLabel",{Parent=frameSlider,Text=text.." : "..default,BackgroundTransparency=1,TextColor3=UI.Theme.Text,Font=Enum.Font.Gotham,TextSize=14,TextXAlignment=Enum.TextXAlignment.Left})
+            local bar = UI:Create("Frame",{Parent=frameSlider,Size=UDim2.new(1,0,0,10),Position=UDim2.new(0,0,0,30),BackgroundColor3=UI.Theme.Stroke})
+            UI:AddCorner(bar,6)
+            local fill = UI:Create("Frame",{Parent=bar,Size=UDim2.new((default-min)/(max-min),0,1,0),BackgroundColor3=UI.Theme.Primary})
+            UI:AddCorner(fill,6)
+
+            local dragging=false
+            bar.InputBegan:Connect(function(input) if input.UserInputType==Enum.UserInputType.MouseButton1 then dragging=true end end)
+            UserInputService.InputEnded:Connect(function(input) if input.UserInputType==Enum.UserInputType.MouseButton1 then dragging=false end end)
+            UserInputService.InputChanged:Connect(function(input)
+                if dragging and input.UserInputType==Enum.UserInputType.MouseMovement then
+                    local x=math.clamp(input.Position.X-bar.AbsolutePosition.X,0,bar.AbsoluteSize.X)
+                    local val=min+((max-min)*(x/bar.AbsoluteSize.X))
+                    fill.Size=UDim2.new(x/bar.AbsoluteSize.X,0,1,0)
+                    lbl.Text=text.." : "..math.floor(val)
+                    if callback then pcall(callback,val) end
+                end
+            end)
+            return frameSlider
+        end
+
+        
+        function tabAPI:Dropdown(text,options,callback)
+            local frameDrop = UI:Create("Frame",{Parent=tabContent,Size=UDim2.new(1,0,0,35),BackgroundTransparency=1})
+            local lbl = UI:Create("TextLabel",{Parent=frameDrop,Text=text,BackgroundTransparency=1,TextColor3=UI.Theme.Text,Font=Enum.Font.Gotham,TextSize=14,TextXAlignment=Enum.TextXAlignment.Left})
+            local btn = UI:Create("TextButton",{Parent=frameDrop,Size=UDim2.new(0.3,0,1,0),Position=UDim2.new(0.7,0,0,0),Text="Select",BackgroundColor3=UI.Theme.Primary,TextColor3=UI.Theme.Text})
+            UI:AddCorner(btn,6)
+            local dropdownOpen = false
+            local list = UI:Create("Frame",{Parent=frameDrop,Size=UDim2.new(1,0,0,#options*30),Position=UDim2.new(0,0,1,0),BackgroundColor3=UI.Theme.Background,Visible=false})
+            UI:AddCorner(list,6)
+            for i,opt in pairs(options) do
+                local optBtn = UI:Create("TextButton",{Parent=list,Size=UDim2.new(1,0,0,30),Position=UDim2.new(0,0,(i-1)*30,0),Text=opt,Font=Enum.Font.Gotham,TextSize=14,TextColor3=UI.Theme.Text,BackgroundColor3=self.Theme.Stroke})
+                UI:AddCorner(optBtn,6)
+                optBtn.MouseEnter:Connect(function() UI:Tween(optBtn,{BackgroundColor3=self.Theme.Hover},0.15) end)
+                optBtn.MouseLeave:Connect(function() UI:Tween(optBtn,{BackgroundColor3=self.Theme.Stroke},0.15) end)
+                optBtn.MouseButton1Click:Connect(function()
+                    btn.Text=opt
+                    list.Visible=false
+                    dropdownOpen=false
+                    if callback then pcall(callback,opt) end
+                end)
+            end
+            btn.MouseButton1Click:Connect(function()
+                dropdownOpen = not dropdownOpen
+                list.Visible = dropdownOpen
+            end)
+            return frameDrop
+        end
+
+        
+        function tabAPI:TextBox(placeholder,callback)
+            local frameBox = UI:Create("Frame",{Parent=tabContent,Size=UDim2.new(1,0,0,35),BackgroundTransparency=1})
+            local box = UI:Create("TextBox",{Parent=frameBox,Size=UDim2.new(1,0,1,0),Text="",PlaceholderText=placeholder or "",Font=Enum.Font.Gotham,TextSize=14,TextColor3=UI.Theme.Text,BackgroundColor3=self.Theme.Stroke})
+            UI:AddCorner(box,6)
+            box.FocusLost:Connect(function(enterPressed)
+                if enterPressed and callback then
+                    pcall(callback,box.Text)
+                end
+            end)
+            return frameBox
         end
 
         return tabAPI
