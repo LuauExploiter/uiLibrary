@@ -1,4 +1,4 @@
--- ULTIMATE UI LIBRARY - PERFECT EDITION
+-- FINAL PERFECT UI LIBRARY
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -21,10 +21,9 @@ local Colors = {
     ToggleOn = Color3.fromRGB(0,140,255)
 }
 
--- Super smooth tween presets
-local TweenSmooth = TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+-- Smooth tween presets
+local TweenSmooth = TweenInfo.new(0.25, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 local TweenSnappy = TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0.2)
-local TweenElastic = TweenInfo.new(0.4, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out)
 
 local function Tween(obj, props, tweenInfo)
     local tween = TweenService:Create(obj, tweenInfo or TweenSmooth, props)
@@ -32,7 +31,7 @@ local function Tween(obj, props, tweenInfo)
     return tween
 end
 
--- DRAG SYSTEM
+-- Drag system
 local function MakeDraggable(frame, dragElement)
     local dragEnabled = false
     local dragInput, dragStart, startPos
@@ -82,11 +81,11 @@ function UILibrary:Create(title)
     
     -- Create ScreenGui
     self.ScreenGui = Instance.new("ScreenGui")
-    self.ScreenGui.Name = "UILibrary_Pro_"..math.random(1000,9999)
+    self.ScreenGui.Name = "UILibrary_Final_"..math.random(1000,9999)
     self.ScreenGui.ResetOnSpawn = false
     self.ScreenGui.Parent = game:GetService("CoreGui") or game.Players.LocalPlayer:WaitForChild("PlayerGui")
     
-    -- Main Window (EVERY CORNER ROUNDED)
+    -- Main Window
     self.Window = Instance.new("Frame")
     self.Window.Size = UDim2.new(0,420,0,280)
     self.Window.Position = UDim2.new(0.5,-210,0.5,-140)
@@ -104,7 +103,7 @@ function UILibrary:Create(title)
     windowStroke.Color = Colors.Primary
     windowStroke.Parent = self.Window
     
-    -- Top Bar (ROUNDED TOP CORNERS ONLY)
+    -- Top Bar
     self.TopBar = Instance.new("Frame")
     self.TopBar.Size = UDim2.new(1,0,0,40)
     self.TopBar.BackgroundColor3 = Colors.Foreground
@@ -127,7 +126,7 @@ function UILibrary:Create(title)
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = self.TopBar
     
-    -- Close Button (CIRCLE)
+    -- Close Button
     self.CloseBtn = Instance.new("TextButton")
     self.CloseBtn.Size = UDim2.new(0,28,0,28)
     self.CloseBtn.Position = UDim2.new(1,-35,0.5,-14)
@@ -143,7 +142,7 @@ function UILibrary:Create(title)
     closeCorner.CornerRadius = UDim.new(1,0)
     closeCorner.Parent = self.CloseBtn
     
-    -- Minimize Button (CIRCLE)
+    -- Minimize Button
     self.MinimizeBtn = Instance.new("TextButton")
     self.MinimizeBtn.Size = UDim2.new(0,28,0,28)
     self.MinimizeBtn.Position = UDim2.new(1,-70,0.5,-14)
@@ -159,7 +158,7 @@ function UILibrary:Create(title)
     minCorner.CornerRadius = UDim.new(1,0)
     minCorner.Parent = self.MinimizeBtn
     
-    -- Left Panel (ROUNDED BOTTOM LEFT)
+    -- Left Panel
     self.LeftPanel = Instance.new("Frame")
     self.LeftPanel.Size = UDim2.new(0,110,1,-40)
     self.LeftPanel.Position = UDim2.new(0,0,0,40)
@@ -186,7 +185,7 @@ function UILibrary:Create(title)
     tabsPadding.PaddingBottom = UDim.new(0,10)
     tabsPadding.Parent = self.TabsContainer
     
-    -- Content Panel (ROUNDED BOTTOM RIGHT)
+    -- Content Panel
     self.ContentPanel = Instance.new("Frame")
     self.ContentPanel.Size = UDim2.new(1,-110,1,-40)
     self.ContentPanel.Position = UDim2.new(0,110,0,40)
@@ -225,41 +224,39 @@ function UILibrary:Create(title)
         self.Content.CanvasSize = UDim2.new(0,0,0,contentList.AbsoluteContentSize.Y + 20)
     end)
     
-    -- MAKE DRAGGABLE
+    -- Make draggable
     MakeDraggable(self.Window, self.TopBar)
     MakeDraggable(self.Window, titleLabel)
     
-    -- Button Hover Effects
+    -- Button hover effects
     self.CloseBtn.MouseEnter:Connect(function()
-        Tween(self.CloseBtn, {BackgroundColor3 = Color3.fromRGB(255,80,80)}, TweenInfo.new(0.1))
+        Tween(self.CloseBtn, {BackgroundColor3 = Color3.fromRGB(255,80,80)})
     end)
     
     self.CloseBtn.MouseLeave:Connect(function()
-        Tween(self.CloseBtn, {BackgroundColor3 = Colors.Close}, TweenInfo.new(0.1))
+        Tween(self.CloseBtn, {BackgroundColor3 = Colors.Close})
     end)
     
     self.MinimizeBtn.MouseEnter:Connect(function()
-        Tween(self.MinimizeBtn, {BackgroundColor3 = Color3.fromRGB(255,200,60)}, TweenInfo.new(0.1))
+        Tween(self.MinimizeBtn, {BackgroundColor3 = Color3.fromRGB(255,200,60)})
     end)
     
     self.MinimizeBtn.MouseLeave:Connect(function()
-        Tween(self.MinimizeBtn, {BackgroundColor3 = Colors.Minimize}, TweenInfo.new(0.1))
+        Tween(self.MinimizeBtn, {BackgroundColor3 = Colors.Minimize})
     end)
     
-    -- Minimize Functionality
+    -- Minimize functionality
     local minimized = false
     local originalSize = self.Window.Size
     self.MinimizeBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
         
         if minimized then
-            -- Hide content, show only title bar
             self.LeftPanel.Visible = false
             self.ContentPanel.Visible = false
             Tween(self.Window, {Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 40)})
             self.MinimizeBtn.Text = "+"
         else
-            -- Show everything
             self.LeftPanel.Visible = true
             self.ContentPanel.Visible = true
             Tween(self.Window, {Size = originalSize})
@@ -267,13 +264,13 @@ function UILibrary:Create(title)
         end
     end)
     
-    -- Close Functionality
+    -- Close functionality
     self.CloseBtn.MouseButton1Click:Connect(function()
         Tween(self.Window, {
             Size = UDim2.new(0,0,0,0),
             Position = UDim2.new(0.5,0,0.5,0)
-        }, TweenElastic)
-        task.wait(0.4)
+        }, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In))
+        task.wait(0.3)
         self.ScreenGui:Destroy()
     end)
     
@@ -282,17 +279,16 @@ function UILibrary:Create(title)
     self.CurrentTab = nil
     self.CurrentTabButton = nil
     
-    -- PERFECT NOTIFICATION SYSTEM - NO OVERLAP
+    -- Notification system - NO OVERLAP
     self.ActiveNotifications = {}
     
     function self:UpdateNotificationStack()
-        -- Sort notifications by their creation time (oldest at bottom)
-        local baseY = 0.5 -- Start at middle
-        local spacing = 60 -- Space between notifications
+        local baseY = 0.5
+        local spacing = 60
         
         for i, notification in ipairs(self.ActiveNotifications) do
             if notification and notification.Parent then
-                local targetY = baseY - (spacing * (i - 1)) / 720 -- Adjust for screen height
+                local targetY = baseY - (spacing * (i - 1)) / 720
                 Tween(notification, {
                     Position = UDim2.new(1, -260, targetY, -25)
                 })
@@ -310,7 +306,6 @@ function UILibrary:Create(title)
             task.wait(0.3)
             notification:Destroy()
             
-            -- Remove from active notifications
             for i, notif in ipairs(self.ActiveNotifications) do
                 if notif == notification then
                     table.remove(self.ActiveNotifications, i)
@@ -355,7 +350,7 @@ function UILibrary:Create(title)
         tabContentList.SortOrder = Enum.SortOrder.LayoutOrder
         tabContentList.Parent = contentFrame
         
-        -- Tab Hover Effects
+        -- Tab hover effects
         tabBtn.MouseEnter:Connect(function()
             if self.CurrentTabButton ~= tabBtn then
                 Tween(tabBtn, {BackgroundColor3 = Colors.Secondary:lerp(Colors.Text, 0.2)})
@@ -370,7 +365,7 @@ function UILibrary:Create(title)
             end
         end)
         
-        -- Tab Selection with BLUE HIGHLIGHT
+        -- Tab selection with BLUE highlight
         tabBtn.MouseButton1Click:Connect(function()
             if self.CurrentTab then 
                 self.CurrentTab.Visible = false 
@@ -424,7 +419,7 @@ function UILibrary:Create(title)
             btnStroke.Color = Colors.Primary
             btnStroke.Parent = btn
             
-            -- Hover Effects
+            -- Hover effects
             btn.MouseEnter:Connect(function()
                 Tween(btn, {BackgroundColor3 = Colors.Primary:lerp(Color3.new(1,1,1), 0.2)})
             end)
@@ -433,7 +428,7 @@ function UILibrary:Create(title)
                 Tween(btn, {BackgroundColor3 = Colors.Primary})
             end)
             
-            -- Click with Animation
+            -- Click animation
             local function handleClick()
                 Tween(btn, {
                     BackgroundColor3 = Colors.Primary:lerp(Color3.new(1,1,1), 0.4),
@@ -456,7 +451,7 @@ function UILibrary:Create(title)
             return btn
         end
         
-        -- ADD TOGGLE (BLUE WHEN ON)
+        -- FIXED TOGGLE - ENTIRE AREA CLICKABLE, SWITCH TURNS BLUE
         function tabData:AddToggle(text, default, callback)
             local toggleFrame = Instance.new("Frame")
             toggleFrame.Size = UDim2.new(1,-10,0,32)
@@ -479,10 +474,10 @@ function UILibrary:Create(title)
             toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
             toggleLabel.Parent = toggleFrame
             
-            -- Toggle Switch Container
+            -- Switch Container
             local switchContainer = Instance.new("Frame")
-            switchContainer.Size = UDim2.new(0,40,0,20)
-            switchContainer.Position = UDim2.new(1,-44,0.5,-10)
+            switchContainer.Size = UDim2.new(0,44,0,22)  -- Bigger container
+            switchContainer.Position = UDim2.new(1,-48,0.5,-11)
             switchContainer.BackgroundColor3 = Colors.SubText
             switchContainer.Parent = toggleFrame
             
@@ -490,10 +485,10 @@ function UILibrary:Create(title)
             switchCorner.CornerRadius = UDim.new(1,0)
             switchCorner.Parent = switchContainer
             
-            -- Toggle Circle
+            -- Toggle Circle (BLUE when on)
             local toggleCircle = Instance.new("Frame")
-            toggleCircle.Size = UDim2.new(0,16,0,16)
-            toggleCircle.Position = default and UDim2.new(1,-18,0.5,-8) or UDim2.new(0,2,0.5,-8)
+            toggleCircle.Size = UDim2.new(0,18,0,18)
+            toggleCircle.Position = default and UDim2.new(1,-20,0.5,-9) or UDim2.new(0,2,0.5,-9)
             toggleCircle.BackgroundColor3 = default and Colors.ToggleOn or Color3.fromRGB(240,240,245)
             toggleCircle.Parent = switchContainer
             
@@ -503,25 +498,28 @@ function UILibrary:Create(title)
             
             local state = default
             
+            -- Function to toggle state (works when clicking ANYWHERE on toggleFrame)
             local function toggleState()
                 state = not state
                 
                 if state then
                     Tween(toggleCircle, {
-                        Position = UDim2.new(1,-18,0.5,-8),
+                        Position = UDim2.new(1,-20,0.5,-9),
                         BackgroundColor3 = Colors.ToggleOn
                     }, TweenSnappy)
+                    Tween(switchContainer, {BackgroundColor3 = Colors.Primary:lerp(Color3.new(1,1,1), 0.3)})
                 else
                     Tween(toggleCircle, {
-                        Position = UDim2.new(0,2,0.5,-8),
+                        Position = UDim2.new(0,2,0.5,-9),
                         BackgroundColor3 = Color3.fromRGB(240,240,245)
                     }, TweenSnappy)
+                    Tween(switchContainer, {BackgroundColor3 = Colors.SubText})
                 end
                 
                 if callback then callback(state) end
             end
             
-            -- Make whole toggle frame clickable
+            -- Make entire toggle frame clickable
             local toggleBtn = Instance.new("TextButton")
             toggleBtn.Size = UDim2.new(1,0,1,0)
             toggleBtn.BackgroundTransparency = 1
@@ -530,6 +528,9 @@ function UILibrary:Create(title)
             
             toggleBtn.MouseButton1Click:Connect(toggleState)
             toggleBtn.TouchTap:Connect(toggleState)
+            
+            -- Also make the switch container itself clickable
+            switchContainer.MouseButton1Click:Connect(toggleState)
             
             return {
                 Set = function(value)
@@ -543,7 +544,7 @@ function UILibrary:Create(title)
             }
         end
         
-        -- ADD SLIDER (WORKING PERFECTLY)
+        -- ADD SLIDER
         function tabData:AddSlider(text, min, max, default, callback)
             local sliderFrame = Instance.new("Frame")
             sliderFrame.Size = UDim2.new(1,-10,0,42)
@@ -639,7 +640,7 @@ function UILibrary:Create(title)
             end)
         end
         
-        -- ADD DROPDOWN (CLEAN ANIMATIONS, ARROW ROTATES)
+        -- FIXED DROPDOWN - BIGGER ARROW BUTTON
         function tabData:AddDropdown(text, options, callback)
             local dropdownFrame = Instance.new("Frame")
             dropdownFrame.Size = UDim2.new(1,-10,0,32)
@@ -652,7 +653,7 @@ function UILibrary:Create(title)
             dropdownCorner.Parent = dropdownFrame
             
             local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,-40,1,0)
+            label.Size = UDim2.new(1,-50,1,0)  -- More space for bigger arrow
             label.Position = UDim2.new(0,12,0,0)
             label.BackgroundTransparency = 1
             label.Text = text
@@ -662,16 +663,21 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = dropdownFrame
             
-            -- Arrow that rotates
-            local arrow = Instance.new("TextLabel")
-            arrow.Size = UDim2.new(0,20,0,20)
-            arrow.Position = UDim2.new(1,-28,0.5,-10)
-            arrow.BackgroundTransparency = 1
-            arrow.Text = "▼"
-            arrow.TextColor3 = Colors.SubText
-            arrow.Font = Enum.Font.GothamBold
-            arrow.TextSize = 12
-            arrow.Parent = dropdownFrame
+            -- BIGGER ARROW BUTTON
+            local arrowBtn = Instance.new("TextButton")
+            arrowBtn.Size = UDim2.new(0,36,0,36)  -- Bigger button
+            arrowBtn.Position = UDim2.new(1,-40,0.5,-18)
+            arrowBtn.BackgroundColor3 = Colors.Secondary
+            arrowBtn.AutoButtonColor = false
+            arrowBtn.Text = "▼"
+            arrowBtn.TextColor3 = Colors.SubText
+            arrowBtn.Font = Enum.Font.GothamBold
+            arrowBtn.TextSize = 14
+            arrowBtn.Parent = dropdownFrame
+            
+            local arrowCorner = Instance.new("UICorner")
+            arrowCorner.CornerRadius = UDim.new(0,6)
+            arrowCorner.Parent = arrowBtn
             
             -- Options Container
             local optionsFrame = Instance.new("Frame")
@@ -693,10 +699,11 @@ function UILibrary:Create(title)
             
             local open = false
             local selectedOption = nil
+            local optionButtons = {}
             
             for idx, opt in ipairs(options) do
                 local optBtn = Instance.new("TextButton")
-                optBtn.Size = UDim2.new(1,-10,0,26)
+                optBtn.Size = UDim2.new(1,-10,0,28)
                 optBtn.BackgroundColor3 = Colors.Secondary
                 optBtn.AutoButtonColor = false
                 optBtn.Text = opt
@@ -705,6 +712,7 @@ function UILibrary:Create(title)
                 optBtn.TextSize = 13
                 optBtn.LayoutOrder = idx
                 optBtn.Parent = optionsFrame
+                optionButtons[opt] = optBtn
                 
                 local optCorner = Instance.new("UICorner")
                 optCorner.CornerRadius = UDim.new(0,6)
@@ -727,19 +735,18 @@ function UILibrary:Create(title)
                 
                 -- Selection (HIGHLIGHT IN BLUE)
                 optBtn.MouseButton1Click:Connect(function()
-                    if selectedOption == opt then return end
+                    if selectedOption == opt then
+                        -- Close dropdown if clicking same option
+                        toggleDropdown()
+                        return
+                    end
                     
                     -- Reset previous selection
-                    if selectedOption then
-                        for _, btn in ipairs(optionsFrame:GetChildren()) do
-                            if btn:IsA("TextButton") and btn.Text == selectedOption then
-                                Tween(btn, {
-                                    BackgroundColor3 = Colors.Secondary,
-                                    TextColor3 = Colors.SubText
-                                })
-                                break
-                            end
-                        end
+                    if selectedOption and optionButtons[selectedOption] then
+                        Tween(optionButtons[selectedOption], {
+                            BackgroundColor3 = Colors.Secondary,
+                            TextColor3 = Colors.SubText
+                        })
                     end
                     
                     selectedOption = opt
@@ -758,32 +765,46 @@ function UILibrary:Create(title)
                 end)
             end
             
+            -- Arrow button hover
+            arrowBtn.MouseEnter:Connect(function()
+                Tween(arrowBtn, {BackgroundColor3 = Colors.Secondary:lerp(Colors.Text, 0.1)})
+                Tween(arrowBtn, {TextColor3 = Colors.Text})
+            end)
+            
+            arrowBtn.MouseLeave:Connect(function()
+                Tween(arrowBtn, {BackgroundColor3 = Colors.Secondary})
+                Tween(arrowBtn, {TextColor3 = Colors.SubText})
+            end)
+            
             local function toggleDropdown()
                 open = not open
                 
                 if open then
                     optionsFrame.Visible = true
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,#options * 28)})
-                    Tween(arrow, {Rotation = 180})
-                    Tween(arrow, {TextColor3 = Colors.Primary})
+                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,#options * 30)})
+                    Tween(arrowBtn, {Rotation = 180})
+                    Tween(arrowBtn, {TextColor3 = Colors.Primary})
                 else
                     Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
-                    Tween(arrow, {Rotation = 0})
-                    Tween(arrow, {TextColor3 = Colors.SubText})
+                    Tween(arrowBtn, {Rotation = 0})
+                    Tween(arrowBtn, {TextColor3 = Colors.SubText})
                     task.wait(0.2)
                     optionsFrame.Visible = false
                 end
             end
             
-            -- Clickable area
-            local dropdownBtn = Instance.new("TextButton")
-            dropdownBtn.Size = UDim2.new(1,0,1,0)
-            dropdownBtn.BackgroundTransparency = 1
-            dropdownBtn.Text = ""
-            dropdownBtn.Parent = dropdownFrame
+            -- Make arrow button clickable
+            arrowBtn.MouseButton1Click:Connect(toggleDropdown)
             
-            dropdownBtn.MouseButton1Click:Connect(toggleDropdown)
-            dropdownBtn.TouchTap:Connect(toggleDropdown)
+            -- Also make entire dropdown frame clickable
+            local dropdownArea = Instance.new("TextButton")
+            dropdownArea.Size = UDim2.new(1,-46,1,0)  -- Don't cover arrow button
+            dropdownArea.Position = UDim2.new(0,0,0,0)
+            dropdownArea.BackgroundTransparency = 1
+            dropdownArea.Text = ""
+            dropdownArea.Parent = dropdownFrame
+            
+            dropdownArea.MouseButton1Click:Connect(toggleDropdown)
             
             -- Close when clicking elsewhere
             local connection
@@ -809,9 +830,23 @@ function UILibrary:Create(title)
             
             return {
                 Set = function(opt)
-                    if table.find(options, opt) then
+                    if table.find(options, opt) and optionButtons[opt] then
+                        -- Reset old selection
+                        if selectedOption and optionButtons[selectedOption] then
+                            Tween(optionButtons[selectedOption], {
+                                BackgroundColor3 = Colors.Secondary,
+                                TextColor3 = Colors.SubText
+                            })
+                        end
+                        
                         selectedOption = opt
                         label.Text = text..": "..opt
+                        
+                        -- Highlight in blue
+                        Tween(optionButtons[opt], {
+                            BackgroundColor3 = Colors.DropdownSelected,
+                            TextColor3 = Colors.Text
+                        })
                     end
                 end,
                 Get = function()
@@ -820,7 +855,7 @@ function UILibrary:Create(title)
             }
         end
         
-        -- ADD MULTI DROPDOWN (SELECT MULTIPLE, BLUE HIGHLIGHT)
+        -- FIXED MULTI DROPDOWN - SELECTED OPTIONS HIGHLIGHTED BLUE
         function tabData:AddMultiDropdown(text, options, callback)
             local dropdownFrame = Instance.new("Frame")
             dropdownFrame.Size = UDim2.new(1,-10,0,32)
@@ -833,7 +868,7 @@ function UILibrary:Create(title)
             dropdownCorner.Parent = dropdownFrame
             
             local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,-40,1,0)
+            label.Size = UDim2.new(1,-50,1,0)
             label.Position = UDim2.new(0,12,0,0)
             label.BackgroundTransparency = 1
             label.Text = text
@@ -843,15 +878,21 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = dropdownFrame
             
-            local arrow = Instance.new("TextLabel")
-            arrow.Size = UDim2.new(0,20,0,20)
-            arrow.Position = UDim2.new(1,-28,0.5,-10)
-            arrow.BackgroundTransparency = 1
-            arrow.Text = "▼"
-            arrow.TextColor3 = Colors.SubText
-            arrow.Font = Enum.Font.GothamBold
-            arrow.TextSize = 12
-            arrow.Parent = dropdownFrame
+            -- Bigger arrow button
+            local arrowBtn = Instance.new("TextButton")
+            arrowBtn.Size = UDim2.new(0,36,0,36)
+            arrowBtn.Position = UDim2.new(1,-40,0.5,-18)
+            arrowBtn.BackgroundColor3 = Colors.Secondary
+            arrowBtn.AutoButtonColor = false
+            arrowBtn.Text = "▼"
+            arrowBtn.TextColor3 = Colors.SubText
+            arrowBtn.Font = Enum.Font.GothamBold
+            arrowBtn.TextSize = 14
+            arrowBtn.Parent = dropdownFrame
+            
+            local arrowCorner = Instance.new("UICorner")
+            arrowCorner.CornerRadius = UDim.new(0,6)
+            arrowCorner.Parent = arrowBtn
             
             local optionsFrame = Instance.new("Frame")
             optionsFrame.Size = UDim2.new(1,0,0,0)
@@ -888,7 +929,7 @@ function UILibrary:Create(title)
             
             for idx, opt in ipairs(options) do
                 local optBtn = Instance.new("TextButton")
-                optBtn.Size = UDim2.new(1,-10,0,26)
+                optBtn.Size = UDim2.new(1,-10,0,28)
                 optBtn.BackgroundColor3 = Colors.Secondary
                 optBtn.AutoButtonColor = false
                 optBtn.Text = opt
@@ -918,7 +959,7 @@ function UILibrary:Create(title)
                     end
                 end)
                 
-                -- Selection/Deselection (HIGHLIGHT IN BLUE WHEN SELECTED)
+                -- Selection/Deselection (HIGHLIGHTED BLUE WHEN SELECTED)
                 optBtn.MouseButton1Click:Connect(function()
                     local isSelected = table.find(selectedOptions, opt)
                     
@@ -941,31 +982,45 @@ function UILibrary:Create(title)
                 end)
             end
             
+            -- Arrow button hover
+            arrowBtn.MouseEnter:Connect(function()
+                Tween(arrowBtn, {BackgroundColor3 = Colors.Secondary:lerp(Colors.Text, 0.1)})
+                Tween(arrowBtn, {TextColor3 = Colors.Text})
+            end)
+            
+            arrowBtn.MouseLeave:Connect(function()
+                Tween(arrowBtn, {BackgroundColor3 = Colors.Secondary})
+                Tween(arrowBtn, {TextColor3 = Colors.SubText})
+            end)
+            
             local function toggleDropdown()
                 open = not open
                 
                 if open then
                     optionsFrame.Visible = true
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,#options * 28)})
-                    Tween(arrow, {Rotation = 180})
-                    Tween(arrow, {TextColor3 = Colors.Primary})
+                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,#options * 30)})
+                    Tween(arrowBtn, {Rotation = 180})
+                    Tween(arrowBtn, {TextColor3 = Colors.Primary})
                 else
                     Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
-                    Tween(arrow, {Rotation = 0})
-                    Tween(arrow, {TextColor3 = Colors.SubText})
+                    Tween(arrowBtn, {Rotation = 0})
+                    Tween(arrowBtn, {TextColor3 = Colors.SubText})
                     task.wait(0.2)
                     optionsFrame.Visible = false
                 end
             end
             
-            local dropdownBtn = Instance.new("TextButton")
-            dropdownBtn.Size = UDim2.new(1,0,1,0)
-            dropdownBtn.BackgroundTransparency = 1
-            dropdownBtn.Text = ""
-            dropdownBtn.Parent = dropdownFrame
+            arrowBtn.MouseButton1Click:Connect(toggleDropdown)
             
-            dropdownBtn.MouseButton1Click:Connect(toggleDropdown)
-            dropdownBtn.TouchTap:Connect(toggleDropdown)
+            -- Make dropdown area clickable
+            local dropdownArea = Instance.new("TextButton")
+            dropdownArea.Size = UDim2.new(1,-46,1,0)
+            dropdownArea.Position = UDim2.new(0,0,0,0)
+            dropdownArea.BackgroundTransparency = 1
+            dropdownArea.Text = ""
+            dropdownArea.Parent = dropdownFrame
+            
+            dropdownArea.MouseButton1Click:Connect(toggleDropdown)
             
             -- Close when clicking elsewhere
             local connection
@@ -991,7 +1046,19 @@ function UILibrary:Create(title)
             
             return {
                 Set = function(opts)
+                    -- Clear all selections first
+                    for _, opt in ipairs(selectedOptions) do
+                        if optionButtons[opt] then
+                            Tween(optionButtons[opt], {
+                                BackgroundColor3 = Colors.Secondary,
+                                TextColor3 = Colors.SubText
+                            })
+                        end
+                    end
+                    
                     selectedOptions = {}
+                    
+                    -- Set new selections with BLUE highlight
                     for _, opt in ipairs(opts) do
                         if optionButtons[opt] then
                             table.insert(selectedOptions, opt)
@@ -1001,6 +1068,7 @@ function UILibrary:Create(title)
                             })
                         end
                     end
+                    
                     updateLabel()
                 end,
                 Get = function()
@@ -1013,7 +1081,7 @@ function UILibrary:Create(title)
         return tabData
     end
     
-    -- NOTIFICATION SYSTEM (PERFECT, NO OVERLAP)
+    -- NOTIFICATION SYSTEM
     function self:Notify(text, duration)
         duration = duration or 3
         
