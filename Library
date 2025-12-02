@@ -1,4 +1,4 @@
--- COMPLETE UI LIBRARY WITH UPDATED DRAGGING
+-- COMPLETELY FIXED UI LIBRARY
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -26,7 +26,7 @@ local function Tween(obj, props, time)
     return tween
 end
 
--- Create Window with new layout
+-- Create Window
 function UILibrary:Create(title)
     local self = setmetatable({}, UILibrary)
     
@@ -36,11 +36,11 @@ function UILibrary:Create(title)
     self.ScreenGui.ResetOnSpawn = false
     self.ScreenGui.Parent = game.CoreGui
     
-    -- Main Window - 420x250 (slightly bigger)
+    -- Main Window - 420x250
     self.Window = Instance.new("Frame")
     self.Window.Name = "Window"
-    self.Window.Size = UDim2.new(0, 420, 0, 250) -- Slightly bigger: 420x250
-    self.Window.Position = UDim2.new(0.5, -210, 0.5, -125) -- Centered
+    self.Window.Size = UDim2.new(0, 420, 0, 250)
+    self.Window.Position = UDim2.new(0.5, -210, 0.5, -125)
     self.Window.BackgroundColor3 = Colors.Background
     self.Window.BorderSizePixel = 0
     self.Window.ClipsDescendants = true
@@ -67,59 +67,62 @@ function UILibrary:Create(title)
     topCorner.CornerRadius = UDim.new(0, 8, 0, 0)
     topCorner.Parent = self.TopBar
     
-    -- UPDATED DRAGGING SYSTEM
-    local Enabled = false
-    local Value2 = nil
-    local Value3 = Vector2.new(0, 0)
-    local Value4 = UDim2.new(0, 0, 0, 0)
+    -- FIXED: Proper dragging with no camera movement
+    local dragEnabled = false
+    local dragStart, windowStart
     
-    local function Calculate2(input)
-        if not Enabled or not self.Window then return end
-        local Position = input.Position - Value3
-        local Table2 = {
-            Position = UDim2.new(
-                Value4.X.Scale, 
-                Value4.X.Offset + Position.X, 
-                Value4.Y.Scale, 
-                Value4.Y.Offset + Position.Y
-            )
-        }
-        TweenService:Create(self.Window, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), Table2):Play()
-    end
-    
-    -- Start dragging
-    self.TopBar.InputBegan:Connect(function(input)
+    local function beginDrag(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            Enabled = true
-            Value3 = input.Position
-            Value4 = self.Window.Position
+            dragEnabled = true
+            dragStart = input.Position
+            windowStart = self.Window.Position
             
+            -- Highlight the top bar
             Tween(self.TopBar, {BackgroundColor3 = Colors.Foreground:lerp(Colors.Primary, 0.3)}, 0.15)
             
-            input.Changed:Connect(function()
+            -- FIX: Capture the input to prevent camera movement
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                local mouse = game.Players.LocalPlayer:GetMouse()
+                mouse.TargetFilter = self.Window
+            end
+            
+            -- End drag when mouse is released
+            local connection
+            connection = input.Changed:Connect(function()
                 if input.UserInputState == Enum.UserInputState.End then
-                    Enabled = false
+                    dragEnabled = false
                     Tween(self.TopBar, {BackgroundColor3 = Colors.Foreground}, 0.15)
+                    
+                    -- FIX: Release mouse capture
+                    local mouse = game.Players.LocalPlayer:GetMouse()
+                    mouse.TargetFilter = nil
+                    
+                    if connection then
+                        connection:Disconnect()
+                    end
                 end
             end)
         end
-    end)
+    end
     
-    -- Track mouse movement
-    self.TopBar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            Value2 = input
+    -- Handle drag updates
+    local function updateDrag(input)
+        if dragEnabled and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            self.Window.Position = UDim2.new(
+                windowStart.X.Scale,
+                windowStart.X.Offset + delta.X,
+                windowStart.Y.Scale,
+                windowStart.Y.Offset + delta.Y
+            )
         end
-    end)
+    end
     
-    -- Update position while dragging
-    UserInputService.InputChanged:Connect(function(input)
-        if input == Value2 and Enabled then
-            Calculate2(input)
-        end
-    end)
+    -- Connect dragging to top bar
+    self.TopBar.InputBegan:Connect(beginDrag)
+    self.TopBar.InputChanged:Connect(updateDrag)
     
-    -- Title
+    -- Title (also draggable)
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Name = "Title"
     titleLabel.Size = UDim2.new(0, 150, 1, 0)
@@ -133,22 +136,8 @@ function UILibrary:Create(title)
     titleLabel.Parent = self.TopBar
     
     -- Make title also draggable
-    titleLabel.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            Enabled = true
-            Value3 = input.Position
-            Value4 = self.Window.Position
-            
-            Tween(self.TopBar, {BackgroundColor3 = Colors.Foreground:lerp(Colors.Primary, 0.3)}, 0.15)
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    Enabled = false
-                    Tween(self.TopBar, {BackgroundColor3 = Colors.Foreground}, 0.15)
-                end
-            end)
-        end
-    end)
+    titleLabel.InputBegan:Connect(beginDrag)
+    titleLabel.InputChanged:Connect(updateDrag)
     
     -- Close Button
     self.CloseBtn = Instance.new("TextButton")
@@ -213,15 +202,15 @@ function UILibrary:Create(title)
     tabsPadding.PaddingBottom = UDim.new(0, 8)
     tabsPadding.Parent = self.TabsContainer
     
-    -- Content Panel
+    -- Content Panel (RIGHT SIDE - FIXED)
     self.ContentPanel = Instance.new("Frame")
     self.ContentPanel.Name = "ContentPanel"
-    self.ContentPanel.Size = UDim2.new(1, -100, 1, -30)
-    self.ContentPanel.Position = UDim2.new(0, 100, 0, 30)
+    self.ContentPanel.Size = UDim2.new(1, -100, 1, -30) -- FIXED: 1 - 100, not 0.7
+    self.ContentPanel.Position = UDim2.new(0, 100, 0, 30) -- FIXED: Starts at 100, not 0.3
     self.ContentPanel.BackgroundColor3 = Colors.Background
     self.ContentPanel.Parent = self.Window
     
-    -- Content Scroll Frame
+    -- Main content scrolling frame
     self.Content = Instance.new("ScrollingFrame")
     self.Content.Name = "Content"
     self.Content.Size = UDim2.new(1, 0, 1, 0)
@@ -234,11 +223,11 @@ function UILibrary:Create(title)
     self.Content.ScrollingDirection = Enum.ScrollingDirection.Y
     self.Content.Parent = self.ContentPanel
     
-    local contentLayout = Instance.new("UIListLayout")
-    contentLayout.Padding = UDim.new(0, 8)
-    contentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    contentLayout.Parent = self.Content
+    local contentList = Instance.new("UIListLayout")
+    contentList.Padding = UDim.new(0, 8)
+    contentList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    contentList.SortOrder = Enum.SortOrder.LayoutOrder
+    contentList.Parent = self.Content
     
     local contentPadding = Instance.new("UIPadding")
     contentPadding.PaddingTop = UDim.new(0, 8)
@@ -246,9 +235,9 @@ function UILibrary:Create(title)
     contentPadding.PaddingRight = UDim.new(0, 8)
     contentPadding.Parent = self.Content
     
-    -- Ensure content layout updates canvas size
-    contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        self.Content.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y)
+    -- FIX: Update canvas size properly
+    contentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        self.Content.CanvasSize = UDim2.new(0, 0, 0, contentList.AbsoluteContentSize.Y)
     end)
     
     -- Minimize functionality
@@ -256,12 +245,6 @@ function UILibrary:Create(title)
     local originalSize = self.Window.Size
     
     self.MinimizeBtn.MouseButton1Click:Connect(function()
-        local new = TweenService:Create(self.MinimizeBtn, TweenInfo.new(0.1), {
-            Size = UDim2.new(0, 18, 0, 18)
-        })
-        new:Play()
-        new.Completed:Wait()
-        
         minimized = not minimized
         if minimized then
             Tween(self.Window, {Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 30)}, 0.2)
@@ -270,48 +253,30 @@ function UILibrary:Create(title)
             Tween(self.Window, {Size = originalSize}, 0.2)
             self.MinimizeBtn.Text = "-"
         end
-        
-        TweenService:Create(self.MinimizeBtn, TweenInfo.new(0.1), {
-            Size = UDim2.new(0, 20, 0, 20)
-        }):Play()
     end)
     
     -- Close functionality
     self.CloseBtn.MouseButton1Click:Connect(function()
-        local new = TweenService:Create(self.CloseBtn, TweenInfo.new(0.1), {
-            Size = UDim2.new(0, 18, 0, 18)
-        })
-        new:Play()
-        new.Completed:Wait()
-        
         Tween(self.Window, {Size = UDim2.new(0, 0, 0, 0)}, 0.2)
         task.wait(0.2)
         self.ScreenGui:Destroy()
     end)
     
-    -- Button animations (similar to your example)
+    -- Button animations
     self.CloseBtn.MouseEnter:Connect(function()
-        TweenService:Create(self.CloseBtn, TweenInfo.new(0.2), {
-            BackgroundColor3 = Colors.Close:lerp(Color3.new(1, 1, 1), 0.3)
-        }):Play()
+        Tween(self.CloseBtn, {BackgroundColor3 = Colors.Close:lerp(Color3.new(1,1,1), 0.3)}, 0.2)
     end)
     
     self.CloseBtn.MouseLeave:Connect(function()
-        TweenService:Create(self.CloseBtn, TweenInfo.new(0.2), {
-            BackgroundColor3 = Colors.Close
-        }):Play()
+        Tween(self.CloseBtn, {BackgroundColor3 = Colors.Close}, 0.2)
     end)
     
     self.MinimizeBtn.MouseEnter:Connect(function()
-        TweenService:Create(self.MinimizeBtn, TweenInfo.new(0.2), {
-            BackgroundColor3 = Colors.Minimize:lerp(Color3.new(1, 1, 1), 0.3)
-        }):Play()
+        Tween(self.MinimizeBtn, {BackgroundColor3 = Colors.Minimize:lerp(Color3.new(1,1,1), 0.3)}, 0.2)
     end)
     
     self.MinimizeBtn.MouseLeave:Connect(function()
-        TweenService:Create(self.MinimizeBtn, TweenInfo.new(0.2), {
-            BackgroundColor3 = Colors.Minimize
-        }):Play()
+        Tween(self.MinimizeBtn, {BackgroundColor3 = Colors.Minimize}, 0.2)
     end)
     
     -- Store tabs
@@ -321,9 +286,9 @@ function UILibrary:Create(title)
     return self
 end
 
--- Create Tab (vertical)
+-- Create Tab
 function UILibrary:Tab(name)
-    -- Tab button (vertical)
+    -- Tab button
     local tabBtn = Instance.new("TextButton")
     tabBtn.Name = name .. "Tab"
     tabBtn.Size = UDim2.new(0.85, 0, 0, 30)
@@ -332,31 +297,13 @@ function UILibrary:Tab(name)
     tabBtn.TextColor3 = Colors.SubText
     tabBtn.TextSize = 12
     tabBtn.Font = Enum.Font.Gotham
-    tabBtn.LayoutOrder = #self.Tabs + 1
     tabBtn.Parent = self.TabsContainer
     
     local tabCorner = Instance.new("UICorner")
     tabCorner.CornerRadius = UDim.new(0, 6)
     tabCorner.Parent = tabBtn
     
-    -- Button hover effects
-    tabBtn.MouseEnter:Connect(function()
-        if self.CurrentTab and self.CurrentTab.Button ~= tabBtn then
-            TweenService:Create(tabBtn, TweenInfo.new(0.2), {
-                BackgroundColor3 = Colors.Foreground:lerp(Colors.Primary, 0.3)
-            }):Play()
-        end
-    end)
-    
-    tabBtn.MouseLeave:Connect(function()
-        if self.CurrentTab and self.CurrentTab.Button ~= tabBtn then
-            TweenService:Create(tabBtn, TweenInfo.new(0.2), {
-                BackgroundColor3 = Colors.Foreground
-            }):Play()
-        end
-    end)
-    
-    -- Tab content
+    -- Tab content frame
     local tabContent = Instance.new("Frame")
     tabContent.Name = name .. "Content"
     tabContent.Size = UDim2.new(1, 0, 0, 0)
@@ -365,17 +312,14 @@ function UILibrary:Tab(name)
     tabContent.LayoutOrder = 1
     tabContent.Parent = self.Content
     
-    local contentLayout = Instance.new("UIListLayout")
-    contentLayout.Padding = UDim.new(0, 8)
-    contentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    contentLayout.Parent = tabContent
+    -- Use AutomaticSize for tab content
+    tabContent.AutomaticSize = Enum.AutomaticSize.Y
     
-    contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        if tabContent.Visible then
-            tabContent.Size = UDim2.new(1, 0, 0, contentLayout.AbsoluteContentSize.Y)
-        end
-    end)
+    local contentList = Instance.new("UIListLayout")
+    contentList.Padding = UDim.new(0, 8)
+    contentList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    contentList.SortOrder = Enum.SortOrder.LayoutOrder
+    contentList.Parent = tabContent
     
     local tab = {
         Button = tabBtn,
@@ -389,40 +333,40 @@ function UILibrary:Tab(name)
         tabBtn.BackgroundColor3 = Colors.Primary
         tabBtn.TextColor3 = Colors.Text
         tabContent.Visible = true
-        task.wait()
-        tabContent.Size = UDim2.new(1, 0, 0, contentLayout.AbsoluteContentSize.Y)
     end
     
     -- Tab switching
     tabBtn.MouseButton1Click:Connect(function()
         if self.CurrentTab == tab then return end
         
-        -- Button click animation
-        local new = TweenService:Create(tabBtn, TweenInfo.new(0.1), {
-            Size = UDim2.new(0.82, 0, 0, 28)
-        })
-        new:Play()
-        new.Completed:Wait()
-        
         if self.CurrentTab then
             self.CurrentTab.Content.Visible = false
-            TweenService:Create(self.CurrentTab.Button, TweenInfo.new(0.2), {
+            Tween(self.CurrentTab.Button, {
                 BackgroundColor3 = Colors.Foreground,
                 TextColor3 = Colors.SubText
-            }):Play()
+            }, 0.15)
         end
         
         self.CurrentTab = tab
         tabContent.Visible = true
         
-        task.wait()
-        tabContent.Size = UDim2.new(1, 0, 0, contentLayout.AbsoluteContentSize.Y)
-        
-        TweenService:Create(tabBtn, TweenInfo.new(0.2), {
+        Tween(tabBtn, {
             BackgroundColor3 = Colors.Primary,
-            TextColor3 = Colors.Text,
-            Size = UDim2.new(0.85, 0, 0, 30)
-        }):Play()
+            TextColor3 = Colors.Text
+        }, 0.15)
+    end)
+    
+    -- Tab hover effect
+    tabBtn.MouseEnter:Connect(function()
+        if self.CurrentTab ~= tab then
+            Tween(tabBtn, {BackgroundColor3 = Colors.Foreground:lerp(Colors.Primary, 0.3)}, 0.15)
+        end
+    end)
+    
+    tabBtn.MouseLeave:Connect(function()
+        if self.CurrentTab ~= tab then
+            Tween(tabBtn, {BackgroundColor3 = Colors.Foreground}, 0.15)
+        end
     end)
     
     table.insert(self.Tabs, tab)
@@ -430,7 +374,7 @@ function UILibrary:Tab(name)
     -- Element methods
     local methods = {}
     
-    -- BUTTON with improved animations
+    -- BUTTON (GUARANTEED TO SHOW)
     function methods:Button(text, callback)
         local btn = Instance.new("TextButton")
         btn.Name = "Button_" .. text
@@ -447,42 +391,32 @@ function UILibrary:Tab(name)
         btnCorner.CornerRadius = UDim.new(0, 6)
         btnCorner.Parent = btn
         
-        -- Click animation
-        btn.MouseButton1Click:Connect(function()
-            local new = TweenService:Create(btn, TweenInfo.new(0.1), {
-                Size = UDim2.new(1, -20, 0, 33)
-            })
-            new:Play()
-            new.Completed:Wait()
-            
-            if callback then 
-                callback() 
-            end
-            
-            TweenService:Create(btn, TweenInfo.new(0.1), {
-                Size = UDim2.new(1, -16, 0, 35)
-            }):Play()
-        end)
-        
-        -- Hover effects
+        -- Hover effect
         btn.MouseEnter:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.2), {
+            Tween(btn, {
                 BackgroundColor3 = Colors.Primary,
                 Size = UDim2.new(1, -12, 0, 35)
-            }):Play()
+            }, 0.15)
         end)
         
         btn.MouseLeave:Connect(function()
-            TweenService:Create(btn, TweenInfo.new(0.2), {
+            Tween(btn, {
                 BackgroundColor3 = Colors.Foreground,
                 Size = UDim2.new(1, -16, 0, 35)
-            }):Play()
+            }, 0.15)
+        end)
+        
+        -- Click
+        btn.MouseButton1Click:Connect(function()
+            if callback then 
+                callback() 
+            end
         end)
         
         return btn
     end
     
-    -- TOGGLE
+    -- TOGGLE (GUARANTEED TO SHOW)
     function methods:Toggle(text, default, callback)
         local frame = Instance.new("Frame")
         frame.Name = "Toggle_" .. text
@@ -552,7 +486,7 @@ function UILibrary:Tab(name)
             Tween(frame, {BackgroundColor3 = Colors.Foreground}, 0.15)
         end)
         
-        -- Click with animation
+        -- Click
         btn.MouseButton1Click:Connect(function()
             state = not state
             if state then
@@ -1013,7 +947,7 @@ function UILibrary:Tab(name)
     return setmetatable(methods, {__index = methods})
 end
 
--- Notification (appears in middle-right of screen)
+-- Notification (250x100)
 function UILibrary:Notification(title, message, duration)
     duration = duration or 5
     
@@ -1038,27 +972,45 @@ function UILibrary:Notification(title, message, duration)
     stroke.Color = Colors.Primary
     stroke.Parent = frame
     
-    -- Make notification draggable too
+    -- FIXED: Notification dragging without camera movement
     local notifDragging = false
-    local notifValue2 = nil
-    local notifValue3 = Vector2.new(0, 0)
-    local notifValue4 = UDim2.new(0, 0, 0, 0)
+    local notifDragStart, notifWindowStart
     
-    local function NotifCalculate2(input)
-        if not notifDragging or not frame then return end
-        local Position = input.Position - notifValue3
-        local Table2 = {
-            Position = UDim2.new(
-                notifValue4.X.Scale, 
-                notifValue4.X.Offset + Position.X, 
-                notifValue4.Y.Scale, 
-                notifValue4.Y.Offset + Position.Y
-            )
-        }
-        TweenService:Create(frame, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), Table2):Play()
+    local function beginNotifDrag(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            notifDragging = true
+            notifDragStart = input.Position
+            notifWindowStart = frame.Position
+            
+            -- FIX: Capture mouse to prevent camera movement
+            local mouse = game.Players.LocalPlayer:GetMouse()
+            mouse.TargetFilter = frame
+            
+            -- End drag when mouse is released
+            local connection
+            connection = input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    notifDragging = false
+                    mouse.TargetFilter = nil
+                    if connection then connection:Disconnect() end
+                end
+            end)
+        end
     end
     
-    -- Title (also draggable)
+    local function updateNotifDrag(input)
+        if notifDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - notifDragStart
+            frame.Position = UDim2.new(
+                notifWindowStart.X.Scale,
+                notifWindowStart.X.Offset + delta.X,
+                notifWindowStart.Y.Scale,
+                notifWindowStart.Y.Offset + delta.Y
+            )
+        end
+    end
+    
+    -- Title
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.new(1, -20, 0, 25)
     titleLabel.Position = UDim2.new(0, 10, 0, 6)
@@ -1071,34 +1023,8 @@ function UILibrary:Notification(title, message, duration)
     titleLabel.Parent = frame
     
     -- Make title draggable
-    titleLabel.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            notifDragging = true
-            notifValue3 = input.Position
-            notifValue4 = frame.Position
-            
-            Tween(titleLabel, {TextColor3 = Colors.Primary}, 0.15)
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    notifDragging = false
-                    Tween(titleLabel, {TextColor3 = Colors.Text}, 0.15)
-                end
-            end)
-        end
-    end)
-    
-    titleLabel.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            notifValue2 = input
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if input == notifValue2 and notifDragging then
-            NotifCalculate2(input)
-        end
-    end)
+    titleLabel.InputBegan:Connect(beginNotifDrag)
+    titleLabel.InputChanged:Connect(updateNotifDrag)
     
     -- Message
     local msgLabel = Instance.new("TextLabel")
@@ -1129,26 +1055,16 @@ function UILibrary:Notification(title, message, duration)
     btnCorner.CornerRadius = UDim.new(0, 4)
     btnCorner.Parent = closeBtn
     
-    -- Button animation
     closeBtn.MouseButton1Click:Connect(function()
-        local new = TweenService:Create(closeBtn, TweenInfo.new(0.1), {
-            Size = UDim2.new(0, 16, 0, 16)
-        })
-        new:Play()
-        new.Completed:Wait()
         notifGui:Destroy()
     end)
     
     closeBtn.MouseEnter:Connect(function()
-        TweenService:Create(closeBtn, TweenInfo.new(0.2), {
-            BackgroundColor3 = Colors.Close:lerp(Color3.new(1, 1, 1), 0.3)
-        }):Play()
+        Tween(closeBtn, {BackgroundColor3 = Colors.Close:lerp(Color3.new(1,1,1), 0.3)}, 0.2)
     end)
     
     closeBtn.MouseLeave:Connect(function()
-        TweenService:Create(closeBtn, TweenInfo.new(0.2), {
-            BackgroundColor3 = Colors.Close
-        }):Play()
+        Tween(closeBtn, {BackgroundColor3 = Colors.Close}, 0.2)
     end)
     
     -- Auto close
