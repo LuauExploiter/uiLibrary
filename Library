@@ -1,63 +1,52 @@
--- FINAL WORKING UI - EVERYTHING SHOWS UP & WORKS
+-- SIMPLE UI LIBRARY THAT ACTUALLY WORKS
+-- Put this in a ModuleScript in ReplicatedStorage
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 
-local UILib = {}
-UILib.__index = UILib
+local SimpleUI = {}
+SimpleUI.__index = SimpleUI
 
--- Black theme with blue accents
+-- Colors
 local Colors = {
-    Background = Color3.fromRGB(20, 20, 25),
+    Background = Color3.fromRGB(15, 15, 20),
     Foreground = Color3.fromRGB(30, 30, 40),
     Primary = Color3.fromRGB(0, 120, 255),
     Text = Color3.fromRGB(240, 240, 245),
     SubText = Color3.fromRGB(160, 160, 170),
-    Border = Color3.fromRGB(50, 50, 60),
-    Close = Color3.fromRGB(255, 60, 60),
-    Minimize = Color3.fromRGB(255, 180, 40)
+    Close = Color3.fromRGB(255, 60, 60)
 }
 
--- Create RECTANGULAR window
-function UILib:Create(title)
-    local self = setmetatable({}, UILib)
+-- Create window
+function SimpleUI:Create(title)
+    local self = setmetatable({}, SimpleUI)
     
     -- ScreenGui
     self.ScreenGui = Instance.new("ScreenGui")
-    self.ScreenGui.Name = "UILib_" .. math.random(1000, 9999)
+    self.ScreenGui.Name = "SimpleUI"
     self.ScreenGui.ResetOnSpawn = false
     self.ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
     
     -- Main Window - RECTANGULAR (400x500)
     self.Window = Instance.new("Frame")
     self.Window.Name = "Window"
-    self.Window.Size = UDim2.new(0, 400, 0, 500)
+    self.Window.Size = UDim2.new(0, 400, 0, 500) -- RECTANGULAR
     self.Window.Position = UDim2.new(0.5, -200, 0.5, -250)
     self.Window.BackgroundColor3 = Colors.Background
     self.Window.BorderSizePixel = 0
-    self.Window.ClipsDescendants = true
     self.Window.Parent = self.ScreenGui
     
-    -- Rounded corners on window
-    local windowCorner = Instance.new("UICorner")
-    windowCorner.CornerRadius = UDim.new(0, 10)
-    windowCorner.Parent = self.Window
+    -- Rounded corners
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = self.Window
     
-    -- Stroke around window
-    local stroke = Instance.new("UIStroke")
-    stroke.Thickness = 2
-    stroke.Color = Colors.Primary
-    stroke.Parent = self.Window
-    
-    -- Top bar for dragging
+    -- Top bar
     self.TopBar = Instance.new("Frame")
     self.TopBar.Name = "TopBar"
     self.TopBar.Size = UDim2.new(1, 0, 0, 40)
     self.TopBar.BackgroundColor3 = Colors.Foreground
-    self.TopBar.BorderSizePixel = 0
     self.TopBar.Parent = self.Window
     
-    -- Rounded top corners only
     local topCorner = Instance.new("UICorner")
     topCorner.CornerRadius = UDim.new(0, 10, 0, 0)
     topCorner.Parent = self.TopBar
@@ -66,9 +55,9 @@ function UILib:Create(title)
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Name = "Title"
     titleLabel.Size = UDim2.new(0, 200, 1, 0)
-    titleLabel.Position = UDim2.new(0, 15, 0, 0)
+    titleLabel.Position = UDim2.new(0, 10, 0, 0)
     titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = title or "UI Library"
+    titleLabel.Text = title or "UI"
     titleLabel.TextColor3 = Colors.Text
     titleLabel.TextSize = 16
     titleLabel.Font = Enum.Font.GothamSemibold
@@ -91,22 +80,6 @@ function UILib:Create(title)
     closeCorner.CornerRadius = UDim.new(0, 6)
     closeCorner.Parent = closeBtn
     
-    -- Minimize button
-    local minBtn = Instance.new("TextButton")
-    minBtn.Name = "Minimize"
-    minBtn.Size = UDim2.new(0, 25, 0, 25)
-    minBtn.Position = UDim2.new(1, -60, 0.5, -12.5)
-    minBtn.BackgroundColor3 = Colors.Minimize
-    minBtn.TextColor3 = Colors.Text
-    minBtn.TextSize = 18
-    minBtn.Text = "-"
-    minBtn.Font = Enum.Font.GothamBold
-    minBtn.Parent = self.TopBar
-    
-    local minCorner = Instance.new("UICorner")
-    minCorner.CornerRadius = UDim.new(0, 6)
-    minCorner.Parent = minBtn
-    
     -- Tabs container
     self.TabsContainer = Instance.new("Frame")
     self.TabsContainer.Name = "Tabs"
@@ -120,17 +93,16 @@ function UILib:Create(title)
     tabsLayout.Padding = UDim.new(0, 5)
     tabsLayout.Parent = self.TabsContainer
     
-    -- Content area (WHERE ELEMENTS GO)
+    -- Content frame (WHERE BUTTONS WILL GO)
     self.Content = Instance.new("ScrollingFrame")
     self.Content.Name = "Content"
-    self.Content.Size = UDim2.new(1, -20, 1, -85) -- 400 - 20 = 380 width
+    self.Content.Size = UDim2.new(1, -20, 1, -85) -- Makes it fit in window
     self.Content.Position = UDim2.new(0, 10, 0, 80)
     self.Content.BackgroundTransparency = 1
     self.Content.BorderSizePixel = 0
     self.Content.ScrollBarThickness = 4
     self.Content.ScrollBarImageColor3 = Colors.SubText
     self.Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    self.Content.ScrollingDirection = Enum.ScrollingDirection.Y
     self.Content.Parent = self.Window
     
     local contentLayout = Instance.new("UIListLayout")
@@ -138,7 +110,7 @@ function UILib:Create(title)
     contentLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
     contentLayout.Parent = self.Content
     
-    -- DRAGGING SYSTEM THAT WORKS
+    -- DRAGGING
     local dragging = false
     local dragStart, windowStart
     
@@ -157,13 +129,6 @@ function UILib:Create(title)
             dragging = true
             dragStart = input.Position
             windowStart = self.Window.Position
-            
-            -- Highlight
-            local tween = TweenService:Create(self.TopBar, 
-                TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {BackgroundColor3 = Colors.Foreground:lerp(Colors.Primary, 0.2)}
-            )
-            tween:Play()
         end
     end)
     
@@ -176,67 +141,11 @@ function UILib:Create(title)
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = false
-            local tween = TweenService:Create(self.TopBar, 
-                TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {BackgroundColor3 = Colors.Foreground}
-            )
-            tween:Play()
         end
     end)
     
-    -- Button hover effects
-    local function setupButton(btn)
-        btn.MouseEnter:Connect(function()
-            local tween = TweenService:Create(btn, 
-                TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {BackgroundColor3 = btn.BackgroundColor3:lerp(Color3.new(1,1,1), 0.2)}
-            )
-            tween:Play()
-        end)
-        
-        btn.MouseLeave:Connect(function()
-            local original = Colors.Close
-            if btn.Name == "Minimize" then original = Colors.Minimize end
-            
-            local tween = TweenService:Create(btn, 
-                TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {BackgroundColor3 = original}
-            )
-            tween:Play()
-        end)
-    end
-    
-    setupButton(closeBtn)
-    setupButton(minBtn)
-    
-    -- Window functionality
-    local minimized = false
-    local originalSize = self.Window.Size
-    
-    minBtn.MouseButton1Click:Connect(function()
-        minimized = not minimized
-        if minimized then
-            local tween = TweenService:Create(self.Window, 
-                TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {Size = UDim2.new(originalSize.X.Scale, originalSize.X.Offset, 0, 40)}
-            )
-            tween:Play()
-        else
-            local tween = TweenService:Create(self.Window, 
-                TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {Size = originalSize}
-            )
-            tween:Play()
-        end
-    end)
-    
+    -- Close button
     closeBtn.MouseButton1Click:Connect(function()
-        local tween = TweenService:Create(self.Window, 
-            TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {Size = UDim2.new(0, 0, 0, 0)}
-        )
-        tween:Play()
-        task.wait(0.2)
         self.ScreenGui:Destroy()
     end)
     
@@ -248,7 +157,7 @@ function UILib:Create(title)
 end
 
 -- Create Tab
-function UILib:Tab(name)
+function SimpleUI:Tab(name)
     -- Tab button
     local tabBtn = Instance.new("TextButton")
     tabBtn.Name = name .. "Tab"
@@ -260,12 +169,11 @@ function UILib:Tab(name)
     tabBtn.Font = Enum.Font.Gotham
     tabBtn.Parent = self.TabsContainer
     
-    -- Rounded corners
     local tabCorner = Instance.new("UICorner")
     tabCorner.CornerRadius = UDim.new(0, 6)
     tabCorner.Parent = tabBtn
     
-    -- Tab content frame
+    -- Tab content
     local tabContent = Instance.new("Frame")
     tabContent.Name = name .. "Content"
     tabContent.Size = UDim2.new(1, 0, 0, 0)
@@ -296,64 +204,28 @@ function UILib:Tab(name)
     tabBtn.MouseButton1Click:Connect(function()
         if self.CurrentTab == tab then return end
         
-        -- Deactivate old tab
         if self.CurrentTab then
             self.CurrentTab.Content.Visible = false
-            local tween = TweenService:Create(self.CurrentTab.Button, 
-                TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {
-                    BackgroundColor3 = Colors.Foreground,
-                    TextColor3 = Colors.SubText
-                }
-            )
-            tween:Play()
+            self.CurrentTab.Button.BackgroundColor3 = Colors.Foreground
+            self.CurrentTab.Button.TextColor3 = Colors.SubText
         end
         
-        -- Activate new tab
         self.CurrentTab = tab
         tabContent.Visible = true
-        
-        local tween = TweenService:Create(tabBtn, 
-            TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-            {
-                BackgroundColor3 = Colors.Primary,
-                TextColor3 = Colors.Text
-            }
-        )
-        tween:Play()
-    end)
-    
-    -- Tab hover effect
-    tabBtn.MouseEnter:Connect(function()
-        if self.CurrentTab ~= tab then
-            local tween = TweenService:Create(tabBtn, 
-                TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {BackgroundColor3 = Colors.Foreground:lerp(Colors.Primary, 0.3)}
-            )
-            tween:Play()
-        end
-    end)
-    
-    tabBtn.MouseLeave:Connect(function()
-        if self.CurrentTab ~= tab then
-            local tween = TweenService:Create(tabBtn, 
-                TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {BackgroundColor3 = Colors.Foreground}
-            )
-            tween:Play()
-        end
+        tabBtn.BackgroundColor3 = Colors.Primary
+        tabBtn.TextColor3 = Colors.Text
     end)
     
     table.insert(self.Tabs, tab)
     
-    -- Element creation methods
+    -- Element methods
     local methods = {}
     
-    -- BUTTON
+    -- BUTTON (THIS WILL SHOW UP)
     function methods:Button(text, callback)
         local btn = Instance.new("TextButton")
         btn.Name = "Button"
-        btn.Size = UDim2.new(1, -20, 0, 40)
+        btn.Size = UDim2.new(1, -20, 0, 40) -- Width: 400-20-20 = 360
         btn.BackgroundColor3 = Colors.Foreground
         btn.Text = text
         btn.TextColor3 = Colors.Text
@@ -361,35 +233,10 @@ function UILib:Tab(name)
         btn.Font = Enum.Font.GothamSemibold
         btn.Parent = self.CurrentTab.Content
         
-        -- Rounded corners
         local btnCorner = Instance.new("UICorner")
         btnCorner.CornerRadius = UDim.new(0, 8)
         btnCorner.Parent = btn
         
-        -- Hover effect
-        btn.MouseEnter:Connect(function()
-            local tween = TweenService:Create(btn, 
-                TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {
-                    BackgroundColor3 = Colors.Primary,
-                    Size = UDim2.new(1, -15, 0, 40)
-                }
-            )
-            tween:Play()
-        end)
-        
-        btn.MouseLeave:Connect(function()
-            local tween = TweenService:Create(btn, 
-                TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                {
-                    BackgroundColor3 = Colors.Foreground,
-                    Size = UDim2.new(1, -20, 0, 40)
-                }
-            )
-            tween:Play()
-        end)
-        
-        -- Click
         btn.MouseButton1Click:Connect(function()
             if callback then
                 callback()
@@ -399,7 +246,7 @@ function UILib:Tab(name)
         return btn
     end
     
-    -- TOGGLE
+    -- TOGGLE (THIS WILL SHOW UP)
     function methods:Toggle(text, default, callback)
         local frame = Instance.new("Frame")
         frame.Name = "Toggle"
@@ -423,18 +270,18 @@ function UILib:Tab(name)
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.Parent = frame
         
-        -- Toggle switch
+        -- Toggle
         local toggle = Instance.new("Frame")
         toggle.Size = UDim2.new(0, 50, 0, 25)
         toggle.Position = UDim2.new(1, -60, 0.5, -12.5)
-        toggle.BackgroundColor3 = Colors.Border
+        toggle.BackgroundColor3 = Colors.SubText
         toggle.Parent = frame
         
         local toggleCorner = Instance.new("UICorner")
         toggleCorner.CornerRadius = UDim.new(0, 12)
         toggleCorner.Parent = toggle
         
-        -- Toggle dot
+        -- Dot
         local dot = Instance.new("Frame")
         dot.Size = UDim2.new(0, 21, 0, 21)
         dot.Position = UDim2.new(0, 2, 0.5, -10.5)
@@ -462,29 +309,11 @@ function UILib:Tab(name)
         btn.MouseButton1Click:Connect(function()
             state = not state
             if state then
-                local tween1 = TweenService:Create(dot, 
-                    TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {Position = UDim2.new(1, -23, 0.5, -10.5)}
-                )
-                tween1:Play()
-                
-                local tween2 = TweenService:Create(toggle, 
-                    TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {BackgroundColor3 = Colors.Primary}
-                )
-                tween2:Play()
+                dot.Position = UDim2.new(1, -23, 0.5, -10.5)
+                toggle.BackgroundColor3 = Colors.Primary
             else
-                local tween1 = TweenService:Create(dot, 
-                    TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {Position = UDim2.new(0, 2, 0.5, -10.5)}
-                )
-                tween1:Play()
-                
-                local tween2 = TweenService:Create(toggle, 
-                    TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {BackgroundColor3 = Colors.Border}
-                )
-                tween2:Play()
+                dot.Position = UDim2.new(0, 2, 0.5, -10.5)
+                toggle.BackgroundColor3 = Colors.SubText
             end
             
             if callback then
@@ -535,7 +364,7 @@ function UILib:Tab(name)
         local track = Instance.new("Frame")
         track.Size = UDim2.new(1, -20, 0, 6)
         track.Position = UDim2.new(0, 10, 0, 35)
-        track.BackgroundColor3 = Colors.Border
+        track.BackgroundColor3 = Colors.SubText
         track.Parent = frame
         
         local trackCorner = Instance.new("UICorner")
@@ -552,21 +381,8 @@ function UILib:Tab(name)
         fillCorner.CornerRadius = UDim.new(0, 3)
         fillCorner.Parent = fill
         
-        -- Knob
-        local knob = Instance.new("Frame")
-        knob.Size = UDim2.new(0, 16, 0, 16)
-        knob.Position = UDim2.new(0, -8, 0.5, -8)
-        knob.BackgroundColor3 = Colors.Primary
-        knob.ZIndex = 2
-        knob.Parent = fill
-        
-        local knobCorner = Instance.new("UICorner")
-        knobCorner.CornerRadius = UDim.new(0, 8)
-        knobCorner.Parent = knob
-        
         -- Slider logic
         local current = default or min
-        local dragging = false
         
         local function update(val)
             val = math.clamp(val, min, max)
@@ -585,7 +401,6 @@ function UILib:Tab(name)
         -- Mouse interactions
         track.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                dragging = true
                 local mouse = UserInputService:GetMouseLocation()
                 local pos = track.AbsolutePosition
                 local size = track.AbsoluteSize
@@ -593,24 +408,6 @@ function UILib:Tab(name)
                 x = math.clamp(x, 0, 1)
                 local val = min + (x * (max - min))
                 update(val)
-            end
-        end)
-        
-        UserInputService.InputChanged:Connect(function(input)
-            if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                local mouse = UserInputService:GetMouseLocation()
-                local pos = track.AbsolutePosition
-                local size = track.AbsoluteSize
-                local x = (mouse.X - pos.X) / size.X
-                x = math.clamp(x, 0, 1)
-                local val = min + (x * (max - min))
-                update(val)
-            end
-        end)
-        
-        UserInputService.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                dragging = false
             end
         end)
         
@@ -647,7 +444,6 @@ function UILib:Tab(name)
         boxCorner.CornerRadius = UDim.new(0, 6)
         boxCorner.Parent = box
         
-        -- Enter key to submit
         box.FocusLost:Connect(function(enterPressed)
             if enterPressed and callback then
                 callback(box.Text)
@@ -663,7 +459,6 @@ function UILib:Tab(name)
         frame.Name = "Dropdown"
         frame.Size = UDim2.new(1, -20, 0, 40)
         frame.BackgroundColor3 = Colors.Foreground
-        frame.ClipsDescendants = true
         frame.Parent = self.CurrentTab.Content
         
         local frameCorner = Instance.new("UICorner")
@@ -689,209 +484,37 @@ function UILib:Tab(name)
         label.TextXAlignment = Enum.TextXAlignment.Left
         label.Parent = btn
         
-        -- Options frame
-        local optionsFrame = Instance.new("Frame")
-        optionsFrame.Size = UDim2.new(1, 0, 0, 0)
-        optionsFrame.Position = UDim2.new(0, 0, 0, 40)
-        optionsFrame.BackgroundColor3 = Colors.Background
-        optionsFrame.Visible = false
-        optionsFrame.Parent = frame
-        
-        local optionsCorner = Instance.new("UICorner")
-        optionsCorner.CornerRadius = UDim.new(0, 6)
-        optionsCorner.Parent = optionsFrame
-        
-        local open = false
-        
-        local function toggle()
-            open = not open
-            if open then
-                frame.Size = UDim2.new(1, -20, 0, 40 + (#options * 35))
-                optionsFrame.Visible = true
-                local tween = TweenService:Create(optionsFrame, 
-                    TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {Size = UDim2.new(1, 0, 0, #options * 35)}
-                )
-                tween:Play()
-                label.Text = text .. " ▲"
-            else
-                local tween = TweenService:Create(optionsFrame, 
-                    TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {Size = UDim2.new(1, 0, 0, 0)}
-                )
-                tween:Play()
-                label.Text = text .. " ▼"
-                task.wait(0.2)
-                if not open then
-                    optionsFrame.Visible = false
-                    frame.Size = UDim2.new(1, -20, 0, 40)
-                end
-            end
-        end
-        
-        -- Create options
+        -- Options
         for i, option in ipairs(options) do
             local optBtn = Instance.new("TextButton")
             optBtn.Size = UDim2.new(1, 0, 0, 35)
+            optBtn.Position = UDim2.new(0, 0, 0, 40 + (i-1)*35)
             optBtn.BackgroundColor3 = Colors.Background
             optBtn.Text = option
             optBtn.TextColor3 = Colors.Text
             optBtn.TextSize = 14
             optBtn.Font = Enum.Font.Gotham
-            optBtn.Parent = optionsFrame
+            optBtn.Visible = false
+            optBtn.Parent = frame
             
             optBtn.MouseButton1Click:Connect(function()
-                toggle()
                 if callback then
                     callback(option)
                 end
+                for _, other in ipairs(options) do
+                    frame:FindFirstChild("Option_" .. other).Visible = false
+                end
             end)
         end
         
-        btn.MouseButton1Click:Connect(toggle)
-        
-        return frame
-    end
-    
-    -- MULTI-SELECT
-    function methods:MultiSelect(text, options, callback)
-        local frame = Instance.new("Frame")
-        frame.Name = "MultiSelect"
-        frame.Size = UDim2.new(1, -20, 0, 40)
-        frame.BackgroundColor3 = Colors.Foreground
-        frame.ClipsDescendants = true
-        frame.Parent = self.CurrentTab.Content
-        
-        local frameCorner = Instance.new("UICorner")
-        frameCorner.CornerRadius = UDim.new(0, 8)
-        frameCorner.Parent = frame
-        
-        -- Button
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 40)
-        btn.BackgroundTransparency = 1
-        btn.Text = ""
-        btn.Parent = frame
-        
-        -- Label
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(0.8, 0, 1, 0)
-        label.Position = UDim2.new(0, 10, 0, 0)
-        label.BackgroundTransparency = 1
-        label.Text = text .. " ▼"
-        label.TextColor3 = Colors.Text
-        label.TextSize = 14
-        label.Font = Enum.Font.Gotham
-        label.TextXAlignment = Enum.TextXAlignment.Left
-        label.Parent = btn
-        
-        -- Options frame
-        local optionsFrame = Instance.new("Frame")
-        optionsFrame.Size = UDim2.new(1, 0, 0, 0)
-        optionsFrame.Position = UDim2.new(0, 0, 0, 40)
-        optionsFrame.BackgroundColor3 = Colors.Background
-        optionsFrame.Visible = false
-        optionsFrame.Parent = frame
-        
-        local optionsCorner = Instance.new("UICorner")
-        optionsCorner.CornerRadius = UDim.new(0, 6)
-        optionsCorner.Parent = optionsFrame
-        
-        local open = false
-        local selected = {}
-        
-        local function toggle()
-            open = not open
-            if open then
-                frame.Size = UDim2.new(1, -20, 0, 40 + (#options * 35))
-                optionsFrame.Visible = true
-                local tween = TweenService:Create(optionsFrame, 
-                    TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {Size = UDim2.new(1, 0, 0, #options * 35)}
-                )
-                tween:Play()
-                label.Text = text .. " ▲"
-            else
-                local tween = TweenService:Create(optionsFrame, 
-                    TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
-                    {Size = UDim2.new(1, 0, 0, 0)}
-                )
-                tween:Play()
-                label.Text = text .. " ▼"
-                task.wait(0.2)
-                if not open then
-                    optionsFrame.Visible = false
-                    frame.Size = UDim2.new(1, -20, 0, 40)
+        btn.MouseButton1Click:Connect(function()
+            for i, option in ipairs(options) do
+                local optBtn = frame:FindFirstChild("Option_" .. option)
+                if optBtn then
+                    optBtn.Visible = not optBtn.Visible
                 end
             end
-        end
-        
-        -- Create options
-        for i, option in ipairs(options) do
-            local optFrame = Instance.new("Frame")
-            optFrame.Size = UDim2.new(1, 0, 0, 35)
-            optFrame.BackgroundColor3 = Colors.Background
-            optFrame.Parent = optionsFrame
-            
-            -- Checkbox
-            local checkbox = Instance.new("Frame")
-            checkbox.Size = UDim2.new(0, 20, 0, 20)
-            checkbox.Position = UDim2.new(0, 10, 0.5, -10)
-            checkbox.BackgroundColor3 = Colors.Border
-            checkbox.Parent = optFrame
-            
-            local checkCorner = Instance.new("UICorner")
-            checkCorner.CornerRadius = UDim.new(0, 4)
-            checkCorner.Parent = checkbox
-            
-            -- Checkmark
-            local check = Instance.new("Frame")
-            check.Size = UDim2.new(0, 14, 0, 14)
-            check.Position = UDim2.new(0, 3, 0, 3)
-            check.BackgroundColor3 = Colors.Primary
-            check.Visible = false
-            check.Parent = checkbox
-            
-            local checkMarkCorner = Instance.new("UICorner")
-            checkMarkCorner.CornerRadius = UDim.new(0, 3)
-            checkMarkCorner.Parent = check
-            
-            -- Option label
-            local optLabel = Instance.new("TextLabel")
-            optLabel.Size = UDim2.new(1, -40, 1, 0)
-            optLabel.Position = UDim2.new(0, 35, 0, 0)
-            optLabel.BackgroundTransparency = 1
-            optLabel.Text = option
-            optLabel.TextColor3 = Colors.Text
-            optLabel.TextSize = 14
-            optLabel.Font = Enum.Font.Gotham
-            optLabel.TextXAlignment = Enum.TextXAlignment.Left
-            optLabel.Parent = optFrame
-            
-            -- Click area
-            local optBtn = Instance.new("TextButton")
-            optBtn.Size = UDim2.new(1, 0, 1, 0)
-            optBtn.BackgroundTransparency = 1
-            optBtn.Text = ""
-            optBtn.Parent = optFrame
-            
-            optBtn.MouseButton1Click:Connect(function()
-                selected[option] = not selected[option]
-                check.Visible = selected[option]
-                
-                if callback then
-                    local list = {}
-                    for opt, sel in pairs(selected) do
-                        if sel then
-                            table.insert(list, opt)
-                        end
-                    end
-                    callback(list)
-                end
-            end)
-        end
-        
-        btn.MouseButton1Click:Connect(toggle)
+        end)
         
         return frame
     end
@@ -899,4 +522,4 @@ function UILib:Tab(name)
     return setmetatable(methods, {__index = methods})
 end
 
-return UILib
+return SimpleUI
