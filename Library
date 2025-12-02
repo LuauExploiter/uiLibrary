@@ -4,7 +4,6 @@ local UI = {}
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local GuiParent = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -14,7 +13,6 @@ UI.Theme = {
     Primary = Color3.fromRGB(139,188,255),
     Hover = Color3.fromRGB(150,198,255),
     Text = Color3.fromRGB(230,230,235),
-    Rainbow = false
 }
 
 function UI:AddCorner(obj,radius)
@@ -29,7 +27,7 @@ end
 
 function UI:Create(class,props)
     local obj = Instance.new(class)
-    for k,v in pairs(props or {}) do obj[k]=v end
+    for k,v in pairs(props or {}) do obj[k] = v end
     return obj
 end
 
@@ -63,7 +61,7 @@ function UI:Window(title,size,pos)
     local screenGui = self:Create("ScreenGui",{Parent=GuiParent,ResetOnSpawn=false,ZIndexBehavior=Enum.ZIndexBehavior.Sibling})
     local frame = self:Create("Frame",{Parent=screenGui,Size=size or UDim2.new(0,400,0,250),Position=pos or UDim2.new(0,50,0,50),BackgroundColor3=self.Theme.Background,BorderSizePixel=0})
     self:AddCorner(frame,16)
-    local stroke = self:Create("UIStroke",{Parent=frame,Color=self.Theme.Stroke,Thickness=1})
+    self:Create("UIStroke",{Parent=frame,Color=self.Theme.Stroke,Thickness=1})
 
     
     local titleBar = self:Create("Frame",{Parent=frame,Size=UDim2.new(1,0,0,30),BackgroundTransparency=1})
@@ -130,7 +128,6 @@ function UI:Window(title,size,pos)
             UI:AddCorner(bar,6)
             local fill = UI:Create("Frame",{Parent=bar,Size=UDim2.new((default-min)/(max-min),0,1,0),BackgroundColor3=UI.Theme.Primary})
             UI:AddCorner(fill,6)
-
             local dragging=false
             bar.InputBegan:Connect(function(input) if input.UserInputType==Enum.UserInputType.MouseButton1 then dragging=true end end)
             UserInputService.InputEnded:Connect(function(input) if input.UserInputType==Enum.UserInputType.MouseButton1 then dragging=false end end)
@@ -158,7 +155,7 @@ function UI:Window(title,size,pos)
             for i,opt in pairs(options) do
                 local optBtn = UI:Create("TextButton",{Parent=list,Size=UDim2.new(1,0,0,30),Position=UDim2.new(0,0,(i-1)*30,0),Text=opt,Font=Enum.Font.Gotham,TextSize=14,TextColor3=UI.Theme.Text,BackgroundColor3=self.Theme.Stroke})
                 UI:AddCorner(optBtn,6)
-                optBtn.MouseEnter:Connect(function() UI:Tween(optBtn,{BackgroundColor3=self.Theme.Hover},0.15) end)
+                optBtn.MouseEnter:Connect(function() UI:Tween(optBtn,{BackgroundColor3=UI.Theme.Hover},0.15) end)
                 optBtn.MouseLeave:Connect(function() UI:Tween(optBtn,{BackgroundColor3=self.Theme.Stroke},0.15) end)
                 optBtn.MouseButton1Click:Connect(function()
                     btn.Text=opt
