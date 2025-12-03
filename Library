@@ -1,4 +1,4 @@
--- SQUIRCLE UI LIBRARY - FAST VERSION
+-- UI LIBRARY
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -25,13 +25,11 @@ end
 function UILibrary:Create(title)
     local self = setmetatable({}, UILibrary)
     
-    -- ScreenGui
     self.ScreenGui = Instance.new("ScreenGui")
     self.ScreenGui.Name = "UILibrary"
     self.ScreenGui.ResetOnSpawn = false
-    self.ScreenGui.Parent = game.CoreGui
+    self.ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
     
-    -- Main Window (SQUIRCLE)
     self.Window = Instance.new("Frame")
     self.Window.Size = UDim2.new(0,400,0,300)
     self.Window.Position = UDim2.new(0.5,-200,0.5,-150)
@@ -41,10 +39,9 @@ function UILibrary:Create(title)
     self.Window.Parent = self.ScreenGui
     
     local windowCorner = Instance.new("UICorner")
-    windowCorner.CornerRadius = UDim.new(0,12)  -- Squircle corners
+    windowCorner.CornerRadius = UDim.new(0,12)
     windowCorner.Parent = self.Window
     
-    -- Top Bar
     self.TopBar = Instance.new("Frame")
     self.TopBar.Size = UDim2.new(1,0,0,40)
     self.TopBar.BackgroundColor3 = Colors.Foreground
@@ -55,7 +52,6 @@ function UILibrary:Create(title)
     topCorner.CornerRadius = UDim.new(0,12,0,0)
     topCorner.Parent = self.TopBar
     
-    -- Title
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.new(0,200,1,0)
     titleLabel.Position = UDim2.new(0,15,0,0)
@@ -67,7 +63,6 @@ function UILibrary:Create(title)
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = self.TopBar
     
-    -- Close Button (SQUIRCLE)
     self.CloseBtn = Instance.new("TextButton")
     self.CloseBtn.Size = UDim2.new(0,28,0,28)
     self.CloseBtn.Position = UDim2.new(1,-35,0.5,-14)
@@ -80,10 +75,9 @@ function UILibrary:Create(title)
     self.CloseBtn.Parent = self.TopBar
     
     local closeCorner = Instance.new("UICorner")
-    closeCorner.CornerRadius = UDim.new(0,8)  -- Squircle corners
+    closeCorner.CornerRadius = UDim.new(0,8)
     closeCorner.Parent = self.CloseBtn
     
-    -- Minimize Button (SQUIRCLE)
     self.MinimizeBtn = Instance.new("TextButton")
     self.MinimizeBtn.Size = UDim2.new(0,28,0,28)
     self.MinimizeBtn.Position = UDim2.new(1,-70,0.5,-14)
@@ -96,10 +90,9 @@ function UILibrary:Create(title)
     self.MinimizeBtn.Parent = self.TopBar
     
     local minCorner = Instance.new("UICorner")
-    minCorner.CornerRadius = UDim.new(0,8)  -- Squircle corners
+    minCorner.CornerRadius = UDim.new(0,8)
     minCorner.Parent = self.MinimizeBtn
     
-    -- Left Panel
     self.LeftPanel = Instance.new("Frame")
     self.LeftPanel.Size = UDim2.new(0,100,1,-40)
     self.LeftPanel.Position = UDim2.new(0,0,0,40)
@@ -110,7 +103,6 @@ function UILibrary:Create(title)
     leftCorner.CornerRadius = UDim.new(0,0,0,12)
     leftCorner.Parent = self.LeftPanel
     
-    -- Tabs Container
     self.TabsContainer = Instance.new("Frame")
     self.TabsContainer.Size = UDim2.new(1,0,1,0)
     self.TabsContainer.BackgroundTransparency = 1
@@ -125,7 +117,6 @@ function UILibrary:Create(title)
     tabsPadding.PaddingTop = UDim.new(0,10)
     tabsPadding.Parent = self.TabsContainer
     
-    -- Content Panel
     self.ContentPanel = Instance.new("Frame")
     self.ContentPanel.Size = UDim2.new(1,-100,1,-40)
     self.ContentPanel.Position = UDim2.new(0,100,0,40)
@@ -136,7 +127,6 @@ function UILibrary:Create(title)
     contentCorner.CornerRadius = UDim.new(0,0,0,12)
     contentCorner.Parent = self.ContentPanel
     
-    -- Content Scrolling
     self.Content = Instance.new("ScrollingFrame")
     self.Content.Size = UDim2.new(1,0,1,0)
     self.Content.BackgroundTransparency = 1
@@ -158,7 +148,6 @@ function UILibrary:Create(title)
     contentPadding.PaddingRight = UDim.new(0,10)
     contentPadding.Parent = self.Content
     
-    -- Drag
     local dragging = false
     local dragStart, startPos
     
@@ -183,7 +172,6 @@ function UILibrary:Create(title)
         end
     end)
     
-    -- Minimize
     local minimized = false
     self.MinimizeBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
@@ -196,18 +184,14 @@ function UILibrary:Create(title)
         end
     end)
     
-    -- Close
     self.CloseBtn.MouseButton1Click:Connect(function()
         Tween(self.Window, {Size = UDim2.new(0,0,0,0)})
         wait(0.2)
         self.ScreenGui:Destroy()
     end)
     
-    -- Store tabs
     self.Tabs = {}
     self.CurrentTab = nil
-    
-    -- Notifications
     self.ActiveNotifications = {}
     
     function self:UpdateNotifications()
@@ -222,7 +206,6 @@ function UILibrary:Create(title)
         end
     end
     
-    -- Tab function
     function self:Tab(name)
         local tabBtn = Instance.new("TextButton")
         tabBtn.Size = UDim2.new(1,-10,0,30)
@@ -235,7 +218,7 @@ function UILibrary:Create(title)
         tabBtn.Parent = self.TabsContainer
         
         local tabCorner = Instance.new("UICorner")
-        tabCorner.CornerRadius = UDim.new(0,8)  -- Squircle corners
+        tabCorner.CornerRadius = UDim.new(0,8)
         tabCorner.Parent = tabBtn
         
         local contentFrame = Instance.new("Frame")
@@ -255,13 +238,11 @@ function UILibrary:Create(title)
                 self.CurrentTab.Visible = false 
             end
             
-            -- Reset previous tab color
             if self.CurrentTabButton then
                 Tween(self.CurrentTabButton, {BackgroundColor3 = Colors.Foreground})
                 Tween(self.CurrentTabButton, {TextColor3 = Colors.SubText})
             end
             
-            -- Highlight current tab
             Tween(tabBtn, {BackgroundColor3 = Colors.Selected})
             Tween(tabBtn, {TextColor3 = Colors.Text})
             
@@ -272,7 +253,6 @@ function UILibrary:Create(title)
         
         local tabData = {}
         
-        -- Add Button (SQUIRCLE)
         function tabData:AddButton(text, callback)
             local btn = Instance.new("TextButton")
             btn.Size = UDim2.new(1,-10,0,32)
@@ -285,7 +265,7 @@ function UILibrary:Create(title)
             btn.Parent = contentFrame
             
             local btnCorner = Instance.new("UICorner")
-            btnCorner.CornerRadius = UDim.new(0,8)  -- Squircle corners
+            btnCorner.CornerRadius = UDim.new(0,8)
             btnCorner.Parent = btn
             
             btn.MouseButton1Click:Connect(function()
@@ -298,7 +278,6 @@ function UILibrary:Create(title)
             return btn
         end
         
-        -- Add Toggle (SQUIRCLE switch, blue when on)
         function tabData:AddToggle(text, default, callback)
             local toggleFrame = Instance.new("Frame")
             toggleFrame.Size = UDim2.new(1,-10,0,32)
@@ -306,7 +285,7 @@ function UILibrary:Create(title)
             toggleFrame.Parent = contentFrame
             
             local toggleCorner = Instance.new("UICorner")
-            toggleCorner.CornerRadius = UDim.new(0,8)  -- Squircle corners
+            toggleCorner.CornerRadius = UDim.new(0,8)
             toggleCorner.Parent = toggleFrame
             
             local label = Instance.new("TextLabel")
@@ -320,7 +299,6 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = toggleFrame
             
-            -- Switch container (SQUIRCLE)
             local switch = Instance.new("Frame")
             switch.Size = UDim2.new(0,40,0,22)
             switch.Position = UDim2.new(1,-44,0.5,-11)
@@ -328,10 +306,9 @@ function UILibrary:Create(title)
             switch.Parent = toggleFrame
             
             local switchCorner = Instance.new("UICorner")
-            switchCorner.CornerRadius = UDim.new(0,11)  -- Squircle corners
+            switchCorner.CornerRadius = UDim.new(0,11)
             switchCorner.Parent = switch
             
-            -- Toggle dot (SQUIRCLE, blue when on)
             local dot = Instance.new("Frame")
             dot.Size = UDim2.new(0,18,0,18)
             dot.Position = default and UDim2.new(1,-20,0.5,-9) or UDim2.new(0,2,0.5,-9)
@@ -339,7 +316,7 @@ function UILibrary:Create(title)
             dot.Parent = switch
             
             local dotCorner = Instance.new("UICorner")
-            dotCorner.CornerRadius = UDim.new(0,9)  -- Squircle corners
+            dotCorner.CornerRadius = UDim.new(0,9)
             dotCorner.Parent = dot
             
             local state = default
@@ -354,7 +331,6 @@ function UILibrary:Create(title)
                 callback(state)
             end
             
-            -- Click anywhere on toggle frame
             local clickBtn = Instance.new("TextButton")
             clickBtn.Size = UDim2.new(1,0,1,0)
             clickBtn.BackgroundTransparency = 1
@@ -366,7 +342,6 @@ function UILibrary:Create(title)
             return {Set = function(v) if state ~= v then toggle() end end}
         end
         
-        -- Add Dropdown (SQUIRCLE corners)
         function tabData:AddDropdown(text, options, callback)
             local dropdownFrame = Instance.new("Frame")
             dropdownFrame.Size = UDim2.new(1,-10,0,32)
@@ -374,7 +349,7 @@ function UILibrary:Create(title)
             dropdownFrame.Parent = contentFrame
             
             local dropdownCorner = Instance.new("UICorner")
-            dropdownCorner.CornerRadius = UDim.new(0,8)  -- Squircle corners
+            dropdownCorner.CornerRadius = UDim.new(0,8)
             dropdownCorner.Parent = dropdownFrame
             
             local label = Instance.new("TextLabel")
@@ -388,7 +363,6 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = dropdownFrame
             
-            -- Arrow button (SQUIRCLE)
             local arrowBtn = Instance.new("TextButton")
             arrowBtn.Size = UDim2.new(0,32,0,32)
             arrowBtn.Position = UDim2.new(1,-38,0.5,-16)
@@ -401,10 +375,9 @@ function UILibrary:Create(title)
             arrowBtn.Parent = dropdownFrame
             
             local arrowCorner = Instance.new("UICorner")
-            arrowCorner.CornerRadius = UDim.new(0,8)  -- Squircle corners
+            arrowCorner.CornerRadius = UDim.new(0,8)
             arrowCorner.Parent = arrowBtn
             
-            -- Options container
             local optionsFrame = Instance.new("Frame")
             optionsFrame.Size = UDim2.new(1,0,0,0)
             optionsFrame.Position = UDim2.new(0,0,1,4)
@@ -414,7 +387,7 @@ function UILibrary:Create(title)
             optionsFrame.Parent = dropdownFrame
             
             local optionsCorner = Instance.new("UICorner")
-            optionsCorner.CornerRadius = UDim.new(0,8)  -- Squircle corners
+            optionsCorner.CornerRadius = UDim.new(0,8)
             optionsCorner.Parent = optionsFrame
             
             local open = false
@@ -431,7 +404,7 @@ function UILibrary:Create(title)
                 optBtn.Parent = optionsFrame
                 
                 local optCorner = Instance.new("UICorner")
-                optCorner.CornerRadius = UDim.new(0,6)  -- Squircle corners
+                optCorner.CornerRadius = UDim.new(0,6)
                 optCorner.Parent = optBtn
                 
                 optBtn.MouseButton1Click:Connect(function()
@@ -466,7 +439,6 @@ function UILibrary:Create(title)
         return tabData
     end
     
-    -- Notification function
     function self:Notify(text, duration)
         duration = duration or 3
         
@@ -477,7 +449,7 @@ function UILibrary:Create(title)
         notif.Parent = self.ScreenGui
         
         local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0,10)  -- Squircle corners
+        corner.CornerRadius = UDim.new(0,10)
         corner.Parent = notif
         
         local label = Instance.new("TextLabel")
@@ -509,7 +481,6 @@ function UILibrary:Create(title)
         self:UpdateNotifications()
     end
     
-    -- Auto select first tab
     task.spawn(function()
         wait(0.1)
         for _, tab in pairs(self.TabsContainer:GetChildren()) do
