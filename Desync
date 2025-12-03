@@ -1,5 +1,7 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local workspace = game:GetService("Workspace")
+
 local function InstantReset()
     local char = LocalPlayer.Character
     if not char then return end
@@ -23,7 +25,8 @@ local function InstantReset()
         workspace.CurrentCamera.CFrame = oldCam
     end)
 end
-local function FireDesync()
+
+function FireDesync()
     spawn(function()
         local flags = {
             {"GameNetPVHeaderRotationalVelocityZeroCutoffExponent", "-5000"},{"LargeReplicatorWrite5", "true"},{"LargeReplicatorEnabled9", "true"},{"AngularVelocityLimit", "360"},
@@ -39,8 +42,9 @@ local function FireDesync()
             {"GameNetPVHeaderLinearVelocityZeroCutoffExponent", "-5000"},{"CheckPVCachedVelThresholdPercent", "10"},{"TimestepArbiterOmegaThou", "1073741823"},
             {"MaxAcceptableUpdateDelay", "1"},{"LargeReplicatorSerializeWrite4", "true"},
         }
-        for _,v in ipairs(flags) do pcall(function() setfflag(v[1],v[2]) end) end
+        for _,v in ipairs(flags) do 
+            pcall(setfflag, v[1], v[2]) 
+        end
         InstantReset()
     end)
 end
-    FireDesync()
