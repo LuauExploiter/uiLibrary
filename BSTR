@@ -1,0 +1,36 @@
+local p = game.Players.LocalPlayer
+local rs = game:GetService("RunService")
+local uis = game:GetService("UserInputService")
+local ws = game:GetService("Workspace")
+
+local speedConn, jumpConn
+
+local function BoosterON()
+    if speedConn or jumpConn then return end
+    ws.Gravity = 40
+    local hum = p.Character and p.Character:FindFirstChild("Humanoid")
+    if hum then hum.JumpPower = 30 end
+    
+    speedConn = rs.Heartbeat:Connect(function()
+        local root = p.Character and p.Character.HumanoidRootPart
+        local hum = p.Character and p.Character.Humanoid
+        if root and hum and hum.MoveDirection.Magnitude > 0 then
+            root.Velocity = Vector3.new(hum.MoveDirection.X*27, root.Velocity.Y, hum.MoveDirection.Z*27)
+        end
+    end)
+    
+    jumpConn = uis.JumpRequest:Connect(function()
+        local root = p.Character and p.Character.HumanoidRootPart
+        if root then root.Velocity = Vector3.new(root.Velocity.X, 30, root.Velocity.Z) end
+    end)
+end
+
+local function BoosterOFF()
+    if speedConn then speedConn:Disconnect() speedConn = nil end
+    if jumpConn then jumpConn:Disconnect() jumpConn = nil end
+    ws.Gravity = 196.2
+    local hum = p.Character and p.Character.Humanoid
+    if hum then hum.JumpPower = 50 end
+end
+
+-- Execute: BoosterON() or BoosterOFF()
