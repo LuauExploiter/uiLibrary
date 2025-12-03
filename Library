@@ -223,7 +223,7 @@ function UILibrary:Create(title)
     self.Notifications = NotificationManager:Init(self.ScreenGui)
     
     self.Window = Instance.new("Frame")
-    self.Window.Size = UDim2.new(0,500,0,400)
+    self.Window.Size = UDim2.new(0,400,0,200)
     self.Window.Position = UDim2.new(0.5,-250,0.5,-200)
     self.Window.BackgroundColor3 = Colors.Background
     self.Window.BorderSizePixel = 0
