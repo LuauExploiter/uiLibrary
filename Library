@@ -1,4 +1,4 @@
--- ULTIMATE UI LIBRARY - FIXED VERSION
+-- ULTIMATE UI LIBRARY - WITH NOTIFICATION SYSTEM
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -15,13 +15,213 @@ local Colors = {
     Minimize = Color3.fromRGB(255,180,40),
     Selected = Color3.fromRGB(40,100,220),
     Button = Color3.fromRGB(35,35,40),
-    Border = Color3.fromRGB(50,50,55)
+    Border = Color3.fromRGB(50,50,55),
+    Success = Color3.fromRGB(40, 200, 80),
+    Warning = Color3.fromRGB(255, 180, 40),
+    Error = Color3.fromRGB(255, 80, 80),
+    Info = Color3.fromRGB(0, 120, 255)
 }
 
 local function Tween(obj, props)
     local tween = TweenService:Create(obj, TweenInfo.new(0.25, Enum.EasingStyle.Quint), props)
     tween:Play()
     return tween
+end
+
+-- Notification System
+local NotificationManager = {}
+NotificationManager.__index = NotificationManager
+
+function NotificationManager:Init(screenGui)
+    local self = setmetatable({}, NotificationManager)
+    
+    self.ScreenGui = screenGui
+    self.ActiveNotifications = {}
+    self.NotificationCount = 0
+    
+    -- Create notification container
+    self.Container = Instance.new("Frame")
+    self.Container.Name = "NotificationContainer"
+    self.Container.Size = UDim2.new(0, 320, 0, 0)
+    self.Container.Position = UDim2.new(1, -340, 0.5, 0)
+    self.Container.BackgroundTransparency = 1
+    self.Container.Parent = self.ScreenGui
+    
+    local uiListLayout = Instance.new("UIListLayout")
+    uiListLayout.Padding = UDim.new(0, 10)
+    uiListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    uiListLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+    uiListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    uiListLayout.Parent = self.Container
+    
+    return self
+end
+
+function NotificationManager:CreateNotification(title, content, notificationType, duration)
+    duration = duration or 5
+    notificationType = notificationType or "Info"
+    
+    self.NotificationCount += 1
+    local notificationId = self.NotificationCount
+    
+    -- Create notification frame
+    local notification = Instance.new("Frame")
+    notification.Name = "Notification_" .. notificationId
+    notification.Size = UDim2.new(0, 300, 0, 0)
+    notification.BackgroundColor3 = Colors.Foreground
+    notification.BackgroundTransparency = 1
+    notification.ClipsDescendants = true
+    notification.LayoutOrder = notificationId
+    notification.Parent = self.Container
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = notification
+    
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Colors.Border
+    stroke.Thickness = 1
+    stroke.Transparency = 0.5
+    stroke.Parent = notification
+    
+    -- Type indicator
+    local typeIndicator = Instance.new("Frame")
+    typeIndicator.Size = UDim2.new(0, 4, 1, 0)
+    typeIndicator.BackgroundColor3 = Colors[notificationType]
+    typeIndicator.BorderSizePixel = 0
+    typeIndicator.Parent = notification
+    
+    local typeCorner = Instance.new("UICorner")
+    typeCorner.CornerRadius = UDim.new(0, 2)
+    typeCorner.Parent = typeIndicator
+    
+    -- Content container
+    local contentContainer = Instance.new("Frame")
+    contentContainer.Size = UDim2.new(1, -20, 1, 0)
+    contentContainer.Position = UDim2.new(0, 12, 0, 0)
+    contentContainer.BackgroundTransparency = 1
+    contentContainer.Parent = notification
+    
+    -- Title
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, 0, 0, 24)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Colors.Text
+    titleLabel.TextSize = 14
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = contentContainer
+    
+    -- Content
+    local contentLabel = Instance.new("TextLabel")
+    contentLabel.Size = UDim2.new(1, 0, 0, 0)
+    contentLabel.Position = UDim2.new(0, 0, 0, 24)
+    contentLabel.BackgroundTransparency = 1
+    contentLabel.Text = content
+    contentLabel.TextColor3 = Colors.SubText
+    contentLabel.TextSize = 12
+    contentLabel.Font = Enum.Font.Gotham
+    contentLabel.TextXAlignment = Enum.TextXAlignment.Left
+    contentLabel.TextYAlignment = Enum.TextYAlignment.Top
+    contentLabel.TextWrapped = true
+    contentLabel.Parent = contentContainer
+    
+    -- Calculate height based on content
+    local textHeight = math.min(contentLabel.TextBounds.Y, 60)
+    contentLabel.Size = UDim2.new(1, 0, 0, textHeight)
+    
+    local notificationHeight = 24 + textHeight + 12
+    notification.Size = UDim2.new(0, 300, 0, notificationHeight)
+    
+    -- Close button
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 20, 0, 20)
+    closeBtn.Position = UDim2.new(1, -24, 0, 8)
+    closeBtn.BackgroundColor3 = Colors.Button
+    closeBtn.AutoButtonColor = false
+    closeBtn.TextColor3 = Colors.Text
+    closeBtn.TextSize = 14
+    closeBtn.Text = "×"
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.Parent = notification
+    
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 4)
+    closeCorner.Parent = closeBtn
+    
+    -- Progress bar for timeout
+    local progressBar = Instance.new("Frame")
+    progressBar.Size = UDim2.new(1, 0, 0, 2)
+    progressBar.Position = UDim2.new(0, 0, 1, -2)
+    progressBar.BackgroundColor3 = Colors[notificationType]
+    progressBar.BorderSizePixel = 0
+    progressBar.Parent = notification
+    
+    local progressCorner = Instance.new("UICorner")
+    progressCorner.CornerRadius = UDim.new(0, 1)
+    progressCorner.Parent = progressBar
+    
+    -- Animation in
+    notification.Position = UDim2.new(1, 0, 0, 0)
+    Tween(notification, {
+        Position = UDim2.new(0, 0, 0, 0),
+        BackgroundTransparency = 0
+    })
+    
+    -- Set up close functionality
+    local function closeNotification()
+        if not notification then return end
+        
+        Tween(notification, {
+            Position = UDim2.new(1, 0, 0, 0),
+            BackgroundTransparency = 1
+        })
+        
+        wait(0.25)
+        if notification then
+            notification:Destroy()
+        end
+        self.ActiveNotifications[notificationId] = nil
+    end
+    
+    closeBtn.MouseButton1Click:Connect(closeNotification)
+    
+    -- Hover effects
+    closeBtn.MouseEnter:Connect(function()
+        Tween(closeBtn, {BackgroundColor3 = Color3.fromRGB(50,50,55)})
+    end)
+    
+    closeBtn.MouseLeave:Connect(function()
+        Tween(closeBtn, {BackgroundColor3 = Colors.Button})
+    end)
+    
+    -- Auto-close timer
+    local startTime = tick()
+    local connection
+    connection = game:GetService("RunService").Heartbeat:Connect(function()
+        local elapsed = tick() - startTime
+        local progress = 1 - (elapsed / duration)
+        
+        if progress <= 0 then
+            connection:Disconnect()
+            closeNotification()
+            return
+        end
+        
+        progressBar.Size = UDim2.new(progress, 0, 0, 2)
+    end)
+    
+    -- Store notification
+    self.ActiveNotifications[notificationId] = {
+        Frame = notification,
+        Close = closeNotification,
+        Connection = connection
+    }
+    
+    return {
+        Close = closeNotification
+    }
 end
 
 function UILibrary:Create(title)
@@ -33,6 +233,9 @@ function UILibrary:Create(title)
     self.ScreenGui.ResetOnSpawn = false
     self.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     self.ScreenGui.Parent = game:GetService("CoreGui")
+    
+    -- Initialize notification system
+    self.Notifications = NotificationManager:Init(self.ScreenGui)
     
     -- Main Window
     self.Window = Instance.new("Frame")
@@ -169,7 +372,7 @@ function UILibrary:Create(title)
     contentPadding.PaddingRight = UDim.new(0,12)
     contentPadding.Parent = self.Content
     
-    -- DRAG SYSTEM FROM YOUR SCRIPT
+    -- DRAG SYSTEM
     local dragEnabled = false
     local dragInput, dragStart, startPos
     
@@ -181,7 +384,7 @@ function UILibrary:Create(title)
             startPos.Y.Scale, 
             startPos.Y.Offset + delta.Y
         )
-        Tween(self.Window, {Position = newPos}, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out))
+        Tween(self.Window, {Position = newPos})
     end
     
     local function beginDrag(input)
@@ -252,7 +455,7 @@ function UILibrary:Create(title)
         Tween(self.Window, {
             Size = UDim2.new(0,0,0,0),
             Position = UDim2.new(0.5,0,0.5,0)
-        }, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In))
+        })
         wait(0.3)
         self.ScreenGui:Destroy()
     end)
@@ -363,9 +566,11 @@ function UILibrary:Create(title)
             -- Button Click
             btn.MouseButton1Click:Connect(function()
                 Tween(btn, {BackgroundColor3 = Color3.fromRGB(50,50,55)})
-                wait(0.1)
+                task.wait(0.1)
                 Tween(btn, {BackgroundColor3 = Colors.Button})
-                if callback then callback() end
+                if callback then 
+                    callback() 
+                end
             end)
             
             return btn
@@ -457,7 +662,7 @@ function UILibrary:Create(title)
             }
         end
         
-        -- Add Dropdown
+        -- Add Dropdown (FIXED VERSION)
         function tabData:AddDropdown(text, options, callback)
             local dropdownFrame = Instance.new("Frame")
             dropdownFrame.Size = UDim2.new(1,0,0,38)
@@ -499,74 +704,202 @@ function UILibrary:Create(title)
             arrowCorner.CornerRadius = UDim.new(0,8)
             arrowCorner.Parent = arrowBtn
             
+            -- Options frame with higher ZIndex
             local optionsFrame = Instance.new("Frame")
             optionsFrame.Size = UDim2.new(1,0,0,0)
             optionsFrame.Position = UDim2.new(0,0,1,4)
             optionsFrame.BackgroundColor3 = Colors.Foreground
             optionsFrame.ClipsDescendants = true
             optionsFrame.Visible = false
+            optionsFrame.ZIndex = 100
             optionsFrame.Parent = dropdownFrame
             
             local optionsCorner = Instance.new("UICorner")
             optionsCorner.CornerRadius = UDim.new(0,8)
             optionsCorner.Parent = optionsFrame
             
-            local open = false
+            local optionsStroke = Instance.new("UIStroke")
+            optionsStroke.Thickness = 1
+            optionsStroke.Color = Colors.Border
+            optionsStroke.Parent = optionsFrame
             
-            for _, opt in ipairs(options) do
+            local optionsLayout = Instance.new("UIListLayout")
+            optionsLayout.Padding = UDim.new(0, 4)
+            optionsLayout.Parent = optionsFrame
+            
+            local optionsPadding = Instance.new("UIPadding")
+            optionsPadding.PaddingTop = UDim.new(0, 4)
+            optionsPadding.PaddingBottom = UDim.new(0, 4)
+            optionsPadding.PaddingLeft = UDim.new(0, 4)
+            optionsPadding.PaddingRight = UDim.new(0, 4)
+            optionsPadding.Parent = optionsFrame
+            
+            local open = false
+            local selectedOption = nil
+            
+            -- Create option buttons
+            local optionButtons = {}
+            for i, opt in ipairs(options) do
                 local optBtn = Instance.new("TextButton")
-                optBtn.Size = UDim2.new(1,-8,0,32)
+                optBtn.Size = UDim2.new(1, -8, 0, 32)
                 optBtn.BackgroundColor3 = Colors.Button
                 optBtn.AutoButtonColor = false
                 optBtn.Text = opt
                 optBtn.TextColor3 = Colors.Text
                 optBtn.Font = Enum.Font.GothamSemibold
                 optBtn.TextSize = 13
+                optBtn.ZIndex = 101
+                optBtn.LayoutOrder = i
                 optBtn.Parent = optionsFrame
                 
                 local optCorner = Instance.new("UICorner")
                 optCorner.CornerRadius = UDim.new(0,6)
                 optCorner.Parent = optBtn
                 
-                optBtn.MouseButton1Click:Connect(function()
-                    label.Text = text .. ": " .. opt
-                    Tween(optBtn, {BackgroundColor3 = Colors.Selected})
-                    callback(opt)
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
-                    wait(0.2)
-                    optionsFrame.Visible = false
-                    open = false
+                -- Hover effects
+                optBtn.MouseEnter:Connect(function()
+                    if selectedOption ~= opt then
+                        Tween(optBtn, {BackgroundColor3 = Color3.fromRGB(45,45,50)})
+                    end
                 end)
+                
+                optBtn.MouseLeave:Connect(function()
+                    if selectedOption ~= opt then
+                        Tween(optBtn, {BackgroundColor3 = Colors.Button})
+                    end
+                end)
+                
+                -- Click handler
+                optBtn.MouseButton1Click:Connect(function()
+                    selectedOption = opt
+                    label.Text = text .. ": " .. opt
+                    
+                    -- Reset all buttons
+                    for _, btn in ipairs(optionButtons) do
+                        Tween(btn, {BackgroundColor3 = Colors.Button})
+                    end
+                    
+                    -- Highlight selected
+                    Tween(optBtn, {BackgroundColor3 = Colors.Selected})
+                    
+                    -- Close dropdown
+                    open = false
+                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
+                    Tween(arrowBtn, {Rotation = 0})
+                    
+                    task.wait(0.2)
+                    optionsFrame.Visible = false
+                    
+                    if callback then
+                        callback(opt)
+                    end
+                end)
+                
+                table.insert(optionButtons, optBtn)
             end
             
+            -- Calculate total options height
+            local totalHeight = #options * 36 + 8
+            
+            -- Arrow button click handler
             arrowBtn.MouseButton1Click:Connect(function()
                 open = not open
                 if open then
                     optionsFrame.Visible = true
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,#options * 34)})
+                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,totalHeight)})
                     Tween(arrowBtn, {Rotation = 180})
+                    
+                    -- Highlight selected option if exists
+                    if selectedOption then
+                        for _, btn in ipairs(optionButtons) do
+                            if btn.Text == selectedOption then
+                                Tween(btn, {BackgroundColor3 = Colors.Selected})
+                            else
+                                Tween(btn, {BackgroundColor3 = Colors.Button})
+                            end
+                        end
+                    end
                 else
                     Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
                     Tween(arrowBtn, {Rotation = 0})
-                    wait(0.2)
+                    task.wait(0.2)
                     optionsFrame.Visible = false
+                end
+            end)
+            
+            -- Close dropdown when clicking outside
+            local dropdownConnection
+            dropdownConnection = UserInputService.InputBegan:Connect(function(input)
+                if open and input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    local mousePos = input.Position
+                    local dropdownAbsolutePos = dropdownFrame.AbsolutePosition
+                    local dropdownAbsoluteSize = dropdownFrame.AbsoluteSize
+                    local optionsAbsolutePos = optionsFrame.AbsolutePosition
+                    local optionsAbsoluteSize = optionsFrame.AbsoluteSize
+                    
+                    -- Check if click is outside dropdown and options
+                    local isInDropdown = mousePos.X >= dropdownAbsolutePos.X and mousePos.X <= dropdownAbsolutePos.X + dropdownAbsoluteSize.X and
+                                        mousePos.Y >= dropdownAbsolutePos.Y and mousePos.Y <= dropdownAbsolutePos.Y + dropdownAbsoluteSize.Y
+                    
+                    local isInOptions = mousePos.X >= optionsAbsolutePos.X and mousePos.X <= optionsAbsolutePos.X + optionsAbsoluteSize.X and
+                                       mousePos.Y >= optionsAbsolutePos.Y and mousePos.Y <= optionsAbsolutePos.Y + optionsAbsoluteSize.Y
+                    
+                    if not isInDropdown and not isInOptions then
+                        open = false
+                        Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
+                        Tween(arrowBtn, {Rotation = 0})
+                        task.wait(0.2)
+                        optionsFrame.Visible = false
+                    end
+                end
+            end)
+            
+            -- Clean up connection when dropdown is destroyed
+            dropdownFrame.Destroying:Connect(function()
+                if dropdownConnection then
+                    dropdownConnection:Disconnect()
                 end
             end)
             
             return {
                 Set = function(opt)
-                    label.Text = text .. ": " .. opt
+                    if table.find(options, opt) then
+                        selectedOption = opt
+                        label.Text = text .. ": " .. opt
+                        
+                        -- Update button colors
+                        for _, btn in ipairs(optionButtons) do
+                            if btn.Text == opt then
+                                Tween(btn, {BackgroundColor3 = Colors.Selected})
+                            else
+                                Tween(btn, {BackgroundColor3 = Colors.Button})
+                            end
+                        end
+                    end
+                end,
+                Get = function()
+                    return selectedOption
                 end
             }
+        end
+        
+        -- Notification function
+        function tabData:Notify(title, content, notificationType, duration)
+            return self.Notifications:CreateNotification(title, content, notificationType, duration)
         end
         
         self.Tabs[name] = tabData
         return tabData
     end
     
+    -- Add global notification function
+    function self:Notify(title, content, notificationType, duration)
+        return self.Notifications:CreateNotification(title, content, notificationType, duration)
+    end
+    
     -- Auto select first tab
     task.spawn(function()
-        wait(0.1)
+        task.wait(0.1)
         for _, tab in pairs(self.TabsContainer:GetChildren()) do
             if tab:IsA("TextButton") then
                 tab:MouseButton1Click()
