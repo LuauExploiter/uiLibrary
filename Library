@@ -1,5 +1,6 @@
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
 local UILibrary = {}
 UILibrary.__index = UILibrary
@@ -184,7 +185,7 @@ function NotificationManager:CreateNotification(title, content, notificationType
     
     local startTime = tick()
     local connection
-    connection = game:GetService("RunService").Heartbeat:Connect(function()
+    connection = RunService.Heartbeat:Connect(function()
         local elapsed = tick() - startTime
         local progress = 1 - (elapsed / duration)
         
@@ -1236,7 +1237,8 @@ function UILibrary:Create(title)
     
     task.spawn(function()
         task.wait(0.1)
-        for _, tab in pairs(self.TabsContainer:GetChildren if tab:IsA("TextButton") then
+        for _, tab in pairs(self.TabsContainer:GetChildren()) do
+            if tab:IsA("TextButton") then
                 tab:MouseButton1Click()
                 break
             end
