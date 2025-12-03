@@ -1,12 +1,12 @@
 local rs = game:GetService("RunService")
-local plrs = game:GetService("Players")
+local plrs = game.Players
 local p = plrs.LocalPlayer
 
-local hitConn
+local conn
 
-local function HitboxON()
-    if hitConn then return end
-    hitConn = rs.RenderStepped:Connect(function()
+function HitboxON()
+    if conn then return end
+    conn = rs.RenderStepped:Connect(function()
         for _, plr in plrs:GetPlayers() do
             if plr ~= p and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
                 local hrp = plr.Character.HumanoidRootPart
@@ -19,8 +19,8 @@ local function HitboxON()
     end)
 end
 
-local function HitboxOFF()
-    if hitConn then hitConn:Disconnect() hitConn = nil end
+function HitboxOFF()
+    if conn then conn:Disconnect() conn = nil end
     for _, plr in plrs:GetPlayers() do
         if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
             local hrp = plr.Character.HumanoidRootPart
@@ -30,5 +30,3 @@ local function HitboxOFF()
         end
     end
 end
-
--- Execute: HitboxON() or HitboxOFF()
