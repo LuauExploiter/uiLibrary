@@ -1,0 +1,42 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local AdminRemote
+pcall(function()
+    AdminRemote = ReplicatedStorage.Packages.Net["RE/AdminPanelService/ExecuteCommand"]
+end)
+
+if not AdminRemote then return end
+
+local function GetNearestPlayer()
+    local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not myRoot then return end
+    
+    local nearest, shortest = nil, math.huge
+    for _, plr in Players:GetPlayers() do
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local dist = (plr.Character.HumanoidRootPart.Position - myRoot.Position).Magnitude
+            if dist < shortest then
+                shortest = dist
+                nearest = plr
+            end
+        end
+    end
+    return nearest
+end
+
+local function SpamNearest()
+    local target = GetNearestPlayer()
+    if not target then return end
+    
+    local cmds = {"rocket", "balloon", "inverse", "tiny"}
+    for _, cmd in cmds do
+        pcall(function()
+            AdminRemote:FireServer(target, cmd)
+        end)
+        task.wait(0.06)
+    end
+end
+
+SpamNearest()
