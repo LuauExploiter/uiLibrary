@@ -1,6 +1,5 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local workspace = game:GetService("Workspace")
 
 local function InstantReset()
     local char = LocalPlayer.Character
@@ -27,23 +26,51 @@ local function InstantReset()
 end
 
 function FireDesync()
-    spawn(function()
+    task.spawn(function()
         local flags = {
-            {"GameNetPVHeaderRotationalVelocityZeroCutoffExponent", "-5000"},{"LargeReplicatorWrite5", "true"},{"LargeReplicatorEnabled9", "true"},{"AngularVelocityLimit", "360"},
-            {"TimestepArbiterVelocityCriteriaThresholdTwoDt", "2147483646"},{"S2PhysicsSenderRate", "15000"},{"DisableDPIScale", "true"},{"MaxDataPacketPerSend", "2147483647"},
-            {"ServerMaxBandwidth", "52"},{"PhysicsSenderMaxBandwidthBps", "20000"},{"MaxTimestepMultiplierForBuoyancy", "2147483647"},{"SimOwnedNOUCountThresholdMillionth", "2147483647"},
-            {"MaxMissedWorldStepsRemembered", "-2147483648"},{"CheckPVDifferencesForInterpolationMinVelThresholdStudsPerSecHundredth", "1"},{"StreamJobNOUVolumeLengthCap", "2147483647"},
-            {"DebugSendDistInSteps", "-2147483648"},{"MaxTimestepMultiplierAcceleration", "2147483647"},{"LargeReplicatorRead5", "true"},{"SimExplicitlyCappedTimestepMultiplier", "2147483646"},
-            {"GameNetDontSendRedundantNumTimes", "1"},{"CheckPVLinearVelocityIntegrateVsDeltaPositionThresholdPercent", "1"},{"CheckPVCachedRotVelThresholdPercent", "10"},
-            {"LargeReplicatorSerializeRead3", "true"},{"ReplicationFocusNouExtentsSizeCutoffForPauseStuds", "2147483647"},{"NextGenReplicatorEnabledWrite4", "true"},
-            {"CheckPVDifferencesForInterpolationMinRotVelThresholdRadsPerSecHundredth", "1"},{"GameNetDontSendRedundantDeltaPositionMillionth", "1"},{"InterpolationFrameVelocityThresholdMillionth", "5"},
-            {"StreamJobNOUVolumeCap", "2147483647"},{"InterpolationFrameRotVelocityThresholdMillionth", "5"},{"WorldStepMax", "30"},{"TimestepArbiterHumanoidLinearVelThreshold", "1"},
-            {"InterpolationFramePositionThresholdMillionth", "5"},{"TimestepArbiterHumanoidTurningVelThreshold", "1"},{"MaxTimestepMultiplierConstraint", "2147483647"},
-            {"GameNetPVHeaderLinearVelocityZeroCutoffExponent", "-5000"},{"CheckPVCachedVelThresholdPercent", "10"},{"TimestepArbiterOmegaThou", "1073741823"},
-            {"MaxAcceptableUpdateDelay", "1"},{"LargeReplicatorSerializeWrite4", "true"},
+            "GameNetPVHeaderRotationalVelocityZeroCutoffExponent", "-5000",
+            "LargeReplicatorWrite5", "true",
+            "LargeReplicatorEnabled9", "true",
+            "AngularVelocityLimit", "360",
+            "TimestepArbiterVelocityCriteriaThresholdTwoDt", "2147483646",
+            "S2PhysicsSenderRate", "15000",
+            "DisableDPIScale", "true",
+            "MaxDataPacketPerSend", "2147483647",
+            "ServerMaxBandwidth", "52",
+            "PhysicsSenderMaxBandwidthBps", "20000",
+            "MaxTimestepMultiplierForBuoyancy", "2147483647",
+            "SimOwnedNOUCountThresholdMillionth", "2147483647",
+            "MaxMissedWorldStepsRemembered", "-2147483648",
+            "CheckPVDifferencesForInterpolationMinVelThresholdStudsPerSecHundredth", "1",
+            "StreamJobNOUVolumeLengthCap", "2147483647",
+            "DebugSendDistInSteps", "-2147483648",
+            "MaxTimestepMultiplierAcceleration", "2147483647",
+            "LargeReplicatorRead5", "true",
+            "SimExplicitlyCappedTimestepMultiplier", "2147483646",
+            "GameNetDontSendRedundantNumTimes", "1",
+            "CheckPVLinearVelocityIntegrateVsDeltaPositionThresholdPercent", "1",
+            "CheckPVCachedRotVelThresholdPercent", "10",
+            "LargeReplicatorSerializeRead3", "true",
+            "ReplicationFocusNouExtentsSizeCutoffForPauseStuds", "2147483647",
+            "NextGenReplicatorEnabledWrite4", "true",
+            "CheckPVDifferencesForInterpolationMinRotVelThresholdRadsPerSecHundredth", "1",
+            "GameNetDontSendRedundantDeltaPositionMillionth", "1",
+            "InterpolationFrameVelocityThresholdMillionth", "5",
+            "StreamJobNOUVolumeCap", "2147483647",
+            "InterpolationFrameRotVelocityThresholdMillionth", "5",
+            "WorldStepMax", "30",
+            "TimestepArbiterHumanoidLinearVelThreshold", "1",
+            "InterpolationFramePositionThresholdMillionth", "5",
+            "TimestepArbiterHumanoidTurningVelThreshold", "1",
+            "MaxTimestepMultiplierConstraint", "2147483647",
+            "GameNetPVHeaderLinearVelocityZeroCutoffExponent", "-5000",
+            "CheckPVCachedVelThresholdPercent", "10",
+            "TimestepArbiterOmegaThou", "1073741823",
+            "MaxAcceptableUpdateDelay", "1",
+            "LargeReplicatorSerializeWrite4", "true"
         }
-        for _,v in ipairs(flags) do 
-            pcall(setfflag, v[1], v[2]) 
+        for i = 1, #flags, 2 do
+            pcall(setfflag, flags[i], flags[i+1])
         end
         InstantReset()
     end)
