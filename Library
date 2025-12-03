@@ -1,4 +1,4 @@
--- ULTIMATE UI LIBRARY - WITH NOTIFICATION SYSTEM
+
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -28,7 +28,6 @@ local function Tween(obj, props)
     return tween
 end
 
--- Notification System
 local NotificationManager = {}
 NotificationManager.__index = NotificationManager
 
@@ -39,7 +38,7 @@ function NotificationManager:Init(screenGui)
     self.ActiveNotifications = {}
     self.NotificationCount = 0
     
-    -- Create notification container
+    
     self.Container = Instance.new("Frame")
     self.Container.Name = "NotificationContainer"
     self.Container.Size = UDim2.new(0, 320, 0, 0)
@@ -64,7 +63,7 @@ function NotificationManager:CreateNotification(title, content, notificationType
     self.NotificationCount += 1
     local notificationId = self.NotificationCount
     
-    -- Create notification frame
+    
     local notification = Instance.new("Frame")
     notification.Name = "Notification_" .. notificationId
     notification.Size = UDim2.new(0, 300, 0, 0)
@@ -84,7 +83,7 @@ function NotificationManager:CreateNotification(title, content, notificationType
     stroke.Transparency = 0.5
     stroke.Parent = notification
     
-    -- Type indicator
+    
     local typeIndicator = Instance.new("Frame")
     typeIndicator.Size = UDim2.new(0, 4, 1, 0)
     typeIndicator.BackgroundColor3 = Colors[notificationType]
@@ -95,14 +94,14 @@ function NotificationManager:CreateNotification(title, content, notificationType
     typeCorner.CornerRadius = UDim.new(0, 2)
     typeCorner.Parent = typeIndicator
     
-    -- Content container
+    
     local contentContainer = Instance.new("Frame")
     contentContainer.Size = UDim2.new(1, -20, 1, 0)
     contentContainer.Position = UDim2.new(0, 12, 0, 0)
     contentContainer.BackgroundTransparency = 1
     contentContainer.Parent = notification
     
-    -- Title
+    
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.new(1, 0, 0, 24)
     titleLabel.BackgroundTransparency = 1
@@ -113,7 +112,7 @@ function NotificationManager:CreateNotification(title, content, notificationType
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = contentContainer
     
-    -- Content
+    
     local contentLabel = Instance.new("TextLabel")
     contentLabel.Size = UDim2.new(1, 0, 0, 0)
     contentLabel.Position = UDim2.new(0, 0, 0, 24)
@@ -127,14 +126,14 @@ function NotificationManager:CreateNotification(title, content, notificationType
     contentLabel.TextWrapped = true
     contentLabel.Parent = contentContainer
     
-    -- Calculate height based on content
+    
     local textHeight = math.min(contentLabel.TextBounds.Y, 60)
     contentLabel.Size = UDim2.new(1, 0, 0, textHeight)
     
     local notificationHeight = 24 + textHeight + 12
     notification.Size = UDim2.new(0, 300, 0, notificationHeight)
     
-    -- Close button
+    
     local closeBtn = Instance.new("TextButton")
     closeBtn.Size = UDim2.new(0, 20, 0, 20)
     closeBtn.Position = UDim2.new(1, -24, 0, 8)
@@ -150,7 +149,7 @@ function NotificationManager:CreateNotification(title, content, notificationType
     closeCorner.CornerRadius = UDim.new(0, 4)
     closeCorner.Parent = closeBtn
     
-    -- Progress bar for timeout
+    
     local progressBar = Instance.new("Frame")
     progressBar.Size = UDim2.new(1, 0, 0, 2)
     progressBar.Position = UDim2.new(0, 0, 1, -2)
@@ -162,14 +161,14 @@ function NotificationManager:CreateNotification(title, content, notificationType
     progressCorner.CornerRadius = UDim.new(0, 1)
     progressCorner.Parent = progressBar
     
-    -- Animation in
+    
     notification.Position = UDim2.new(1, 0, 0, 0)
     Tween(notification, {
         Position = UDim2.new(0, 0, 0, 0),
         BackgroundTransparency = 0
     })
     
-    -- Set up close functionality
+    
     local function closeNotification()
         if not notification then return end
         
@@ -187,7 +186,7 @@ function NotificationManager:CreateNotification(title, content, notificationType
     
     closeBtn.MouseButton1Click:Connect(closeNotification)
     
-    -- Hover effects
+    
     closeBtn.MouseEnter:Connect(function()
         Tween(closeBtn, {BackgroundColor3 = Color3.fromRGB(50,50,55)})
     end)
@@ -196,7 +195,7 @@ function NotificationManager:CreateNotification(title, content, notificationType
         Tween(closeBtn, {BackgroundColor3 = Colors.Button})
     end)
     
-    -- Auto-close timer
+    
     local startTime = tick()
     local connection
     connection = game:GetService("RunService").Heartbeat:Connect(function()
@@ -212,7 +211,7 @@ function NotificationManager:CreateNotification(title, content, notificationType
         progressBar.Size = UDim2.new(progress, 0, 0, 2)
     end)
     
-    -- Store notification
+    
     self.ActiveNotifications[notificationId] = {
         Frame = notification,
         Close = closeNotification,
@@ -227,17 +226,17 @@ end
 function UILibrary:Create(title)
     local self = setmetatable({}, UILibrary)
     
-    -- ScreenGui
+    
     self.ScreenGui = Instance.new("ScreenGui")
     self.ScreenGui.Name = "UILibrary"
     self.ScreenGui.ResetOnSpawn = false
     self.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     self.ScreenGui.Parent = game:GetService("CoreGui")
     
-    -- Initialize notification system
+    
     self.Notifications = NotificationManager:Init(self.ScreenGui)
     
-    -- Main Window
+    
     self.Window = Instance.new("Frame")
     self.Window.Size = UDim2.new(0,450,0,340)
     self.Window.Position = UDim2.new(0.5,-225,0.5,-170)
@@ -256,7 +255,7 @@ function UILibrary:Create(title)
     windowStroke.Transparency = 0.5
     windowStroke.Parent = self.Window
     
-    -- Top Bar
+    
     self.TopBar = Instance.new("Frame")
     self.TopBar.Size = UDim2.new(1,0,0,42)
     self.TopBar.BackgroundColor3 = Colors.Foreground
@@ -267,7 +266,7 @@ function UILibrary:Create(title)
     topCorner.CornerRadius = UDim.new(0,14,0,0)
     topCorner.Parent = self.TopBar
     
-    -- Title Label
+    
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.new(0,220,1,0)
     titleLabel.Position = UDim2.new(0,15,0,0)
@@ -279,7 +278,7 @@ function UILibrary:Create(title)
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = self.TopBar
     
-    -- Close Button
+    
     self.CloseBtn = Instance.new("TextButton")
     self.CloseBtn.Size = UDim2.new(0,30,0,30)
     self.CloseBtn.Position = UDim2.new(1,-38,0.5,-15)
@@ -295,7 +294,7 @@ function UILibrary:Create(title)
     closeCorner.CornerRadius = UDim.new(0,8)
     closeCorner.Parent = self.CloseBtn
     
-    -- Minimize Button
+    
     self.MinimizeBtn = Instance.new("TextButton")
     self.MinimizeBtn.Size = UDim2.new(0,30,0,30)
     self.MinimizeBtn.Position = UDim2.new(1,-76,0.5,-15)
@@ -311,7 +310,7 @@ function UILibrary:Create(title)
     minCorner.CornerRadius = UDim.new(0,8)
     minCorner.Parent = self.MinimizeBtn
     
-    -- Left Panel
+    
     self.LeftPanel = Instance.new("Frame")
     self.LeftPanel.Size = UDim2.new(0,120,1,-42)
     self.LeftPanel.Position = UDim2.new(0,0,0,42)
@@ -322,7 +321,7 @@ function UILibrary:Create(title)
     leftCorner.CornerRadius = UDim.new(0,0,0,14)
     leftCorner.Parent = self.LeftPanel
     
-    -- Tabs Container
+    
     self.TabsContainer = Instance.new("Frame")
     self.TabsContainer.Size = UDim2.new(1,0,1,0)
     self.TabsContainer.BackgroundTransparency = 1
@@ -339,7 +338,7 @@ function UILibrary:Create(title)
     tabsPadding.PaddingRight = UDim.new(0,10)
     tabsPadding.Parent = self.TabsContainer
     
-    -- Content Panel
+    
     self.ContentPanel = Instance.new("Frame")
     self.ContentPanel.Size = UDim2.new(1,-120,1,-42)
     self.ContentPanel.Position = UDim2.new(0,120,0,42)
@@ -350,7 +349,7 @@ function UILibrary:Create(title)
     contentCorner.CornerRadius = UDim.new(0,0,0,14)
     contentCorner.Parent = self.ContentPanel
     
-    -- Content
+    
     self.Content = Instance.new("ScrollingFrame")
     self.Content.Size = UDim2.new(1,0,1,0)
     self.Content.BackgroundTransparency = 1
@@ -372,7 +371,7 @@ function UILibrary:Create(title)
     contentPadding.PaddingRight = UDim.new(0,12)
     contentPadding.Parent = self.Content
     
-    -- DRAG SYSTEM
+    
     local dragEnabled = false
     local dragInput, dragStart, startPos
     
@@ -416,7 +415,7 @@ function UILibrary:Create(title)
         end
     end)
     
-    -- Button Hover Effects
+    
     self.CloseBtn.MouseEnter:Connect(function()
         Tween(self.CloseBtn, {BackgroundColor3 = Color3.fromRGB(255,80,80)})
     end)
@@ -433,7 +432,7 @@ function UILibrary:Create(title)
         Tween(self.MinimizeBtn, {BackgroundColor3 = Colors.Minimize})
     end)
     
-    -- MINIMIZE FUNCTION
+    
     local minimized = false
     self.MinimizeBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
@@ -450,7 +449,7 @@ function UILibrary:Create(title)
         end
     end)
     
-    -- CLOSE FUNCTION
+    
     self.CloseBtn.MouseButton1Click:Connect(function()
         Tween(self.Window, {
             Size = UDim2.new(0,0,0,0),
@@ -460,12 +459,12 @@ function UILibrary:Create(title)
         self.ScreenGui:Destroy()
     end)
     
-    -- Tab Storage
+    
     self.Tabs = {}
     self.CurrentTab = nil
     self.CurrentTabButton = nil
     
-    -- Create Tab Function
+    
     function self:Tab(name)
         local tabBtn = Instance.new("TextButton")
         tabBtn.Size = UDim2.new(1,0,0,36)
@@ -498,7 +497,7 @@ function UILibrary:Create(title)
         tabContentList.SortOrder = Enum.SortOrder.LayoutOrder
         tabContentList.Parent = contentFrame
         
-        -- Tab Hover
+        
         tabBtn.MouseEnter:Connect(function()
             if self.CurrentTabButton ~= tabBtn then
                 Tween(tabBtn, {BackgroundColor3 = Color3.fromRGB(40,40,45)})
@@ -513,13 +512,13 @@ function UILibrary:Create(title)
             end
         end)
         
-        -- Tab Click
+        
         tabBtn.MouseButton1Click:Connect(function()
             if self.CurrentTab then 
                 self.CurrentTab.Visible = false 
             end
             
-            -- Reset previous tab
+            
             if self.CurrentTabButton then
                 Tween(self.CurrentTabButton, {
                     BackgroundColor3 = Colors.Button,
@@ -528,7 +527,7 @@ function UILibrary:Create(title)
                 Tween(self.CurrentTabButton.UIStroke, {Color = Colors.Border})
             end
             
-            -- Highlight current tab
+            
             Tween(tabBtn, {
                 BackgroundColor3 = Colors.Selected,
                 TextColor3 = Colors.Text
@@ -542,7 +541,7 @@ function UILibrary:Create(title)
         
         local tabData = {}
         
-        -- Add Button
+        
         function tabData:AddButton(text, callback)
             local btn = Instance.new("TextButton")
             btn.Size = UDim2.new(1,0,0,38)
@@ -563,7 +562,7 @@ function UILibrary:Create(title)
             btnStroke.Color = Colors.Border
             btnStroke.Parent = btn
             
-            -- Button Click
+            
             btn.MouseButton1Click:Connect(function()
                 Tween(btn, {BackgroundColor3 = Color3.fromRGB(50,50,55)})
                 task.wait(0.1)
@@ -576,7 +575,7 @@ function UILibrary:Create(title)
             return btn
         end
         
-        -- Add Toggle
+        
         function tabData:AddToggle(text, default, callback)
             local toggleFrame = Instance.new("Frame")
             toggleFrame.Size = UDim2.new(1,0,0,38)
@@ -603,7 +602,7 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = toggleFrame
             
-            -- Switch
+            
             local switch = Instance.new("Frame")
             switch.Size = UDim2.new(0,44,0,24)
             switch.Position = UDim2.new(1,-48,0.5,-12)
@@ -662,7 +661,7 @@ function UILibrary:Create(title)
             }
         end
         
-        -- Add Dropdown (FIXED VERSION)
+        
         function tabData:AddDropdown(text, options, callback)
             local dropdownFrame = Instance.new("Frame")
             dropdownFrame.Size = UDim2.new(1,0,0,38)
@@ -704,7 +703,7 @@ function UILibrary:Create(title)
             arrowCorner.CornerRadius = UDim.new(0,8)
             arrowCorner.Parent = arrowBtn
             
-            -- Options frame with higher ZIndex
+            
             local optionsFrame = Instance.new("Frame")
             optionsFrame.Size = UDim2.new(1,0,0,0)
             optionsFrame.Position = UDim2.new(0,0,1,4)
@@ -737,7 +736,7 @@ function UILibrary:Create(title)
             local open = false
             local selectedOption = nil
             
-            -- Create option buttons
+            
             local optionButtons = {}
             for i, opt in ipairs(options) do
                 local optBtn = Instance.new("TextButton")
@@ -756,7 +755,7 @@ function UILibrary:Create(title)
                 optCorner.CornerRadius = UDim.new(0,6)
                 optCorner.Parent = optBtn
                 
-                -- Hover effects
+                
                 optBtn.MouseEnter:Connect(function()
                     if selectedOption ~= opt then
                         Tween(optBtn, {BackgroundColor3 = Color3.fromRGB(45,45,50)})
@@ -769,20 +768,20 @@ function UILibrary:Create(title)
                     end
                 end)
                 
-                -- Click handler
+                
                 optBtn.MouseButton1Click:Connect(function()
                     selectedOption = opt
                     label.Text = text .. ": " .. opt
                     
-                    -- Reset all buttons
+                    
                     for _, btn in ipairs(optionButtons) do
                         Tween(btn, {BackgroundColor3 = Colors.Button})
                     end
                     
-                    -- Highlight selected
+                    
                     Tween(optBtn, {BackgroundColor3 = Colors.Selected})
                     
-                    -- Close dropdown
+                    
                     open = false
                     Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
                     Tween(arrowBtn, {Rotation = 0})
@@ -798,10 +797,10 @@ function UILibrary:Create(title)
                 table.insert(optionButtons, optBtn)
             end
             
-            -- Calculate total options height
+            
             local totalHeight = #options * 36 + 8
             
-            -- Arrow button click handler
+            
             arrowBtn.MouseButton1Click:Connect(function()
                 open = not open
                 if open then
@@ -809,7 +808,7 @@ function UILibrary:Create(title)
                     Tween(optionsFrame, {Size = UDim2.new(1,0,0,totalHeight)})
                     Tween(arrowBtn, {Rotation = 180})
                     
-                    -- Highlight selected option if exists
+                    
                     if selectedOption then
                         for _, btn in ipairs(optionButtons) do
                             if btn.Text == selectedOption then
@@ -827,7 +826,7 @@ function UILibrary:Create(title)
                 end
             end)
             
-            -- Close dropdown when clicking outside
+            
             local dropdownConnection
             dropdownConnection = UserInputService.InputBegan:Connect(function(input)
                 if open and input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -837,7 +836,7 @@ function UILibrary:Create(title)
                     local optionsAbsolutePos = optionsFrame.AbsolutePosition
                     local optionsAbsoluteSize = optionsFrame.AbsoluteSize
                     
-                    -- Check if click is outside dropdown and options
+                    
                     local isInDropdown = mousePos.X >= dropdownAbsolutePos.X and mousePos.X <= dropdownAbsolutePos.X + dropdownAbsoluteSize.X and
                                         mousePos.Y >= dropdownAbsolutePos.Y and mousePos.Y <= dropdownAbsolutePos.Y + dropdownAbsoluteSize.Y
                     
@@ -854,7 +853,7 @@ function UILibrary:Create(title)
                 end
             end)
             
-            -- Clean up connection when dropdown is destroyed
+            
             dropdownFrame.Destroying:Connect(function()
                 if dropdownConnection then
                     dropdownConnection:Disconnect()
@@ -867,7 +866,7 @@ function UILibrary:Create(title)
                         selectedOption = opt
                         label.Text = text .. ": " .. opt
                         
-                        -- Update button colors
+                        
                         for _, btn in ipairs(optionButtons) do
                             if btn.Text == opt then
                                 Tween(btn, {BackgroundColor3 = Colors.Selected})
@@ -883,7 +882,7 @@ function UILibrary:Create(title)
             }
         end
         
-        -- Notification function
+        
         function tabData:Notify(title, content, notificationType, duration)
             return self.Notifications:CreateNotification(title, content, notificationType, duration)
         end
@@ -892,12 +891,12 @@ function UILibrary:Create(title)
         return tabData
     end
     
-    -- Add global notification function
+    
     function self:Notify(title, content, notificationType, duration)
         return self.Notifications:CreateNotification(title, content, notificationType, duration)
     end
     
-    -- Auto select first tab
+    
     task.spawn(function()
         task.wait(0.1)
         for _, tab in pairs(self.TabsContainer:GetChildren()) do
