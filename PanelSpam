@@ -1,42 +1,29 @@
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RS = game:GetService("ReplicatedStorage")
+local p = Players.LocalPlayer
 
-local AdminRemote
-pcall(function()
-    AdminRemote = ReplicatedStorage.Packages.Net["RE/AdminPanelService/ExecuteCommand"]
-end)
+local remote = RS:FindFirstChild("Packages") and RS.Packages.Net:FindFirstChild("RE/AdminPanelService/ExecuteCommand")
 
-if not AdminRemote then return end
-
-local function GetNearestPlayer()
-    local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+function SpamNearest()
+    if not remote then return end
+    local myRoot = p.Character and p.Character:FindFirstChild("HumanoidRootPart")
     if not myRoot then return end
-    
-    local nearest, shortest = nil, math.huge
+
+    local nearest, dist = nil, math.huge
     for _, plr in Players:GetPlayers() do
-        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-            local dist = (plr.Character.HumanoidRootPart.Position - myRoot.Position).Magnitude
-            if dist < shortest then
-                shortest = dist
+        if plr ~= p and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local d = (plr.Character.HumanoidRootPart.Position - myRoot.Position).Magnitude
+            if d < dist then
+                dist = d
                 nearest = plr
             end
         end
     end
-    return nearest
-end
 
-local function SpamNearest()
-    local target = GetNearestPlayer()
-    if not target then return end
-    
-    local cmds = {"rocket", "balloon", "inverse", "tiny"}
-    for _, cmd in cmds do
-        pcall(function()
-            AdminRemote:FireServer(target, cmd)
-        end)
-        task.wait(0.06)
+    if nearest then
+        for _, cmd in {"rocket", "balloon", "inverse", "tiny"} do
+            pcall(function() remote:FireServer(nearest, cmd) end)
+            task.wait(0.06)
+        end
     end
 end
-
-SpamNearest()
