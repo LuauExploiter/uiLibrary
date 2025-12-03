@@ -1,0 +1,41 @@
+local rs = game:GetService("RunService")
+local rs2 = game:GetService("ReplicatedStorage")
+local p = game.Players.LocalPlayer
+
+local antiConn1, antiConn2
+
+local function AntiKBON()
+    if antiConn1 or antiConn2 then return end
+    local char = p.Character or p.CharacterAdded:Wait()
+    local hum = char:WaitForChild("Humanoid")
+    local root = char:WaitForChild("HumanoidRootPart")
+
+    for _, v in char:GetDescendants() do
+        if v:IsA("BallSocketConstraint") or v:IsA("NoCollisionConstraint") or v:IsA("HingeConstraint") then
+            v:Destroy()
+        end
+    end
+
+    antiConn1 = hum.StateChanged:Connect(function(_, state)
+        if state == Enum.HumanoidStateType.Ragdoll or state == Enum.HumanoidStateType.FallingDown then
+            hum:ChangeState(Enum.HumanoidStateType.Running)
+        end
+    end)
+
+    antiConn2 = rs.Heartbeat:Connect(function()
+        root.AssemblyLinearVelocity = root.AssemblyLinearVelocity.Unit * math.min(root.AssemblyLinearVelocity.Magnitude, 15)
+    end)
+
+    pcall(function()
+        rs2.Packages.Net["RE/CombatService/ApplyImpulse"].OnClientEvent:Connect(function()
+            root.AssemblyLinearVelocity = Vector3.new(0,0,0)
+        end)
+    end)
+end
+
+local function AntiKBOFF()
+    if antiConn1 then antiConn1:Disconnect() antiConn1 = nil end
+    if antiConn2 then antiConn2:Disconnect() antiConn2 = nil end
+end
+
+-- Execute: AntiKBON() or AntiKBOFF()
