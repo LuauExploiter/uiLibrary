@@ -1,4 +1,4 @@
--- UI LIBRARY
+-- DARK THEME UI LIBRARY
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -6,18 +6,20 @@ local UILibrary = {}
 UILibrary.__index = UILibrary
 
 local Colors = {
-    Background = Color3.fromRGB(20,20,25),
-    Foreground = Color3.fromRGB(30,30,40),
+    Background = Color3.fromRGB(10,10,15),
+    Foreground = Color3.fromRGB(20,20,25),
     Primary = Color3.fromRGB(0,120,255),
     Text = Color3.fromRGB(240,240,245),
-    SubText = Color3.fromRGB(160,160,170),
+    SubText = Color3.fromRGB(120,120,130),
     Close = Color3.fromRGB(255,60,60),
     Minimize = Color3.fromRGB(255,180,40),
-    Selected = Color3.fromRGB(40,100,220)
+    Selected = Color3.fromRGB(40,100,220),
+    Button = Color3.fromRGB(30,30,40),
+    Border = Color3.fromRGB(40,40,50)
 }
 
 local function Tween(obj, props)
-    local tween = TweenService:Create(obj, TweenInfo.new(0.2, Enum.EasingStyle.Quad), props)
+    local tween = TweenService:Create(obj, TweenInfo.new(0.25, Enum.EasingStyle.Quint), props)
     tween:Play()
     return tween
 end
@@ -26,35 +28,45 @@ function UILibrary:Create(title)
     local self = setmetatable({}, UILibrary)
     
     self.ScreenGui = Instance.new("ScreenGui")
-    self.ScreenGui.Name = "UILibrary"
+    self.ScreenGui.Name = "UILibrary_Dark"
     self.ScreenGui.ResetOnSpawn = false
-    self.ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    self.ScreenGui.Parent = game.CoreGui
     
     self.Window = Instance.new("Frame")
-    self.Window.Size = UDim2.new(0,400,0,300)
-    self.Window.Position = UDim2.new(0.5,-200,0.5,-150)
+    self.Window.Size = UDim2.new(0,420,0,320)
+    self.Window.Position = UDim2.new(0.5,-210,0.5,-160)
     self.Window.BackgroundColor3 = Colors.Background
     self.Window.BorderSizePixel = 0
     self.Window.ClipsDescendants = true
     self.Window.Parent = self.ScreenGui
     
     local windowCorner = Instance.new("UICorner")
-    windowCorner.CornerRadius = UDim.new(0,12)
+    windowCorner.CornerRadius = UDim.new(0,14)
     windowCorner.Parent = self.Window
     
+    local windowStroke = Instance.new("UIStroke")
+    windowStroke.Thickness = 1
+    windowStroke.Color = Colors.Border
+    windowStroke.Parent = self.Window
+    
     self.TopBar = Instance.new("Frame")
-    self.TopBar.Size = UDim2.new(1,0,0,40)
+    self.TopBar.Size = UDim2.new(1,0,0,42)
     self.TopBar.BackgroundColor3 = Colors.Foreground
     self.TopBar.BorderSizePixel = 0
     self.TopBar.Parent = self.Window
     
     local topCorner = Instance.new("UICorner")
-    topCorner.CornerRadius = UDim.new(0,12,0,0)
+    topCorner.CornerRadius = UDim.new(0,14,0,0)
     topCorner.Parent = self.TopBar
     
+    local topStroke = Instance.new("UIStroke")
+    topStroke.Thickness = 1
+    topStroke.Color = Colors.Border
+    topStroke.Parent = self.TopBar
+    
     local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(0,200,1,0)
-    titleLabel.Position = UDim2.new(0,15,0,0)
+    titleLabel.Size = UDim2.new(0,220,1,0)
+    titleLabel.Position = UDim2.new(0,16,0,0)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = title or "UI Library"
     titleLabel.TextColor3 = Colors.Text
@@ -64,8 +76,8 @@ function UILibrary:Create(title)
     titleLabel.Parent = self.TopBar
     
     self.CloseBtn = Instance.new("TextButton")
-    self.CloseBtn.Size = UDim2.new(0,28,0,28)
-    self.CloseBtn.Position = UDim2.new(1,-35,0.5,-14)
+    self.CloseBtn.Size = UDim2.new(0,30,0,30)
+    self.CloseBtn.Position = UDim2.new(1,-38,0.5,-15)
     self.CloseBtn.BackgroundColor3 = Colors.Close
     self.CloseBtn.AutoButtonColor = false
     self.CloseBtn.TextColor3 = Colors.Text
@@ -78,9 +90,14 @@ function UILibrary:Create(title)
     closeCorner.CornerRadius = UDim.new(0,8)
     closeCorner.Parent = self.CloseBtn
     
+    local closeStroke = Instance.new("UIStroke")
+    closeStroke.Thickness = 1
+    closeStroke.Color = Colors.Border
+    closeStroke.Parent = self.CloseBtn
+    
     self.MinimizeBtn = Instance.new("TextButton")
-    self.MinimizeBtn.Size = UDim2.new(0,28,0,28)
-    self.MinimizeBtn.Position = UDim2.new(1,-70,0.5,-14)
+    self.MinimizeBtn.Size = UDim2.new(0,30,0,30)
+    self.MinimizeBtn.Position = UDim2.new(1,-76,0.5,-15)
     self.MinimizeBtn.BackgroundColor3 = Colors.Minimize
     self.MinimizeBtn.AutoButtonColor = false
     self.MinimizeBtn.TextColor3 = Colors.Text
@@ -93,15 +110,25 @@ function UILibrary:Create(title)
     minCorner.CornerRadius = UDim.new(0,8)
     minCorner.Parent = self.MinimizeBtn
     
+    local minStroke = Instance.new("UIStroke")
+    minStroke.Thickness = 1
+    minStroke.Color = Colors.Border
+    minStroke.Parent = self.MinimizeBtn
+    
     self.LeftPanel = Instance.new("Frame")
-    self.LeftPanel.Size = UDim2.new(0,100,1,-40)
-    self.LeftPanel.Position = UDim2.new(0,0,0,40)
+    self.LeftPanel.Size = UDim2.new(0,110,1,-42)
+    self.LeftPanel.Position = UDim2.new(0,0,0,42)
     self.LeftPanel.BackgroundColor3 = Colors.Foreground
     self.LeftPanel.Parent = self.Window
     
     local leftCorner = Instance.new("UICorner")
-    leftCorner.CornerRadius = UDim.new(0,0,0,12)
+    leftCorner.CornerRadius = UDim.new(0,0,0,14)
     leftCorner.Parent = self.LeftPanel
+    
+    local leftStroke = Instance.new("UIStroke")
+    leftStroke.Thickness = 1
+    leftStroke.Color = Colors.Border
+    leftStroke.Parent = self.LeftPanel
     
     self.TabsContainer = Instance.new("Frame")
     self.TabsContainer.Size = UDim2.new(1,0,1,0)
@@ -109,23 +136,28 @@ function UILibrary:Create(title)
     self.TabsContainer.Parent = self.LeftPanel
     
     local tabsList = Instance.new("UIListLayout")
-    tabsList.Padding = UDim.new(0,8)
+    tabsList.Padding = UDim.new(0,10)
     tabsList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     tabsList.Parent = self.TabsContainer
     
     local tabsPadding = Instance.new("UIPadding")
-    tabsPadding.PaddingTop = UDim.new(0,10)
+    tabsPadding.PaddingTop = UDim.new(0,12)
     tabsPadding.Parent = self.TabsContainer
     
     self.ContentPanel = Instance.new("Frame")
-    self.ContentPanel.Size = UDim2.new(1,-100,1,-40)
-    self.ContentPanel.Position = UDim2.new(0,100,0,40)
+    self.ContentPanel.Size = UDim2.new(1,-110,1,-42)
+    self.ContentPanel.Position = UDim2.new(0,110,0,42)
     self.ContentPanel.BackgroundColor3 = Colors.Background
     self.ContentPanel.Parent = self.Window
     
     local contentCorner = Instance.new("UICorner")
-    contentCorner.CornerRadius = UDim.new(0,0,0,12)
+    contentCorner.CornerRadius = UDim.new(0,0,0,14)
     contentCorner.Parent = self.ContentPanel
+    
+    local contentStroke = Instance.new("UIStroke")
+    contentStroke.Thickness = 1
+    contentStroke.Color = Colors.Border
+    contentStroke.Parent = self.ContentPanel
     
     self.Content = Instance.new("ScrollingFrame")
     self.Content.Size = UDim2.new(1,0,1,0)
@@ -137,49 +169,81 @@ function UILibrary:Create(title)
     self.Content.Parent = self.ContentPanel
     
     local contentList = Instance.new("UIListLayout")
-    contentList.Padding = UDim.new(0,10)
+    contentList.Padding = UDim.new(0,12)
     contentList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     contentList.SortOrder = Enum.SortOrder.LayoutOrder
     contentList.Parent = self.Content
     
     local contentPadding = Instance.new("UIPadding")
-    contentPadding.PaddingTop = UDim.new(0,10)
-    contentPadding.PaddingLeft = UDim.new(0,10)
-    contentPadding.PaddingRight = UDim.new(0,10)
+    contentPadding.PaddingTop = UDim.new(0,12)
+    contentPadding.PaddingLeft = UDim.new(0,12)
+    contentPadding.PaddingRight = UDim.new(0,12)
     contentPadding.Parent = self.Content
     
-    local dragging = false
-    local dragStart, startPos
+    local dragEnabled = false
+    local dragInput, dragStart, startPos
     
-    self.TopBar.InputBegan:Connect(function(input)
+    local function updateDrag(input)
+        local delta = input.Position - dragStart
+        self.Window.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        )
+    end
+    
+    local function beginDrag(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
+            dragEnabled = true
             dragStart = input.Position
             startPos = self.Window.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragEnabled = false
+                end
+            end)
+        end
+    end
+    
+    self.TopBar.InputBegan:Connect(beginDrag)
+    titleLabel.InputBegan:Connect(beginDrag)
+    
+    self.TopBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
         end
     end)
     
     UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = input.Position - dragStart
-            self.Window.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        if input == dragInput and dragEnabled then
+            updateDrag(input)
         end
     end)
     
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
+    self.CloseBtn.MouseEnter:Connect(function()
+        Tween(self.CloseBtn, {BackgroundColor3 = Color3.fromRGB(255,80,80)})
+    end)
+    
+    self.CloseBtn.MouseLeave:Connect(function()
+        Tween(self.CloseBtn, {BackgroundColor3 = Colors.Close})
+    end)
+    
+    self.MinimizeBtn.MouseEnter:Connect(function()
+        Tween(self.MinimizeBtn, {BackgroundColor3 = Color3.fromRGB(255,200,60)})
+    end)
+    
+    self.MinimizeBtn.MouseLeave:Connect(function()
+        Tween(self.MinimizeBtn, {BackgroundColor3 = Colors.Minimize})
     end)
     
     local minimized = false
     self.MinimizeBtn.MouseButton1Click:Connect(function()
         minimized = not minimized
         if minimized then
-            Tween(self.Window, {Size = UDim2.new(0,400,0,40)})
+            Tween(self.Window, {Size = UDim2.new(0,420,0,42)})
             self.MinimizeBtn.Text = "+"
         else
-            Tween(self.Window, {Size = UDim2.new(0,400,0,300)})
+            Tween(self.Window, {Size = UDim2.new(0,420,0,320)})
             self.MinimizeBtn.Text = "-"
         end
     end)
@@ -196,20 +260,20 @@ function UILibrary:Create(title)
     
     function self:UpdateNotifications()
         local baseY = 0.5
-        local spacing = 60
+        local spacing = 65
         
         for i, notif in ipairs(self.ActiveNotifications) do
             if notif and notif.Parent then
                 local targetY = baseY - (spacing * (i - 1)) / 720
-                Tween(notif, {Position = UDim2.new(1, -260, targetY, -25)})
+                Tween(notif, {Position = UDim2.new(1, -270, targetY, -25)})
             end
         end
     end
     
     function self:Tab(name)
         local tabBtn = Instance.new("TextButton")
-        tabBtn.Size = UDim2.new(1,-10,0,30)
-        tabBtn.BackgroundColor3 = Colors.Foreground
+        tabBtn.Size = UDim2.new(1,-16,0,36)
+        tabBtn.BackgroundColor3 = Colors.Button
         tabBtn.AutoButtonColor = false
         tabBtn.Text = name
         tabBtn.TextColor3 = Colors.SubText
@@ -221,6 +285,11 @@ function UILibrary:Create(title)
         tabCorner.CornerRadius = UDim.new(0,8)
         tabCorner.Parent = tabBtn
         
+        local tabStroke = Instance.new("UIStroke")
+        tabStroke.Thickness = 1
+        tabStroke.Color = Colors.Border
+        tabStroke.Parent = tabBtn
+        
         local contentFrame = Instance.new("Frame")
         contentFrame.Size = UDim2.new(1,0,1,0)
         contentFrame.BackgroundTransparency = 1
@@ -228,10 +297,24 @@ function UILibrary:Create(title)
         contentFrame.Parent = self.Content
         
         local tabContentList = Instance.new("UIListLayout")
-        tabContentList.Padding = UDim.new(0,10)
+        tabContentList.Padding = UDim.new(0,12)
         tabContentList.HorizontalAlignment = Enum.HorizontalAlignment.Center
         tabContentList.SortOrder = Enum.SortOrder.LayoutOrder
         tabContentList.Parent = contentFrame
+        
+        tabBtn.MouseEnter:Connect(function()
+            if self.CurrentTabButton ~= tabBtn then
+                Tween(tabBtn, {BackgroundColor3 = Color3.fromRGB(35,35,45)})
+                Tween(tabBtn, {TextColor3 = Colors.Text})
+            end
+        end)
+        
+        tabBtn.MouseLeave:Connect(function()
+            if self.CurrentTabButton ~= tabBtn then
+                Tween(tabBtn, {BackgroundColor3 = Colors.Button})
+                Tween(tabBtn, {TextColor3 = Colors.SubText})
+            end
+        end)
         
         tabBtn.MouseButton1Click:Connect(function()
             if self.CurrentTab then 
@@ -239,12 +322,14 @@ function UILibrary:Create(title)
             end
             
             if self.CurrentTabButton then
-                Tween(self.CurrentTabButton, {BackgroundColor3 = Colors.Foreground})
+                Tween(self.CurrentTabButton, {BackgroundColor3 = Colors.Button})
                 Tween(self.CurrentTabButton, {TextColor3 = Colors.SubText})
+                Tween(self.CurrentTabButton.UIStroke, {Color = Colors.Border})
             end
             
             Tween(tabBtn, {BackgroundColor3 = Colors.Selected})
             Tween(tabBtn, {TextColor3 = Colors.Text})
+            Tween(tabBtn.UIStroke, {Color = Colors.Primary})
             
             contentFrame.Visible = true
             self.CurrentTab = contentFrame
@@ -255,8 +340,8 @@ function UILibrary:Create(title)
         
         function tabData:AddButton(text, callback)
             local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(1,-10,0,32)
-            btn.BackgroundColor3 = Colors.Primary
+            btn.Size = UDim2.new(1,-16,0,38)
+            btn.BackgroundColor3 = Colors.Button
             btn.AutoButtonColor = false
             btn.Text = text
             btn.TextColor3 = Colors.Text
@@ -268,10 +353,25 @@ function UILibrary:Create(title)
             btnCorner.CornerRadius = UDim.new(0,8)
             btnCorner.Parent = btn
             
+            local btnStroke = Instance.new("UIStroke")
+            btnStroke.Thickness = 1
+            btnStroke.Color = Colors.Border
+            btnStroke.Parent = btn
+            
+            btn.MouseEnter:Connect(function()
+                Tween(btn, {BackgroundColor3 = Color3.fromRGB(40,40,50)})
+                Tween(btnStroke, {Color = Colors.Primary})
+            end)
+            
+            btn.MouseLeave:Connect(function()
+                Tween(btn, {BackgroundColor3 = Colors.Button})
+                Tween(btnStroke, {Color = Colors.Border})
+            end)
+            
             btn.MouseButton1Click:Connect(function()
-                Tween(btn, {BackgroundColor3 = Colors.Primary:lerp(Color3.new(1,1,1), 0.3)})
+                Tween(btn, {BackgroundColor3 = Color3.fromRGB(50,50,60)})
                 wait(0.1)
-                Tween(btn, {BackgroundColor3 = Colors.Primary})
+                Tween(btn, {BackgroundColor3 = Colors.Button})
                 callback()
             end)
             
@@ -280,7 +380,7 @@ function UILibrary:Create(title)
         
         function tabData:AddToggle(text, default, callback)
             local toggleFrame = Instance.new("Frame")
-            toggleFrame.Size = UDim2.new(1,-10,0,32)
+            toggleFrame.Size = UDim2.new(1,-16,0,38)
             toggleFrame.BackgroundColor3 = Colors.Foreground
             toggleFrame.Parent = contentFrame
             
@@ -288,9 +388,14 @@ function UILibrary:Create(title)
             toggleCorner.CornerRadius = UDim.new(0,8)
             toggleCorner.Parent = toggleFrame
             
+            local toggleStroke = Instance.new("UIStroke")
+            toggleStroke.Thickness = 1
+            toggleStroke.Color = Colors.Border
+            toggleStroke.Parent = toggleFrame
+            
             local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,-50,1,0)
-            label.Position = UDim2.new(0,10,0,0)
+            label.Size = UDim2.new(1,-60,1,0)
+            label.Position = UDim2.new(0,14,0,0)
             label.BackgroundTransparency = 1
             label.Text = text
             label.TextColor3 = Colors.Text
@@ -300,23 +405,28 @@ function UILibrary:Create(title)
             label.Parent = toggleFrame
             
             local switch = Instance.new("Frame")
-            switch.Size = UDim2.new(0,40,0,22)
-            switch.Position = UDim2.new(1,-44,0.5,-11)
-            switch.BackgroundColor3 = Colors.SubText
+            switch.Size = UDim2.new(0,44,0,24)
+            switch.Position = UDim2.new(1,-48,0.5,-12)
+            switch.BackgroundColor3 = Colors.Button
             switch.Parent = toggleFrame
             
             local switchCorner = Instance.new("UICorner")
-            switchCorner.CornerRadius = UDim.new(0,11)
+            switchCorner.CornerRadius = UDim.new(1,0)
             switchCorner.Parent = switch
             
+            local switchStroke = Instance.new("UIStroke")
+            switchStroke.Thickness = 1
+            switchStroke.Color = Colors.Border
+            switchStroke.Parent = switch
+            
             local dot = Instance.new("Frame")
-            dot.Size = UDim2.new(0,18,0,18)
-            dot.Position = default and UDim2.new(1,-20,0.5,-9) or UDim2.new(0,2,0.5,-9)
-            dot.BackgroundColor3 = default and Colors.Selected or Colors.Text
+            dot.Size = UDim2.new(0,20,0,20)
+            dot.Position = default and UDim2.new(1,-22,0.5,-10) or UDim2.new(0,2,0.5,-10)
+            dot.BackgroundColor3 = default and Colors.Selected or Colors.SubText
             dot.Parent = switch
             
             local dotCorner = Instance.new("UICorner")
-            dotCorner.CornerRadius = UDim.new(0,9)
+            dotCorner.CornerRadius = UDim.new(1,0)
             dotCorner.Parent = dot
             
             local state = default
@@ -324,9 +434,9 @@ function UILibrary:Create(title)
             local function toggle()
                 state = not state
                 if state then
-                    Tween(dot, {Position = UDim2.new(1,-20,0.5,-9), BackgroundColor3 = Colors.Selected})
+                    Tween(dot, {Position = UDim2.new(1,-22,0.5,-10), BackgroundColor3 = Colors.Selected})
                 else
-                    Tween(dot, {Position = UDim2.new(0,2,0.5,-9), BackgroundColor3 = Colors.Text})
+                    Tween(dot, {Position = UDim2.new(0,2,0.5,-10), BackgroundColor3 = Colors.SubText})
                 end
                 callback(state)
             end
@@ -344,7 +454,7 @@ function UILibrary:Create(title)
         
         function tabData:AddDropdown(text, options, callback)
             local dropdownFrame = Instance.new("Frame")
-            dropdownFrame.Size = UDim2.new(1,-10,0,32)
+            dropdownFrame.Size = UDim2.new(1,-16,0,38)
             dropdownFrame.BackgroundColor3 = Colors.Foreground
             dropdownFrame.Parent = contentFrame
             
@@ -352,9 +462,14 @@ function UILibrary:Create(title)
             dropdownCorner.CornerRadius = UDim.new(0,8)
             dropdownCorner.Parent = dropdownFrame
             
+            local dropdownStroke = Instance.new("UIStroke")
+            dropdownStroke.Thickness = 1
+            dropdownStroke.Color = Colors.Border
+            dropdownStroke.Parent = dropdownFrame
+            
             local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,-50,1,0)
-            label.Position = UDim2.new(0,10,0,0)
+            label.Size = UDim2.new(1,-60,1,0)
+            label.Position = UDim2.new(0,14,0,0)
             label.BackgroundTransparency = 1
             label.Text = text
             label.TextColor3 = Colors.Text
@@ -364,9 +479,9 @@ function UILibrary:Create(title)
             label.Parent = dropdownFrame
             
             local arrowBtn = Instance.new("TextButton")
-            arrowBtn.Size = UDim2.new(0,32,0,32)
-            arrowBtn.Position = UDim2.new(1,-38,0.5,-16)
-            arrowBtn.BackgroundColor3 = Colors.SubText
+            arrowBtn.Size = UDim2.new(0,36,0,36)
+            arrowBtn.Position = UDim2.new(1,-42,0.5,-18)
+            arrowBtn.BackgroundColor3 = Colors.Button
             arrowBtn.AutoButtonColor = false
             arrowBtn.Text = "▼"
             arrowBtn.TextColor3 = Colors.Text
@@ -377,6 +492,11 @@ function UILibrary:Create(title)
             local arrowCorner = Instance.new("UICorner")
             arrowCorner.CornerRadius = UDim.new(0,8)
             arrowCorner.Parent = arrowBtn
+            
+            local arrowStroke = Instance.new("UIStroke")
+            arrowStroke.Thickness = 1
+            arrowStroke.Color = Colors.Border
+            arrowStroke.Parent = arrowBtn
             
             local optionsFrame = Instance.new("Frame")
             optionsFrame.Size = UDim2.new(1,0,0,0)
@@ -390,12 +510,17 @@ function UILibrary:Create(title)
             optionsCorner.CornerRadius = UDim.new(0,8)
             optionsCorner.Parent = optionsFrame
             
+            local optionsStroke = Instance.new("UIStroke")
+            optionsStroke.Thickness = 1
+            optionsStroke.Color = Colors.Border
+            optionsStroke.Parent = optionsFrame
+            
             local open = false
             
             for _, opt in ipairs(options) do
                 local optBtn = Instance.new("TextButton")
-                optBtn.Size = UDim2.new(1,-10,0,28)
-                optBtn.BackgroundColor3 = Colors.SubText
+                optBtn.Size = UDim2.new(1,-8,0,32)
+                optBtn.BackgroundColor3 = Colors.Button
                 optBtn.AutoButtonColor = false
                 optBtn.Text = opt
                 optBtn.TextColor3 = Colors.Text
@@ -406,6 +531,19 @@ function UILibrary:Create(title)
                 local optCorner = Instance.new("UICorner")
                 optCorner.CornerRadius = UDim.new(0,6)
                 optCorner.Parent = optBtn
+                
+                local optStroke = Instance.new("UIStroke")
+                optStroke.Thickness = 1
+                optStroke.Color = Colors.Border
+                optStroke.Parent = optBtn
+                
+                optBtn.MouseEnter:Connect(function()
+                    Tween(optBtn, {BackgroundColor3 = Color3.fromRGB(40,40,50)})
+                end)
+                
+                optBtn.MouseLeave:Connect(function()
+                    Tween(optBtn, {BackgroundColor3 = Colors.Button})
+                end)
                 
                 optBtn.MouseButton1Click:Connect(function()
                     label.Text = text .. ": " .. opt
@@ -418,11 +556,19 @@ function UILibrary:Create(title)
                 end)
             end
             
+            arrowBtn.MouseEnter:Connect(function()
+                Tween(arrowBtn, {BackgroundColor3 = Color3.fromRGB(40,40,50)})
+            end)
+            
+            arrowBtn.MouseLeave:Connect(function()
+                Tween(arrowBtn, {BackgroundColor3 = Colors.Button})
+            end)
+            
             arrowBtn.MouseButton1Click:Connect(function()
                 open = not open
                 if open then
                     optionsFrame.Visible = true
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,#options * 30)})
+                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,#options * 34)})
                     Tween(arrowBtn, {Rotation = 180})
                 else
                     Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
@@ -443,8 +589,8 @@ function UILibrary:Create(title)
         duration = duration or 3
         
         local notif = Instance.new("Frame")
-        notif.Size = UDim2.new(0,250,0,50)
-        notif.Position = UDim2.new(1,0,0.5,-25)
+        notif.Size = UDim2.new(0,260,0,52)
+        notif.Position = UDim2.new(1,0,0.5,-26)
         notif.BackgroundColor3 = Colors.Foreground
         notif.Parent = self.ScreenGui
         
@@ -452,18 +598,25 @@ function UILibrary:Create(title)
         corner.CornerRadius = UDim.new(0,10)
         corner.Parent = notif
         
+        local stroke = Instance.new("UIStroke")
+        stroke.Thickness = 1
+        stroke.Color = Colors.Border
+        stroke.Parent = notif
+        
         local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(1,0,1,0)
+        label.Size = UDim2.new(1,-20,1,0)
+        label.Position = UDim2.new(0,14,0,0)
         label.BackgroundTransparency = 1
         label.TextColor3 = Colors.Text
         label.Text = text
         label.Font = Enum.Font.GothamSemibold
         label.TextSize = 14
+        label.TextXAlignment = Enum.TextXAlignment.Left
         label.Parent = notif
         
         table.insert(self.ActiveNotifications, notif)
         
-        Tween(notif, {Position = UDim2.new(1,-260,0.5,-25)})
+        Tween(notif, {Position = UDim2.new(1,-270,0.5,-26)})
         self:UpdateNotifications()
         
         wait(duration)
