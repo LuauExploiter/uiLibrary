@@ -1,72 +1,86 @@
 ```markdown
 Hiklo's UI Library
 
-A lightweight Roblox Lua UI library with notifications.
+A clean Roblox UI library with a notification system.
 
 ## Installation
 
-local uilib = loadstring(game:HttpGet("https://raw.githubusercontent.com/LuauExploiter/uiLibrary/refs/heads/main/Library"))()
+
+local UILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/LuauExploiter/uiLibrary/refs/heads/main/Library"))()
 ```
 
-Basic Usage
+Usage
 
 Create Window
 
 ```lua
-local ui = uilib:create("Window Title")
+local UI = UILibrary:Create("Window Title")
 ```
 
 Create Tab
 
 ```lua
-local tab = ui:tab("Tab Name")
+local Tab = UI:Tab("Tab Name")
 ```
 
 Add Button
 
 ```lua
-tab:addbutton("Button", function()
-    print("Clicked")
+Tab:AddButton("Button Text", function()
+    print("Button clicked")
 end)
 ```
 
 Add Toggle
 
 ```lua
-tab:addtoggle("Toggle", false, function(state)
-    print(state)
+Tab:AddToggle("Toggle Text", false, function(state)
+    print("Toggle:", state)
 end)
 ```
 
 Add Dropdown
 
 ```lua
-tab:adddropdown("Dropdown", {"1","2","3"}, function(selected)
-    print(selected)
+Tab:AddDropdown("Dropdown Text", {"Option 1", "Option 2", "Option 3"}, function(selected)
+    print("Selected:", selected)
 end)
 ```
 
 Show Notification
 
 ```lua
-ui:notify("Title", "Message", "Type", 5)
+UI:Notify("Title", "Message", "Type", duration)
 ```
 
-Types: "success", "warning", "error", "info"
+Types: "Success", "Warning", "Error", "Info"
+Duration: seconds (optional, default: 5)
 
 Example
 
 ```lua
-local uilib = loadstring(game:HttpGet("https://raw.githubusercontent.com/LuauExploiter/uiLibrary/refs/heads/main/Library"))()
+local UILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/LuauExploiter/uiLibrary/refs/heads/main/Library"))()
 
-local window = uilib:create("My UI")
-local main = window:tab("Main")
+local window = UILibrary:Create("My Script")
+local main = window:Tab("Main")
 
-main:addbutton("Test", function()
-    window:notify("Test", "Button clicked", "success", 3)
+main:AddButton("Test", function()
+    window:Notify("Button", "Clicked!", "Success", 3)
 end)
 
-main:adddropdown("Options", {"A","B","C"}, function(opt)
-    window:notify("Selected", opt, "info", 2)
+main:AddDropdown("Options", {"A", "B", "C"}, function(selected)
+    window:Notify("Selected", selected, "Info", 2)
 end)
+```
+
+Features
+
+· Draggable window
+· Tab system
+· Notification system (middle-right)
+· Smooth animations
+· Auto-closing notifications
+· Fixed dropdowns
+
+```
 ```
