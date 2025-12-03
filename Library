@@ -1,7 +1,5 @@
--- HIKLO'S UI LIBRARY - ENHANCED VERSION
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 
 local UILibrary = {}
 UILibrary.__index = UILibrary
@@ -29,7 +27,6 @@ local function Tween(obj, props)
     return tween
 end
 
--- Notification System
 local NotificationManager = {}
 NotificationManager.__index = NotificationManager
 
@@ -168,7 +165,7 @@ function NotificationManager:CreateNotification(title, content, notificationType
             BackgroundTransparency = 1
         })
         
-        task.wait(0.25)
+        wait(0.25)
         if notification then
             notification:Destroy()
         end
@@ -187,7 +184,7 @@ function NotificationManager:CreateNotification(title, content, notificationType
     
     local startTime = tick()
     local connection
-    connection = RunService.Heartbeat:Connect(function()
+    connection = game:GetService("RunService").Heartbeat:Connect(function()
         local elapsed = tick() - startTime
         local progress = 1 - (elapsed / duration)
         
@@ -223,8 +220,8 @@ function UILibrary:Create(title)
     self.Notifications = NotificationManager:Init(self.ScreenGui)
     
     self.Window = Instance.new("Frame")
-    self.Window.Size = UDim2.new(0,400,0,200)
-    self.Window.Position = UDim2.new(0.5,-250,0.5,-200)
+    self.Window.Size = UDim2.new(0,450,0,340)
+    self.Window.Position = UDim2.new(0.5,-225,0.5,-170)
     self.Window.BackgroundColor3 = Colors.Background
     self.Window.BorderSizePixel = 0
     self.Window.ClipsDescendants = true
@@ -348,7 +345,6 @@ function UILibrary:Create(title)
     contentPadding.PaddingRight = UDim.new(0,12)
     contentPadding.Parent = self.Content
     
-    -- DRAG SYSTEM
     local dragEnabled = false
     local dragInput, dragStart, startPos
     
@@ -414,12 +410,12 @@ function UILibrary:Create(title)
         if minimized then
             self.LeftPanel.Visible = false
             self.ContentPanel.Visible = false
-            Tween(self.Window, {Size = UDim2.new(0,500,0,42)})
+            Tween(self.Window, {Size = UDim2.new(0,450,0,42)})
             self.MinimizeBtn.Text = "+"
         else
             self.LeftPanel.Visible = true
             self.ContentPanel.Visible = true
-            Tween(self.Window, {Size = UDim2.new(0,500,0,400)})
+            Tween(self.Window, {Size = UDim2.new(0,450,0,340)})
             self.MinimizeBtn.Text = "-"
         end
     end)
@@ -429,7 +425,7 @@ function UILibrary:Create(title)
             Size = UDim2.new(0,0,0,0),
             Position = UDim2.new(0.5,0,0.5,0)
         })
-        task.wait(0.3)
+        wait(0.3)
         self.ScreenGui:Destroy()
     end)
     
@@ -509,7 +505,6 @@ function UILibrary:Create(title)
         
         local tabData = {}
         
-        -- ADD BUTTON
         function tabData:AddButton(text, callback)
             local btn = Instance.new("TextButton")
             btn.Size = UDim2.new(1,0,0,38)
@@ -542,7 +537,6 @@ function UILibrary:Create(title)
             return btn
         end
         
-        -- ADD TOGGLE
         function tabData:AddToggle(text, default, callback)
             local toggleFrame = Instance.new("Frame")
             toggleFrame.Size = UDim2.new(1,0,0,38)
@@ -627,7 +621,6 @@ function UILibrary:Create(title)
             }
         end
         
-        -- ADD DROPDOWN
         function tabData:AddDropdown(text, options, callback)
             local dropdownFrame = Instance.new("Frame")
             dropdownFrame.Size = UDim2.new(1,0,0,38)
@@ -834,7 +827,6 @@ function UILibrary:Create(title)
             }
         end
         
-        -- ADD TEXTBOX
         function tabData:AddTextbox(text, placeholder, callback)
             local textboxFrame = Instance.new("Frame")
             textboxFrame.Size = UDim2.new(1,0,0,38)
@@ -906,10 +898,9 @@ function UILibrary:Create(title)
             }
         end
         
-        -- ADD SLIDER
         function tabData:AddSlider(text, min, max, default, callback)
             local sliderFrame = Instance.new("Frame")
-            sliderFrame.Size = UDim2.new(1,0,0,54)
+            sliderFrame.Size = UDim2.new(1,0,0,38)
             sliderFrame.BackgroundColor3 = Colors.Foreground
             sliderFrame.Parent = contentFrame
             
@@ -923,8 +914,8 @@ function UILibrary:Create(title)
             sliderStroke.Parent = sliderFrame
             
             local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,-20,0,20)
-            label.Position = UDim2.new(0,14,0,6)
+            label.Size = UDim2.new(1,-70,1,0)
+            label.Position = UDim2.new(0,14,0,0)
             label.BackgroundTransparency = 1
             label.Text = text
             label.TextColor3 = Colors.Text
@@ -934,8 +925,8 @@ function UILibrary:Create(title)
             label.Parent = sliderFrame
             
             local valueLabel = Instance.new("TextLabel")
-            valueLabel.Size = UDim2.new(0,60,0,20)
-            valueLabel.Position = UDim2.new(1,-74,0,6)
+            valueLabel.Size = UDim2.new(0,60,0,38)
+            valueLabel.Position = UDim2.new(1,-74,0,0)
             valueLabel.BackgroundTransparency = 1
             valueLabel.Text = tostring(default or min)
             valueLabel.TextColor3 = Colors.Primary
@@ -945,8 +936,8 @@ function UILibrary:Create(title)
             valueLabel.Parent = sliderFrame
             
             local sliderBar = Instance.new("Frame")
-            sliderBar.Size = UDim2.new(1,-28,0,6)
-            sliderBar.Position = UDim2.new(0,14,0,34)
+            sliderBar.Size = UDim2.new(1,-90,0,4)
+            sliderBar.Position = UDim2.new(0,14,0,28)
             sliderBar.BackgroundColor3 = Colors.Button
             sliderBar.Parent = sliderFrame
             
@@ -964,8 +955,8 @@ function UILibrary:Create(title)
             fillCorner.Parent = sliderFill
             
             local sliderButton = Instance.new("TextButton")
-            sliderButton.Size = UDim2.new(0,20,0,20)
-            sliderButton.Position = UDim2.new(0,0,0.5,-10)
+            sliderButton.Size = UDim2.new(0,12,0,12)
+            sliderButton.Position = UDim2.new(0,0,0.5,-6)
             sliderButton.BackgroundColor3 = Colors.Text
             sliderButton.AutoButtonColor = false
             sliderButton.Text = ""
@@ -985,7 +976,7 @@ function UILibrary:Create(title)
                 
                 valueLabel.Text = string.format("%.2f", currentValue)
                 sliderFill.Size = UDim2.new(percentage, 0, 1, 0)
-                sliderButton.Position = UDim2.new(percentage, -10, 0.5, -10)
+                sliderButton.Position = UDim2.new(percentage, -6, 0.5, -6)
                 
                 if callback then
                     callback(currentValue)
@@ -1031,7 +1022,6 @@ function UILibrary:Create(title)
             }
         end
         
-        -- ADD LABEL
         function tabData:AddLabel(text)
             local labelFrame = Instance.new("Frame")
             labelFrame.Size = UDim2.new(1,0,0,32)
@@ -1051,7 +1041,6 @@ function UILibrary:Create(title)
             return label
         end
         
-        -- ADD KEYBIND
         function tabData:AddKeybind(text, defaultKey, callback)
             local keybindFrame = Instance.new("Frame")
             keybindFrame.Size = UDim2.new(1,0,0,38)
@@ -1144,7 +1133,6 @@ function UILibrary:Create(title)
             }
         end
         
-        -- ADD COLORPICKER
         function tabData:AddColorpicker(text, defaultColor, callback)
             local colorFrame = Instance.new("Frame")
             colorFrame.Size = UDim2.new(1,0,0,38)
@@ -1191,57 +1179,23 @@ function UILibrary:Create(title)
             local currentColor = defaultColor or Color3.new(1, 1, 1)
             
             colorBtn.MouseButton1Click:Connect(function()
-                local colorPicker = Instance.new("Frame")
-                colorPicker.Size = UDim2.new(0, 200, 0, 200)
-                colorPicker.Position = UDim2.new(1, 10, 0, 0)
-                colorPicker.BackgroundColor3 = Colors.Foreground
-                colorPicker.ZIndex = 1000
-                colorPicker.Parent = colorFrame
-                
-                local pickerCorner = Instance.new("UICorner")
-                pickerCorner.CornerRadius = UDim.new(0, 8)
-                pickerCorner.Parent = colorPicker
-                
-                local pickerStroke = Instance.new("UIStroke")
-                pickerStroke.Thickness = 1
-                pickerStroke.Color = Colors.Border
-                pickerStroke.Parent = colorPicker
-                
-                -- Close picker when clicking outside
-                local connection
-                connection = UserInputService.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        local mousePos = input.Position
-                        local pickerAbsolutePos = colorPicker.AbsolutePosition
-                        local pickerAbsoluteSize = colorPicker.AbsoluteSize
-                        
-                        if mousePos.X < pickerAbsolutePos.X or mousePos.X > pickerAbsolutePos.X + pickerAbsoluteSize.X or
-                           mousePos.Y < pickerAbsolutePos.Y or mousePos.Y > pickerAbsolutePos.Y + pickerAbsoluteSize.Y then
-                            colorPicker:Destroy()
-                            connection:Disconnect()
-                        end
-                    end
-                end)
-                
-                -- Simple color preview - in a real implementation you'd want a full color picker
-                colorPicker:Destroy() -- Remove this and implement actual color picker
-                
-                -- For now, just cycle through some colors
                 local colors = {
                     Color3.new(1, 0, 0),
                     Color3.new(0, 1, 0),
                     Color3.new(0, 0, 1),
                     Color3.new(1, 1, 0),
                     Color3.new(1, 0, 1),
-                    Color3.new(0, 1, 1)
+                    Color3.new(0, 1, 1),
+                    Color3.new(1, 1, 1),
+                    Color3.new(0, 0, 0)
                 }
                 
                 local index = 1
-                for _, color in pairs(colors) do
+                for i, color in pairs(colors) do
                     if color == currentColor then
+                        index = i + 1
                         break
                     end
-                    index += 1
                 end
                 
                 if index > #colors then index = 1 end
@@ -1282,8 +1236,7 @@ function UILibrary:Create(title)
     
     task.spawn(function()
         task.wait(0.1)
-        for _, tab in pairs(self.TabsContainer:GetChildren()) do
-            if tab:IsA("TextButton") then
+        for _, tab in pairs(self.TabsContainer:GetChildren if tab:IsA("TextButton") then
                 tab:MouseButton1Click()
                 break
             end
