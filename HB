@@ -1,0 +1,34 @@
+local rs = game:GetService("RunService")
+local plrs = game:GetService("Players")
+local p = plrs.LocalPlayer
+
+local hitConn
+
+local function HitboxON()
+    if hitConn then return end
+    hitConn = rs.RenderStepped:Connect(function()
+        for _, plr in plrs:GetPlayers() do
+            if plr ~= p and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+                local hrp = plr.Character.HumanoidRootPart
+                hrp.Size = Vector3.new(12,12,12)
+                hrp.Transparency = 0.4
+                hrp.CanCollide = false
+                hrp.Material = Enum.Material.SmoothPlastic
+            end
+        end
+    end)
+end
+
+local function HitboxOFF()
+    if hitConn then hitConn:Disconnect() hitConn = nil end
+    for _, plr in plrs:GetPlayers() do
+        if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = plr.Character.HumanoidRootPart
+            hrp.Size = Vector3.new(2,2,1)
+            hrp.Transparency = 1
+            hrp.Material = Enum.Material.Plastic
+        end
+    end
+end
+
+-- Execute: HitboxON() or HitboxOFF()
