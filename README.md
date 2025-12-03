@@ -1,15 +1,14 @@
 ```markdown
-Hiklo's UI Library
+# Hiklo's UI Library
 
-A clean Roblox UI library with a notification system.
+A modern Roblox UI library with complete components and notifications.
 
 ## Installation
-
-
+```lua
 local UILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/LuauExploiter/uiLibrary/refs/heads/main/Library"))()
 ```
 
-Usage
+Basic Usage
 
 Create Window
 
@@ -23,64 +22,118 @@ Create Tab
 local Tab = UI:Tab("Tab Name")
 ```
 
-Add Button
+Components
+
+Button
 
 ```lua
-Tab:AddButton("Button Text", function()
-    print("Button clicked")
+Tab:AddButton("Text", function()
+    print("Clicked")
 end)
 ```
 
-Add Toggle
+Toggle
 
 ```lua
-Tab:AddToggle("Toggle Text", false, function(state)
-    print("Toggle:", state)
+local toggle = Tab:AddToggle("Toggle", false, function(state)
+    print(state)
 end)
+
+toggle:Set(true)
+toggle:Get()
 ```
 
-Add Dropdown
+Dropdown
 
 ```lua
-Tab:AddDropdown("Dropdown Text", {"Option 1", "Option 2", "Option 3"}, function(selected)
-    print("Selected:", selected)
+local dropdown = Tab:AddDropdown("Dropdown", {"Option1","Option2","Option3"}, function(selected)
+    print(selected)
 end)
+
+dropdown:Set("Option1")
+dropdown:Get()
 ```
 
-Show Notification
+Textbox
 
 ```lua
-UI:Notify("Title", "Message", "Type", duration)
+local textbox = Tab:AddTextbox("Label", "Placeholder", function(text)
+    print(text)
+end)
+
+textbox:Set("Text")
+textbox:Get()
 ```
 
-Types: "Success", "Warning", "Error", "Info"
-Duration: seconds (optional, default: 5)
+Slider
 
-Example
+```lua
+local slider = Tab:AddSlider("Slider", 0, 100, 50, function(value)
+    print(value)
+end)
+
+slider:Set(75)
+slider:Get()
+```
+
+Label
+
+```lua
+Tab:AddLabel("Label Text")
+```
+
+Keybind
+
+```lua
+local keybind = Tab:AddKeybind("Keybind", Enum.KeyCode.F, function(key, pressed)
+    print(key, pressed)
+end)
+
+keybind:Set(Enum.KeyCode.E)
+keybind:Get()
+```
+
+Colorpicker
+
+```lua
+local colorpicker = Tab:AddColorpicker("Color", Color3.new(1,0,0), function(color)
+    print(color)
+end)
+
+colorpicker:Set(Color3.new(0,1,0))
+colorpicker:Get()
+```
+
+Notifications
+
+```lua
+UI:Notify("Title", "Message", "Type", 5)
+Tab:Notify("Title", "Message", "Type", 5)
+
+-- Types: "Success", "Warning", "Error", "Info"
+```
+
+Full Example
 
 ```lua
 local UILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/LuauExploiter/uiLibrary/refs/heads/main/Library"))()
 
-local window = UILibrary:Create("My Script")
-local main = window:Tab("Main")
+local UI = UILibrary:Create("My UI")
+local Main = UI:Tab("Main")
 
-main:AddButton("Test", function()
-    window:Notify("Button", "Clicked!", "Success", 3)
+Main:AddButton("Test", function()
+    UI:Notify("Button", "Clicked!", "Success", 3)
 end)
 
-main:AddDropdown("Options", {"A", "B", "C"}, function(selected)
-    window:Notify("Selected", selected, "Info", 2)
+local toggle = Main:AddToggle("Enable", false, function(state)
+    UI:Notify("Toggle", state and "On" or "Off", "Info", 2)
 end)
-```
 
-Features
+local dropdown = Main:AddDropdown("Options", {"A","B","C"}, function(opt)
+    UI:Notify("Selected", opt, "Warning", 2)
+end)
 
-· Draggable window
-· Tab system
-· Notification system (middle-right)
-· Smooth animations
-· Auto-closing notifications
-· Fixed dropdowns
-
-```
+local textbox = Main:AddTextbox("Input", "Type here", function(text)
+    print("Input:", text)
+end)
 ```
