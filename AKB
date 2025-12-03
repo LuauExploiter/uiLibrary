@@ -1,32 +1,66 @@
-local rs = game:GetService("RunService")
-local p = game.Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-local conn1, conn2
+local Connections = {}
+local Enabled = false
 
 function AntiKBON()
-    if conn1 or conn2 then return end
-    local char = p.Character or p.CharacterAdded:Wait()
-    local hum = char:WaitForChild("Humanoid")
-    local root = char:WaitForChild("HumanoidRootPart")
+    if Enabled then return end
+    Enabled = true
 
-    for _, v in char:GetDescendants() do
+    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local Humanoid = Character:WaitForChild("Humanoid")
+    local Root = Character:WaitForChild("HumanoidRootPart")
+    local Animator = Humanoid:WaitForChild("Animator")
+    local Camera = workspace.CurrentCamera
+    local LastVelocity = Vector3.new(0, 0, 0)
+    local MaxKB = 15
+
+    for _, v in pairs(Character:GetDescendants()) do
         if v:IsA("BallSocketConstraint") or v:IsA("NoCollisionConstraint") or v:IsA("HingeConstraint") then
             v:Destroy()
         end
     end
 
-    conn1 = hum.StateChanged:Connect(function(_, state)
+    table.insert(Connections, Humanoid.StateChanged:Connect(function(_, state)
         if state == Enum.HumanoidStateType.Ragdoll or state == Enum.HumanoidStateType.FallingDown then
-            hum:ChangeState(Enum.HumanoidStateType.Running)
+            Humanoid:ChangeState(Enum.HumanoidStateType.Running)
         end
-    end)
+    end))
 
-    conn2 = rs.Heartbeat:Connect(function()
-        root.AssemblyLinearVelocity = root.AssemblyLinearVelocity.Unit * math.min(root.AssemblyLinearVelocity.Magnitude, 15)
-    end)
+    table.insert(Connections, Character.DescendantAdded:Connect(function(v)
+        if v:IsA("BallSocketConstraint") or v:IsA("NoCollisionConstraint") or v:IsA("HingeConstraint") then
+            v:Destroy()
+        end
+    end))
+
+    table.insert(Connections, RunService.Heartbeat:Connect(function()
+        local state = Humanoid:GetState()
+        if state == Enum.HumanoidStateType.Ragdoll or state == Enum.HumanoidStateType.FallingDown or state == Enum.HumanoidStateType.GettingUp or state == Enum.HumanoidStateType.Physics then
+            Humanoid:ChangeState(Enum.HumanoidStateType.Running)
+
+            for _, track in pairs(Animator:GetPlayingAnimationTracks()) do
+                local animName = track.Animation and (track.Animation.Name:lower() or "") or ""
+                if animName:find("rag") or animName:find("fall") or animName:find("hurt") or animName:find("down") then
+                    track:Stop(0)
+                end
+            end
+
+            local vel = Root.AssemblyLinearVelocity
+            if MaxKB < (vel - LastVelocity).Magnitude and MaxKB < vel.Magnitude then
+                Root.AssemblyLinearVelocity = vel.Unit * math.min(vel.Magnitude, MaxKB)
+            end
+            LastVelocity = Root.AssemblyLinearVelocity
+            Camera.CameraSubject = Humanoid
+        end
+    end))
 end
 
 function AntiKBOFF()
-    if conn1 then conn1:Disconnect() conn1 = nil end
-    if conn2 then conn2:Disconnect() conn2 = nil end
+    for _, conn in pairs(Connections) do
+        conn:Disconnect()
+    end
+    Connections = {}
+    Enabled = false
 end
