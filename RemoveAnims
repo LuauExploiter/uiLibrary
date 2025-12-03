@@ -3,14 +3,28 @@ local LocalPlayer = Players.LocalPlayer
 
 function RemoveAnims()
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local animator = char:FindFirstChildOfClass("Animator")
-    if not animator then return end
-
-    for _, track in animator:GetPlayingAnimationTracks() do
-        track:Stop()
+    
+    for _, animator in pairs(char:GetDescendants()) do
+        if animator:IsA("Animator") then
+            for _, track in pairs(animator:GetPlayingAnimationTracks()) do
+                track:Stop()
+            end
+            animator.AnimationPlayed:Connect(function(track)
+                track:Stop()
+            end)
+        end
     end
 
-    animator.AnimationPlayed:Connect(function(track)
-        track:Stop()
+    LocalPlayer.CharacterAdded:Connect(function(newChar)
+        for _, animator in pairs(newChar:GetDescendants()) do
+            if animator:IsA("Animator") then
+                for _, track in pairs(animator:GetPlayingAnimationTracks()) do
+                    track:Stop()
+                end
+                animator.AnimationPlayed:Connect(function(track)
+                    track:Stop()
+                end)
+            end
+        end
     end)
 end
