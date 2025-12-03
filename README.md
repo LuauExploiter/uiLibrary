@@ -1,5 +1,5 @@
 ```markdown
- Hiklo's UI Library
+Hiklo's UI Library
 
 A lightweight Roblox Lua UI library with notifications.
 
