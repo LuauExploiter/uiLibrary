@@ -4,7 +4,6 @@
 A modern Roblox UI library with complete components and notifications.
 
 ## Installation
-```lua
 local UILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/LuauExploiter/uiLibrary/refs/heads/main/Library"))()
 ```
 
