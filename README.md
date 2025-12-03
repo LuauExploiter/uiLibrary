@@ -1,11 +1,10 @@
 ```markdown
-# Hiklo's UI Library
+ Hiklo's UI Library
 
 A lightweight Roblox Lua UI library with notifications.
 
 ## Installation
 
-```lua
 local uilib = loadstring(game:HttpGet("https://raw.githubusercontent.com/LuauExploiter/uiLibrary/refs/heads/main/Library"))()
 ```
 
