@@ -215,7 +215,7 @@ function UILibrary:Create(title)
     self.ScreenGui = Instance.new("ScreenGui")
     self.ScreenGui.Name = "UILibrary"
     self.ScreenGui.ResetOnSpawn = false
-    self.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    self.ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
     self.ScreenGui.Parent = game:GetService("CoreGui")
     
     self.Notifications = NotificationManager:Init(self.ScreenGui)
@@ -696,7 +696,7 @@ function UILibrary:Create(title)
             optionsFrame.BackgroundColor3 = Colors.Foreground
             optionsFrame.ClipsDescendants = true
             optionsFrame.Visible = false
-            optionsFrame.ZIndex = 100
+            optionsFrame.ZIndex = 1000
             optionsFrame.Parent = dropdownFrame
             
             local optionsCorner = Instance.new("UICorner")
@@ -732,7 +732,7 @@ function UILibrary:Create(title)
                 optBtn.TextColor3 = Colors.Text
                 optBtn.Font = Enum.Font.GothamSemibold
                 optBtn.TextSize = 13
-                optBtn.ZIndex = 101
+                optBtn.ZIndex = 1001
                 optBtn.LayoutOrder = i
                 optBtn.Parent = optionsFrame
                 
