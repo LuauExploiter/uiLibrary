@@ -337,7 +337,8 @@ function UILibrary:Create(title)
     self.Content.ScrollBarThickness = 6
     self.Content.ScrollBarImageColor3 = Colors.Primary
     self.Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    self.Content.CanvasSize = UDim2.new(0,0,0,10000)
+    self.Content.CanvasSize = UDim2.new(0,0,0,0)
+    self.Content.ScrollingEnabled = true
     self.Content.Parent = self.ContentPanel
     
     local contentList = Instance.new("UIListLayout")
@@ -352,6 +353,10 @@ function UILibrary:Create(title)
     contentPadding.PaddingLeft = UDim.new(0,12)
     contentPadding.PaddingRight = UDim.new(0,12)
     contentPadding.Parent = self.Content
+    
+    contentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        self.Content.CanvasSize = UDim2.new(0, 0, 0, contentList.AbsoluteContentSize.Y + 10000)
+    end)
     
     local dragEnabled = false
     local dragInput, dragStart, startPos
@@ -468,7 +473,6 @@ function UILibrary:Create(title)
         contentFrame.ScrollBarThickness = 6
         contentFrame.ScrollBarImageColor3 = Colors.Primary
         contentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-        contentFrame.CanvasSize = UDim2.new(0,0,0,10000)
         contentFrame.Visible = false
         contentFrame.Parent = self.Content
         
@@ -484,6 +488,10 @@ function UILibrary:Create(title)
         tabContentPadding.PaddingLeft = UDim.new(0,12)
         tabContentPadding.PaddingRight = UDim.new(0,12)
         tabContentPadding.Parent = contentFrame
+        
+        tabContentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+            contentFrame.CanvasSize = UDim2.new(0, 0, 0, tabContentList.AbsoluteContentSize.Y + 10000)
+        end)
         
         tabBtn.MouseEnter:Connect(function()
             if self.CurrentTabButton ~= tabBtn then
@@ -689,7 +697,7 @@ function UILibrary:Create(title)
             optionsFrame.ClipsDescendants = true
             optionsFrame.Visible = false
             optionsFrame.ZIndex = 1000
-            optionsFrame.Parent = self.ScreenGui
+            optionsFrame.Parent = self.Window
             
             local optionsCorner = Instance.new("UICorner")
             optionsCorner.CornerRadius = UDim.new(0,8)
@@ -713,14 +721,6 @@ function UILibrary:Create(title)
             
             local open = false
             local selectedOption = nil
-            
-            local function updateOptionsPosition()
-                if not dropdownFrame or not optionsFrame then return end
-                local absolutePos = dropdownFrame.AbsolutePosition
-                local absoluteSize = dropdownFrame.AbsoluteSize
-                optionsFrame.Position = UDim2.new(0, absolutePos.X, 0, absolutePos.Y + absoluteSize.Y + 4)
-                optionsFrame.Size = UDim2.new(0, absoluteSize.X, 0, optionsFrame.Size.Y.Offset)
-            end
             
             local optionButtons = {}
             for i, opt in ipairs(options) do
@@ -763,7 +763,7 @@ function UILibrary:Create(title)
                     Tween(optBtn, {BackgroundColor3 = Colors.Selected})
                     
                     open = false
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
+                    Tween(optionsFrame, {Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, 0)})
                     Tween(arrowBtn, {Rotation = 0})
                     
                     task.wait(0.2)
@@ -778,14 +778,16 @@ function UILibrary:Create(title)
             end
             
             local totalHeight = #options * 36 + 8
-            local positionConnection
             
             arrowBtn.MouseButton1Click:Connect(function()
                 open = not open
                 if open then
-                    updateOptionsPosition()
                     optionsFrame.Visible = true
-                    Tween(optionsFrame, {Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, totalHeight)})
+                    local dropdownAbsolutePos = dropdownFrame.AbsolutePosition
+                    local dropdownAbsoluteSize = dropdownFrame.AbsoluteSize
+                    optionsFrame.Position = UDim2.new(0, dropdownAbsolutePos.X, 0, dropdownAbsolutePos.Y + dropdownAbsoluteSize.Y + 4)
+                    optionsFrame.Size = UDim2.new(0, dropdownAbsoluteSize.X, 0, 0)
+                    Tween(optionsFrame, {Size = UDim2.new(0, dropdownAbsoluteSize.X, 0, totalHeight)})
                     Tween(arrowBtn, {Rotation = 180})
                     
                     if selectedOption then
@@ -797,20 +799,11 @@ function UILibrary:Create(title)
                             end
                         end
                     end
-                    
-                    if positionConnection then
-                        positionConnection:Disconnect()
-                    end
-                    positionConnection = RunService.RenderStepped:Connect(updateOptionsPosition)
                 else
                     Tween(optionsFrame, {Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, 0)})
                     Tween(arrowBtn, {Rotation = 0})
                     task.wait(0.2)
                     optionsFrame.Visible = false
-                    if positionConnection then
-                        positionConnection:Disconnect()
-                        positionConnection = nil
-                    end
                 end
             end)
             
@@ -835,10 +828,6 @@ function UILibrary:Create(title)
                         Tween(arrowBtn, {Rotation = 0})
                         task.wait(0.2)
                         optionsFrame.Visible = false
-                        if positionConnection then
-                            positionConnection:Disconnect()
-                            positionConnection = nil
-                        end
                     end
                 end
             end)
@@ -846,12 +835,6 @@ function UILibrary:Create(title)
             dropdownFrame.Destroying:Connect(function()
                 if dropdownConnection then
                     dropdownConnection:Disconnect()
-                end
-                if positionConnection then
-                    positionConnection:Disconnect()
-                end
-                if optionsFrame then
-                    optionsFrame:Destroy()
                 end
             end)
             
