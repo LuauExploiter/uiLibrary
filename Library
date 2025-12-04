@@ -696,7 +696,7 @@ function UILibrary:Create(title)
             optionsFrame.BackgroundColor3 = Colors.Foreground
             optionsFrame.ClipsDescendants = true
             optionsFrame.Visible = false
-            optionsFrame.ZIndex = 50
+            optionsFrame.ZIndex = 1000
             optionsFrame.Parent = dropdownFrame
             
             local optionsCorner = Instance.new("UICorner")
@@ -732,7 +732,7 @@ function UILibrary:Create(title)
                 optBtn.TextColor3 = Colors.Text
                 optBtn.Font = Enum.Font.GothamSemibold
                 optBtn.TextSize = 13
-                optBtn.ZIndex = 51
+                optBtn.ZIndex = 1001
                 optBtn.LayoutOrder = i
                 optBtn.Parent = optionsFrame
                 
