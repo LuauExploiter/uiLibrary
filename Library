@@ -221,8 +221,8 @@ function UILibrary:Create(title)
     self.Notifications = NotificationManager:Init(self.ScreenGui)
     
     self.Window = Instance.new("Frame")
-    self.Window.Size = UDim2.new(0,500,0,400)
-    self.Window.Position = UDim2.new(0.5,-250,0.5,-200)
+    self.Window.Size = UDim2.new(0,450,0,340)
+    self.Window.Position = UDim2.new(0.5,-225,0.5,-170)
     self.Window.BackgroundColor3 = Colors.Background
     self.Window.BorderSizePixel = 0
     self.Window.ClipsDescendants = true
@@ -337,7 +337,7 @@ function UILibrary:Create(title)
     self.Content.ScrollBarThickness = 6
     self.Content.ScrollBarImageColor3 = Colors.Primary
     self.Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    self.Content.CanvasSize = UDim2.new(0,0,0,0)
+    self.Content.CanvasSize = UDim2.new(0,0,0,10000)
     self.Content.Parent = self.ContentPanel
     
     local contentList = Instance.new("UIListLayout")
@@ -352,10 +352,6 @@ function UILibrary:Create(title)
     contentPadding.PaddingLeft = UDim.new(0,12)
     contentPadding.PaddingRight = UDim.new(0,12)
     contentPadding.Parent = self.Content
-    
-    contentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        self.Content.CanvasSize = UDim2.new(0, 0, 0, contentList.AbsoluteContentSize.Y + 24)
-    end)
     
     local dragEnabled = false
     local dragInput, dragStart, startPos
@@ -422,12 +418,12 @@ function UILibrary:Create(title)
         if minimized then
             self.LeftPanel.Visible = false
             self.ContentPanel.Visible = false
-            Tween(self.Window, {Size = UDim2.new(0,500,0,42)})
+            Tween(self.Window, {Size = UDim2.new(0,450,0,42)})
             self.MinimizeBtn.Text = "+"
         else
             self.LeftPanel.Visible = true
             self.ContentPanel.Visible = true
-            Tween(self.Window, {Size = UDim2.new(0,500,0,400)})
+            Tween(self.Window, {Size = UDim2.new(0,450,0,340)})
             self.MinimizeBtn.Text = "-"
         end
     end)
@@ -472,6 +468,7 @@ function UILibrary:Create(title)
         contentFrame.ScrollBarThickness = 6
         contentFrame.ScrollBarImageColor3 = Colors.Primary
         contentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        contentFrame.CanvasSize = UDim2.new(0,0,0,10000)
         contentFrame.Visible = false
         contentFrame.Parent = self.Content
         
@@ -691,8 +688,8 @@ function UILibrary:Create(title)
             optionsFrame.BackgroundColor3 = Colors.Foreground
             optionsFrame.ClipsDescendants = true
             optionsFrame.Visible = false
-            optionsFrame.ZIndex = 100
-            optionsFrame.Parent = dropdownFrame
+            optionsFrame.ZIndex = 1000
+            optionsFrame.Parent = self.ScreenGui
             
             local optionsCorner = Instance.new("UICorner")
             optionsCorner.CornerRadius = UDim.new(0,8)
@@ -717,6 +714,14 @@ function UILibrary:Create(title)
             local open = false
             local selectedOption = nil
             
+            local function updateOptionsPosition()
+                if not dropdownFrame or not optionsFrame then return end
+                local absolutePos = dropdownFrame.AbsolutePosition
+                local absoluteSize = dropdownFrame.AbsoluteSize
+                optionsFrame.Position = UDim2.new(0, absolutePos.X, 0, absolutePos.Y + absoluteSize.Y + 4)
+                optionsFrame.Size = UDim2.new(0, absoluteSize.X, 0, optionsFrame.Size.Y.Offset)
+            end
+            
             local optionButtons = {}
             for i, opt in ipairs(options) do
                 local optBtn = Instance.new("TextButton")
@@ -727,7 +732,7 @@ function UILibrary:Create(title)
                 optBtn.TextColor3 = Colors.Text
                 optBtn.Font = Enum.Font.GothamSemibold
                 optBtn.TextSize = 13
-                optBtn.ZIndex = 101
+                optBtn.ZIndex = 1001
                 optBtn.LayoutOrder = i
                 optBtn.Parent = optionsFrame
                 
@@ -773,12 +778,14 @@ function UILibrary:Create(title)
             end
             
             local totalHeight = #options * 36 + 8
+            local positionConnection
             
             arrowBtn.MouseButton1Click:Connect(function()
                 open = not open
                 if open then
+                    updateOptionsPosition()
                     optionsFrame.Visible = true
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,totalHeight)})
+                    Tween(optionsFrame, {Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, totalHeight)})
                     Tween(arrowBtn, {Rotation = 180})
                     
                     if selectedOption then
@@ -790,11 +797,20 @@ function UILibrary:Create(title)
                             end
                         end
                     end
+                    
+                    if positionConnection then
+                        positionConnection:Disconnect()
+                    end
+                    positionConnection = RunService.RenderStepped:Connect(updateOptionsPosition)
                 else
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
+                    Tween(optionsFrame, {Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, 0)})
                     Tween(arrowBtn, {Rotation = 0})
                     task.wait(0.2)
                     optionsFrame.Visible = false
+                    if positionConnection then
+                        positionConnection:Disconnect()
+                        positionConnection = nil
+                    end
                 end
             end)
             
@@ -815,10 +831,14 @@ function UILibrary:Create(title)
                     
                     if not isInDropdown and not isInOptions then
                         open = false
-                        Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
+                        Tween(optionsFrame, {Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, 0)})
                         Tween(arrowBtn, {Rotation = 0})
                         task.wait(0.2)
                         optionsFrame.Visible = false
+                        if positionConnection then
+                            positionConnection:Disconnect()
+                            positionConnection = nil
+                        end
                     end
                 end
             end)
@@ -826,6 +846,12 @@ function UILibrary:Create(title)
             dropdownFrame.Destroying:Connect(function()
                 if dropdownConnection then
                     dropdownConnection:Disconnect()
+                end
+                if positionConnection then
+                    positionConnection:Disconnect()
+                end
+                if optionsFrame then
+                    optionsFrame:Destroy()
                 end
             end)
             
