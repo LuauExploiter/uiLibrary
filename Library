@@ -696,8 +696,8 @@ function UILibrary:Create(title)
             optionsFrame.BackgroundColor3 = Colors.Foreground
             optionsFrame.ClipsDescendants = true
             optionsFrame.Visible = false
-            optionsFrame.ZIndex = 99999
-            optionsFrame.Parent = self.ScreenGui
+            optionsFrame.ZIndex = 100
+            optionsFrame.Parent = dropdownFrame
             
             local optionsCorner = Instance.new("UICorner")
             optionsCorner.CornerRadius = UDim.new(0,8)
@@ -732,7 +732,7 @@ function UILibrary:Create(title)
                 optBtn.TextColor3 = Colors.Text
                 optBtn.Font = Enum.Font.GothamSemibold
                 optBtn.TextSize = 13
-                optBtn.ZIndex = 100000
+                optBtn.ZIndex = 101
                 optBtn.LayoutOrder = i
                 optBtn.Parent = optionsFrame
                 
@@ -763,7 +763,7 @@ function UILibrary:Create(title)
                     Tween(optBtn, {BackgroundColor3 = Colors.Selected})
                     
                     open = false
-                    Tween(optionsFrame, {Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, 0)})
+                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
                     Tween(arrowBtn, {Rotation = 0})
                     
                     task.wait(0.2)
@@ -779,23 +779,11 @@ function UILibrary:Create(title)
             
             local totalHeight = #options * 36 + 8
             
-            local function updateOptionsPosition()
-                if open and optionsFrame.Visible then
-                    local dropdownAbsolutePos = dropdownFrame.AbsolutePosition
-                    local dropdownAbsoluteSize = dropdownFrame.AbsoluteSize
-                    optionsFrame.Position = UDim2.new(0, dropdownAbsolutePos.X, 0, dropdownAbsolutePos.Y + dropdownAbsoluteSize.Y + 4)
-                end
-            end
-            
             arrowBtn.MouseButton1Click:Connect(function()
                 open = not open
                 if open then
                     optionsFrame.Visible = true
-                    local dropdownAbsolutePos = dropdownFrame.AbsolutePosition
-                    local dropdownAbsoluteSize = dropdownFrame.AbsoluteSize
-                    optionsFrame.Position = UDim2.new(0, dropdownAbsolutePos.X, 0, dropdownAbsolutePos.Y + dropdownAbsoluteSize.Y + 4)
-                    optionsFrame.Size = UDim2.new(0, dropdownAbsoluteSize.X, 0, 0)
-                    Tween(optionsFrame, {Size = UDim2.new(0, dropdownAbsoluteSize.X, 0, totalHeight)})
+                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,totalHeight)})
                     Tween(arrowBtn, {Rotation = 180})
                     
                     if selectedOption then
@@ -808,7 +796,7 @@ function UILibrary:Create(title)
                         end
                     end
                 else
-                    Tween(optionsFrame, {Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, 0)})
+                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
                     Tween(arrowBtn, {Rotation = 0})
                     task.wait(0.2)
                     optionsFrame.Visible = false
@@ -832,7 +820,7 @@ function UILibrary:Create(title)
                     
                     if not isInDropdown and not isInOptions then
                         open = false
-                        Tween(optionsFrame, {Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, 0)})
+                        Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
                         Tween(arrowBtn, {Rotation = 0})
                         task.wait(0.2)
                         optionsFrame.Visible = false
@@ -843,9 +831,6 @@ function UILibrary:Create(title)
             dropdownFrame.Destroying:Connect(function()
                 if dropdownConnection then
                     dropdownConnection:Disconnect()
-                end
-                if optionsFrame then
-                    optionsFrame:Destroy()
                 end
             end)
             
