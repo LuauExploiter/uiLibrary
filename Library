@@ -221,8 +221,8 @@ function UILibrary:Create(title)
     self.Notifications = NotificationManager:Init(self.ScreenGui)
     
     self.Window = Instance.new("Frame")
-    self.Window.Size = UDim2.new(0,450,0,340)
-    self.Window.Position = UDim2.new(0.5,-225,0.5,-170)
+    self.Window.Size = UDim2.new(0,500,0,400)
+    self.Window.Position = UDim2.new(0.5,-250,0.5,-200)
     self.Window.BackgroundColor3 = Colors.Background
     self.Window.BorderSizePixel = 0
     self.Window.ClipsDescendants = true
@@ -299,9 +299,13 @@ function UILibrary:Create(title)
     leftCorner.CornerRadius = UDim.new(0,14)
     leftCorner.Parent = self.LeftPanel
     
-    self.TabsContainer = Instance.new("Frame")
+    self.TabsContainer = Instance.new("ScrollingFrame")
     self.TabsContainer.Size = UDim2.new(1,0,1,0)
     self.TabsContainer.BackgroundTransparency = 1
+    self.TabsContainer.BorderSizePixel = 0
+    self.TabsContainer.ScrollBarThickness = 6
+    self.TabsContainer.ScrollBarImageColor3 = Colors.Primary
+    self.TabsContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
     self.TabsContainer.Parent = self.LeftPanel
     
     local tabsList = Instance.new("UIListLayout")
@@ -311,6 +315,7 @@ function UILibrary:Create(title)
     
     local tabsPadding = Instance.new("UIPadding")
     tabsPadding.PaddingTop = UDim.new(0,10)
+    tabsPadding.PaddingBottom = UDim.new(0,10)
     tabsPadding.PaddingLeft = UDim.new(0,10)
     tabsPadding.PaddingRight = UDim.new(0,10)
     tabsPadding.Parent = self.TabsContainer
@@ -332,6 +337,7 @@ function UILibrary:Create(title)
     self.Content.ScrollBarThickness = 6
     self.Content.ScrollBarImageColor3 = Colors.Primary
     self.Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    self.Content.CanvasSize = UDim2.new(0,0,0,0)
     self.Content.Parent = self.ContentPanel
     
     local contentList = Instance.new("UIListLayout")
@@ -342,9 +348,14 @@ function UILibrary:Create(title)
     
     local contentPadding = Instance.new("UIPadding")
     contentPadding.PaddingTop = UDim.new(0,12)
+    contentPadding.PaddingBottom = UDim.new(0,12)
     contentPadding.PaddingLeft = UDim.new(0,12)
     contentPadding.PaddingRight = UDim.new(0,12)
     contentPadding.Parent = self.Content
+    
+    contentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        self.Content.CanvasSize = UDim2.new(0, 0, 0, contentList.AbsoluteContentSize.Y + 24)
+    end)
     
     local dragEnabled = false
     local dragInput, dragStart, startPos
@@ -411,12 +422,12 @@ function UILibrary:Create(title)
         if minimized then
             self.LeftPanel.Visible = false
             self.ContentPanel.Visible = false
-            Tween(self.Window, {Size = UDim2.new(0,450,0,42)})
+            Tween(self.Window, {Size = UDim2.new(0,500,0,42)})
             self.MinimizeBtn.Text = "+"
         else
             self.LeftPanel.Visible = true
             self.ContentPanel.Visible = true
-            Tween(self.Window, {Size = UDim2.new(0,450,0,340)})
+            Tween(self.Window, {Size = UDim2.new(0,500,0,400)})
             self.MinimizeBtn.Text = "-"
         end
     end)
@@ -454,9 +465,13 @@ function UILibrary:Create(title)
         tabStroke.Color = Colors.Border
         tabStroke.Parent = tabBtn
         
-        local contentFrame = Instance.new("Frame")
+        local contentFrame = Instance.new("ScrollingFrame")
         contentFrame.Size = UDim2.new(1,0,1,0)
         contentFrame.BackgroundTransparency = 1
+        contentFrame.BorderSizePixel = 0
+        contentFrame.ScrollBarThickness = 6
+        contentFrame.ScrollBarImageColor3 = Colors.Primary
+        contentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
         contentFrame.Visible = false
         contentFrame.Parent = self.Content
         
@@ -465,6 +480,13 @@ function UILibrary:Create(title)
         tabContentList.HorizontalAlignment = Enum.HorizontalAlignment.Center
         tabContentList.SortOrder = Enum.SortOrder.LayoutOrder
         tabContentList.Parent = contentFrame
+        
+        local tabContentPadding = Instance.new("UIPadding")
+        tabContentPadding.PaddingTop = UDim.new(0,12)
+        tabContentPadding.PaddingBottom = UDim.new(0,12)
+        tabContentPadding.PaddingLeft = UDim.new(0,12)
+        tabContentPadding.PaddingRight = UDim.new(0,12)
+        tabContentPadding.Parent = contentFrame
         
         tabBtn.MouseEnter:Connect(function()
             if self.CurrentTabButton ~= tabBtn then
