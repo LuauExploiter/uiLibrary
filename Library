@@ -296,7 +296,7 @@ function UILibrary:Create(title)
     self.LeftPanel.Parent = self.Window
     
     local leftCorner = Instance.new("UICorner")
-    leftCorner.CornerRadius = UDim.new(0,0,0,14)
+    leftCorner.CornerRadius = UDim.new(0,14)
     leftCorner.Parent = self.LeftPanel
     
     self.TabsContainer = Instance.new("Frame")
@@ -322,7 +322,7 @@ function UILibrary:Create(title)
     self.ContentPanel.Parent = self.Window
     
     local contentCorner = Instance.new("UICorner")
-    contentCorner.CornerRadius = UDim.new(0,0,0,14)
+    contentCorner.CornerRadius = UDim.new(0,14)
     contentCorner.Parent = self.ContentPanel
     
     self.Content = Instance.new("ScrollingFrame")
