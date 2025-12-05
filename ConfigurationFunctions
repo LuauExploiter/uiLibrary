@@ -1,67 +1,35 @@
-local HttpService = game:GetService("HttpService")
-local Folder = "2ZeroPvP_Configs"
-local LastFile = Folder .. "/LastUsed.txt"
+local HttpService=game:GetService("HttpService")
+local FILE_NAME="hkopvp.json"
+local Config={}
 
-if not isfolder(Folder) then
-    makefolder(Folder)
-end
-
-local Config = {}
-
-function Config.Save(name, data)
-    if typeof(name) ~= "string" or name == "" or name:match("[^%w_]") then return false end
-    if typeof(data) ~= "table" then return false end
-    
-    local path = Folder .. "/" .. name .. ".json"
-    local success = pcall(function()
-        writefile(path, HttpService:JSONEncode(data))
-        writefile(LastFile, name)
+function Config.Save(t)
+    pcall(function()
+        writefile(FILE_NAME,HttpService:JSONEncode(t))
     end)
-    return success
 end
 
-function Config.Load(name)
-    if typeof(name) ~= "string" or name == "" then return nil end
-    
-    local path = Folder .. "/" .. name .. ".json"
-    if not isfile(path) then return nil end
-    
-    local content = readfile(path)
-    local success, data = pcall(HttpService.JSONDecode, HttpService, content)
-    if not success then return nil end
-    
-    writefile(LastFile, name)
-    return data
-end
-
-function Config.Delete(name)
-    local path = Folder .. "/" .. name .. ".json"
-    if isfile(path) then
-        delfile(path)
-        return true
+function Config.Load()
+    if not isfile(FILE_NAME)then return nil end
+    local s,r=pcall(function()
+        return HttpService:JSONDecode(readfile(FILE_NAME))
+    end)
+    if s and type(r)=="table"then
+        return r
+    else
+        pcall(delfile,FILE_NAME)
+        return nil
     end
-    return false
 end
 
-function Config.List()
-    local list = {}
-    for _, file in listfiles(Folder) do
-        local name = file:match("([^/\\]+)%.json$")
-        if name and name ~= "LastUsed" then
-            table.insert(list, name)
+function Config.AutoLoad(d)
+    local l=Config.Load()
+    if not l then return d end
+    for k,v in pairs(d)do
+        if l[k]~=nil and typeof(l[k])==typeof(v)then
+            d[k]=l[k]
         end
     end
-    table.sort(list)
-    return list
-end
-
-function Config.AutoLoad()
-    if not isfile(LastFile) then return nil end
-    local name = readfile(LastFile)
-    if name ~= "" then
-        return Config.Load(name)
-    end
-    return nil
+    return d
 end
 
 return Config
