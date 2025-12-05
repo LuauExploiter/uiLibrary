@@ -1,5 +1,5 @@
 local HttpService=game:GetService("HttpService")
-local FILE_NAME="hkopvp.json"
+local FILE_NAME="hkopvp.json" or "HikloPvP.json"
 local Config={}
 
 function Config.Save(t)
