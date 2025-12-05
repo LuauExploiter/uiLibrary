@@ -1,35 +1,39 @@
-local HttpService=game:GetService("HttpService")
-local FILE_NAME="hkopvp.json" or "HikloPvP.json"
-local Config={}
+local HttpService = game:GetService("HttpService")
 
-function Config.Save(t)
-    pcall(function()
-        writefile(FILE_NAME,HttpService:JSONEncode(t))
-    end)
+local file = isfile("hkopvp.json") and "hkopvp.json" or "HikloPvP.json"
+
+local Config = {}
+
+function Config.Save(_,data)
+	if typeof(data)~="table" then return false end
+	pcall(function()
+		writefile(file,HttpService:JSONEncode(data))
+	end)
+	return true
 end
 
 function Config.Load()
-    if not isfile(FILE_NAME)then return nil end
-    local s,r=pcall(function()
-        return HttpService:JSONDecode(readfile(FILE_NAME))
-    end)
-    if s and type(r)=="table"then
-        return r
-    else
-        pcall(delfile,FILE_NAME)
-        return nil
-    end
+	if not isfile(file) then return nil end
+	local success,result = pcall(function()
+		return HttpService:JSONDecode(readfile(file))
+	end)
+	return success and result or nil
 end
 
-function Config.AutoLoad(d)
-    local l=Config.Load()
-    if not l then return d end
-    for k,v in pairs(d)do
-        if l[k]~=nil and typeof(l[k])==typeof(v)then
-            d[k]=l[k]
-        end
-    end
-    return d
+function Config.Delete()
+	if isfile(file) then delfile(file) end
+end
+
+function Config.List()
+	local t = {}
+	if isfile("hkopvp.json") then table.insert(t,"hkopvp") end
+	if isfile("HikloPvP.json") then table.insert(t,"HikloPvP") end
+	table.sort(t)
+	return t
+end
+
+function Config.AutoLoad()
+	return Config.Load()
 end
 
 return Config
