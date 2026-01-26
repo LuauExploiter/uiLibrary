@@ -657,25 +657,16 @@ function UILibrary:Create(title)
                 btnContent.Position = UDim2.new(0.5, -contentSize.X/2, 0, 0)
             end)
             
-            -- Mouse input
-            btn.MouseButton1Click:Connect(function()
+            local function handleClick()
                 Tween(btn, {BackgroundColor3 = Color3.fromRGB(50,50,55)})
                 task.wait(0.1)
                 Tween(btn, {BackgroundColor3 = Colors.Button})
                 if callback then 
                     callback() 
                 end
-            end)
+            end
             
-            -- Touch input for mobile
-            btn.TouchTap:Connect(function()
-                Tween(btn, {BackgroundColor3 = Color3.fromRGB(50,50,55)})
-                task.wait(0.1)
-                Tween(btn, {BackgroundColor3 = Colors.Button})
-                if callback then 
-                    callback() 
-                end
-            end)
+            btn.MouseButton1Click:Connect(handleClick)
             
             return btn
         end
@@ -770,10 +761,9 @@ function UILibrary:Create(title)
             clickBtn.Text = ""
             clickBtn.Parent = toggleFrame
             
-            clickBtn.MouseButton1Click:Connect(toggle)
-            
-            -- Touch support for mobile
-            clickBtn.TouchTap:Connect(toggle)
+            clickBtn.MouseButton1Click:Connect(function()
+                toggle()
+            end)
             
             local toggleObj = {}
             
@@ -940,29 +930,6 @@ function UILibrary:Create(title)
                     end
                 end)
                 
-                -- Touch support for mobile
-                optBtn.TouchTap:Connect(function()
-                    selectedOption = opt
-                    label.Text = text .. ": " .. opt
-                    
-                    for _, btn in ipairs(optionButtons) do
-                        Tween(btn, {BackgroundColor3 = Colors.Button})
-                    end
-                    
-                    Tween(optBtn, {BackgroundColor3 = Colors.Selected})
-                    
-                    open = false
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
-                    Tween(arrowBtn, {Rotation = 0})
-                    
-                    task.wait(0.2)
-                    optionsFrame.Visible = false
-                    
-                    if callback then
-                        callback(opt)
-                    end
-                end)
-                
                 table.insert(optionButtons, optBtn)
             end
             
@@ -995,35 +962,9 @@ function UILibrary:Create(title)
                 end
             end)
             
-            -- Touch support for mobile
-            arrowBtn.TouchTap:Connect(function()
-                open = not open
-                if open then
-                    optionsFrame.Visible = true
-                    local height = math.min(optionsLayout.AbsoluteContentSize.Y + 12, 200)
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,height)})
-                    Tween(arrowBtn, {Rotation = 180})
-                    
-                    if selectedOption then
-                        for _, btn in ipairs(optionButtons) do
-                            if btn.Text == selectedOption then
-                                Tween(btn, {BackgroundColor3 = Colors.Selected})
-                            else
-                                Tween(btn, {BackgroundColor3 = Colors.Button})
-                            end
-                        end
-                    end
-                else
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
-                    Tween(arrowBtn, {Rotation = 0})
-                    task.wait(0.2)
-                    optionsFrame.Visible = false
-                end
-            end)
-            
             local dropdownConnection
             dropdownConnection = UserInputService.InputBegan:Connect(function(input)
-                if open and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+                if open and input.UserInputType == Enum.UserInputType.MouseButton1 then
                     local mousePos = input.Position
                     local dropdownAbsolutePos = dropdownFrame.AbsolutePosition
                     local dropdownAbsoluteSize = dropdownFrame.AbsoluteSize
@@ -1275,23 +1216,21 @@ function UILibrary:Create(title)
                 end
             end
             
-            -- Mouse input
-            sliderButton.MouseButton1Down:Connect(function()
-                dragging = true
-            end)
-            
-            sliderBar.MouseButton1Down:Connect(function()
-                dragging = true
-            end)
-            
-            -- Touch input for mobile
-            sliderButton.TouchStarted:Connect(function()
-                dragging = true
-            end)
-            
-            sliderBar.TouchStarted:Connect(function()
-                dragging = true
-            end)
+            local function onInputBegan(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = true
+                    
+                    -- Update value immediately on touch start
+                    local mousePos = input.Position.X
+                    local sliderAbsolutePos = sliderBar.AbsolutePosition.X
+                    local sliderAbsoluteSize = sliderBar.AbsoluteSize.X
+                    
+                    local percentage = math.clamp((mousePos - sliderAbsolutePos) / sliderAbsoluteSize, 0, 1)
+                    local value = min + (percentage * (max - min))
+                    
+                    updateValue(value)
+                end
+            end
             
             local function onInputChanged(input)
                 if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
@@ -1311,6 +1250,10 @@ function UILibrary:Create(title)
                     dragging = false
                 end
             end
+            
+            -- Connect events
+            sliderButton.InputBegan:Connect(onInputBegan)
+            sliderBar.InputBegan:Connect(onInputBegan)
             
             UserInputService.InputChanged:Connect(onInputChanged)
             UserInputService.InputEnded:Connect(onInputEnded)
@@ -1445,56 +1388,42 @@ function UILibrary:Create(title)
                 end
             end
             
-            keyBtn.MouseButton1Click:Connect(function()
-                listening = not listening
-                if listening then
-                    keyBtn.Text = "..."
-                    Tween(keyBtn, {BackgroundColor3 = Colors.Primary})
-                    
-                    local connection
-                    connection = UserInputService.InputBegan:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.Keyboard then
-                            listening = false
-                            updateKey(input.KeyCode)
-                            Tween(keyBtn, {BackgroundColor3 = Colors.Button})
-                            connection:Disconnect()
-                        end
-                    end)
-                else
-                    Tween(keyBtn, {BackgroundColor3 = Colors.Button})
-                end
-            end)
-            
-            -- Touch support for mobile
-            keyBtn.TouchTap:Connect(function()
-                listening = not listening
-                if listening then
-                    keyBtn.Text = "..."
-                    Tween(keyBtn, {BackgroundColor3 = Colors.Primary})
-                    
-                    local connection
-                    connection = UserInputService.InputBegan:Connect(function(input)
-                        if input.UserInputType == Enum.UserInputType.Keyboard then
-                            listening = false
-                            updateKey(input.KeyCode)
-                            Tween(keyBtn, {BackgroundColor3 = Colors.Button})
-                            connection:Disconnect()
-                        end
-                    end)
-                else
-                    Tween(keyBtn, {BackgroundColor3 = Colors.Button})
-                end
-            end)
-            
-            if defaultKey then
-                UserInputService.InputBegan:Connect(function(input)
-                    if input.KeyCode == currentKey then
-                        if callback then
-                            callback(currentKey, true)
-                        end
-                    end
-                end)
+            local function startListening()
+                listening = true
+                keyBtn.Text = "..."
+                Tween(keyBtn, {BackgroundColor3 = Colors.Primary})
             end
+            
+            local function stopListening()
+                listening = false
+                Tween(keyBtn, {BackgroundColor3 = Colors.Button})
+            end
+            
+            keyBtn.MouseButton1Click:Connect(function()
+                if listening then
+                    stopListening()
+                else
+                    startListening()
+                end
+            end)
+            
+            local keybindConnection
+            keybindConnection = UserInputService.InputBegan:Connect(function(input)
+                if listening and input.UserInputType == Enum.UserInputType.Keyboard then
+                    updateKey(input.KeyCode)
+                    stopListening()
+                elseif not listening and defaultKey and input.KeyCode == currentKey then
+                    if callback then
+                        callback(currentKey, true)
+                    end
+                end
+            end)
+            
+            keybindFrame.Destroying:Connect(function()
+                if keybindConnection then
+                    keybindConnection:Disconnect()
+                end
+            end)
             
             local keybindObj = {}
             
@@ -1575,37 +1504,6 @@ function UILibrary:Create(title)
             local currentColor = defaultColor or Color3.new(1, 1, 1)
             
             colorBtn.MouseButton1Click:Connect(function()
-                local colors = {
-                    Color3.new(1, 0, 0),
-                    Color3.new(0, 1, 0),
-                    Color3.new(0, 0, 1),
-                    Color3.new(1, 1, 0),
-                    Color3.new(1, 0, 1),
-                    Color3.new(0, 1, 1),
-                    Color3.new(1, 1, 1),
-                    Color3.new(0, 0, 0)
-                }
-                
-                local index = 1
-                for i, color in pairs(colors) do
-                    if color == currentColor then
-                        index = i + 1
-                        break
-                    end
-                end
-                
-                if index > #colors then index = 1 end
-                
-                currentColor = colors[index]
-                colorBtn.BackgroundColor3 = currentColor
-                
-                if callback then
-                    callback(currentColor)
-                end
-            end)
-            
-            -- Touch support for mobile
-            colorBtn.TouchTap:Connect(function()
                 local colors = {
                     Color3.new(1, 0, 0),
                     Color3.new(0, 1, 0),
