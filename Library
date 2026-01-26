@@ -851,6 +851,7 @@ function UILibrary:Create(title)
             arrowCorner.CornerRadius = UDim.new(0,8)
             arrowCorner.Parent = arrowBtn
             
+            -- FIXED: Options frame now has fixed height of 200px with scrolling enabled
             local optionsFrame = Instance.new("Frame")
             optionsFrame.Size = UDim2.new(1,0,0,0)
             optionsFrame.Position = UDim2.new(0,0,1,4)
@@ -858,7 +859,7 @@ function UILibrary:Create(title)
             optionsFrame.ClipsDescendants = true
             optionsFrame.Visible = false
             optionsFrame.ZIndex = 1000
-            optionsFrame.Parent = self.ScreenGui
+            optionsFrame.Parent = self.Window
             
             local optionsCorner = Instance.new("UICorner")
             optionsCorner.CornerRadius = UDim.new(0,8)
@@ -884,14 +885,14 @@ function UILibrary:Create(title)
             optionsLayout.Parent = optionsScrolling
             
             local optionsPadding = Instance.new("UIPadding")
-            optionsPadding.PaddingTop = UDim.new(0, 4)
-            optionsPadding.PaddingBottom = UDim.new(0, 4)
-            optionsPadding.PaddingLeft = UDim.new(0, 4)
-            optionsPadding.PaddingRight = UDim.new(0, 4)
+            optionsPadding.PaddingTop = UDim.new(0, 8)
+            optionsPadding.PaddingBottom = UDim.new(0, 8)
+            optionsPadding.PaddingLeft = UDim.new(0, 8)
+            optionsPadding.PaddingRight = UDim.new(0, 8)
             optionsPadding.Parent = optionsScrolling
             
             optionsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                optionsScrolling.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + 8)
+                optionsScrolling.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + 16)
             end)
             
             local open = false
@@ -908,7 +909,7 @@ function UILibrary:Create(title)
                 end
                 
                 local optBtn = Instance.new("TextButton")
-                optBtn.Size = UDim2.new(1, -8, 0, 32)
+                optBtn.Size = UDim2.new(1, -16, 0, 32)
                 optBtn.BackgroundColor3 = Colors.Button
                 optBtn.AutoButtonColor = false
                 optBtn.Text = ""
@@ -930,7 +931,7 @@ function UILibrary:Create(title)
                 optLayout.FillDirection = Enum.FillDirection.Horizontal
                 optLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
                 optLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-                optLayout.Padding = UDim.new(0, 6)
+                optLayout.Padding = UDim.new(0, 8)
                 optLayout.Parent = optContent
                 
                 local optPadding = Instance.new("UIPadding")
@@ -939,7 +940,7 @@ function UILibrary:Create(title)
                 
                 if optIcon then
                     local iconImage = Instance.new("ImageLabel")
-                    iconImage.Size = UDim2.new(0, 16, 0, 16)
+                    iconImage.Size = UDim2.new(0, 20, 0, 20)
                     iconImage.BackgroundTransparency = 1
                     iconImage.Image = optIcon
                     iconImage.ImageColor3 = Colors.Text
@@ -957,7 +958,7 @@ function UILibrary:Create(title)
                 optLabel.Text = optText
                 optLabel.TextColor3 = Colors.Text
                 optLabel.Font = Enum.Font.GothamSemibold
-                optLabel.TextSize = 13
+                optLabel.TextSize = 14
                 optLabel.TextXAlignment = Enum.TextXAlignment.Left
                 optLabel.AutomaticSize = Enum.AutomaticSize.X
                 optLabel.Parent = optContent
@@ -1008,11 +1009,15 @@ function UILibrary:Create(title)
             local function updateOptionsPosition()
                 local dropdownAbsolutePos = dropdownFrame.AbsolutePosition
                 local dropdownAbsoluteSize = dropdownFrame.AbsoluteSize
-                local screenSize = self.ScreenGui.AbsoluteSize
+                local windowAbsolutePos = self.Window.AbsolutePosition
+                
+                -- Position relative to window
+                local relativeX = dropdownAbsolutePos.X - windowAbsolutePos.X
+                local relativeY = dropdownAbsolutePos.Y - windowAbsolutePos.Y
                 
                 optionsFrame.Position = UDim2.new(
-                    0, dropdownAbsolutePos.X,
-                    0, dropdownAbsolutePos.Y + dropdownAbsoluteSize.Y + 4
+                    0, relativeX,
+                    0, relativeY + dropdownAbsoluteSize.Y + 4
                 )
                 optionsFrame.Size = UDim2.new(0, dropdownAbsoluteSize.X, 0, 0)
             end
@@ -1027,13 +1032,8 @@ function UILibrary:Create(title)
                     updateOptionsPosition()
                     optionsFrame.Visible = true
                     
-                    local optionCount = #options
-                    local optionHeight = 32
-                    local padding = 8
-                    local maxHeight = 200
-                    local totalHeight = math.min(optionCount * (optionHeight + 4) + padding, maxHeight)
-                    
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,totalHeight)})
+                    -- FIXED: Always show 200px height for options, scroll if needed
+                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,200)})
                     Tween(arrowBtn, {Rotation = 180})
                     
                     if selectedOption then
@@ -1187,6 +1187,7 @@ function UILibrary:Create(title)
             arrowCorner.CornerRadius = UDim.new(0,8)
             arrowCorner.Parent = arrowBtn
             
+            -- FIXED: Options frame with fixed height
             local optionsFrame = Instance.new("Frame")
             optionsFrame.Size = UDim2.new(1,0,0,0)
             optionsFrame.Position = UDim2.new(0,0,1,4)
@@ -1194,7 +1195,7 @@ function UILibrary:Create(title)
             optionsFrame.ClipsDescendants = true
             optionsFrame.Visible = false
             optionsFrame.ZIndex = 1000
-            optionsFrame.Parent = self.ScreenGui
+            optionsFrame.Parent = self.Window
             
             local optionsCorner = Instance.new("UICorner")
             optionsCorner.CornerRadius = UDim.new(0,8)
@@ -1220,14 +1221,14 @@ function UILibrary:Create(title)
             optionsLayout.Parent = optionsScrolling
             
             local optionsPadding = Instance.new("UIPadding")
-            optionsPadding.PaddingTop = UDim.new(0, 4)
-            optionsPadding.PaddingBottom = UDim.new(0, 4)
-            optionsPadding.PaddingLeft = UDim.new(0, 4)
-            optionsPadding.PaddingRight = UDim.new(0, 4)
+            optionsPadding.PaddingTop = UDim.new(0, 8)
+            optionsPadding.PaddingBottom = UDim.new(0, 8)
+            optionsPadding.PaddingLeft = UDim.new(0, 8)
+            optionsPadding.PaddingRight = UDim.new(0, 8)
             optionsPadding.Parent = optionsScrolling
             
             optionsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                optionsScrolling.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + 8)
+                optionsScrolling.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + 16)
             end)
             
             local open = false
@@ -1244,7 +1245,7 @@ function UILibrary:Create(title)
                 end
                 
                 local optBtn = Instance.new("TextButton")
-                optBtn.Size = UDim2.new(1, -8, 0, 32)
+                optBtn.Size = UDim2.new(1, -16, 0, 32)
                 optBtn.BackgroundColor3 = Colors.Button
                 optBtn.AutoButtonColor = false
                 optBtn.Text = ""
@@ -1266,7 +1267,7 @@ function UILibrary:Create(title)
                 optLayout.FillDirection = Enum.FillDirection.Horizontal
                 optLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
                 optLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-                optLayout.Padding = UDim.new(0, 6)
+                optLayout.Padding = UDim.new(0, 8)
                 optLayout.Parent = optContent
                 
                 local optPadding = Instance.new("UIPadding")
@@ -1298,7 +1299,7 @@ function UILibrary:Create(title)
                 
                 if optIcon then
                     local iconImage = Instance.new("ImageLabel")
-                    iconImage.Size = UDim2.new(0, 16, 0, 16)
+                    iconImage.Size = UDim2.new(0, 20, 0, 20)
                     iconImage.BackgroundTransparency = 1
                     iconImage.Image = optIcon
                     iconImage.ImageColor3 = Colors.Text
@@ -1316,7 +1317,7 @@ function UILibrary:Create(title)
                 optLabel.Text = optText
                 optLabel.TextColor3 = Colors.Text
                 optLabel.Font = Enum.Font.GothamSemibold
-                optLabel.TextSize = 13
+                optLabel.TextSize = 14
                 optLabel.TextXAlignment = Enum.TextXAlignment.Left
                 optLabel.AutomaticSize = Enum.AutomaticSize.X
                 optLabel.Parent = optContent
@@ -1394,11 +1395,15 @@ function UILibrary:Create(title)
             local function updateOptionsPosition()
                 local dropdownAbsolutePos = dropdownFrame.AbsolutePosition
                 local dropdownAbsoluteSize = dropdownFrame.AbsoluteSize
-                local screenSize = self.ScreenGui.AbsoluteSize
+                local windowAbsolutePos = self.Window.AbsolutePosition
+                
+                -- Position relative to window
+                local relativeX = dropdownAbsolutePos.X - windowAbsolutePos.X
+                local relativeY = dropdownAbsolutePos.Y - windowAbsolutePos.Y
                 
                 optionsFrame.Position = UDim2.new(
-                    0, dropdownAbsolutePos.X,
-                    0, dropdownAbsolutePos.Y + dropdownAbsoluteSize.Y + 4
+                    0, relativeX,
+                    0, relativeY + dropdownAbsoluteSize.Y + 4
                 )
                 optionsFrame.Size = UDim2.new(0, dropdownAbsoluteSize.X, 0, 0)
             end
@@ -1413,13 +1418,8 @@ function UILibrary:Create(title)
                     updateOptionsPosition()
                     optionsFrame.Visible = true
                     
-                    local optionCount = #options
-                    local optionHeight = 32
-                    local padding = 8
-                    local maxHeight = 200
-                    local totalHeight = math.min(optionCount * (optionHeight + 4) + padding, maxHeight)
-                    
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,totalHeight)})
+                    -- FIXED: Always 200px height
+                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,200)})
                     Tween(arrowBtn, {Rotation = 180})
                     
                     for _, btnData in ipairs(optionButtons) do
