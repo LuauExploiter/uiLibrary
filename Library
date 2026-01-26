@@ -968,7 +968,7 @@ function UILibrary:Create(title)
                 open = not open
                 if open then
                     optionsFrame.Visible = true
-                    local height = math.min(optionsLayout.AbsoluteContentSize.Y + 12, 300) -- FIXED: Larger height (300px)
+                    local height = math.min(optionsLayout.AbsoluteContentSize.Y + 12, 800) -- FIXED: Larger height (300px)
                     Tween(optionsFrame, {Size = UDim2.new(1,0,0,height)})
                     Tween(arrowBtn, {Rotation = 180})
                     
