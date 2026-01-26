@@ -487,7 +487,7 @@ function UILibrary:Create(title)
             
             -- Add squircle corners to icon
             local iconCorner = Instance.new("UICorner")
-            iconCorner.CornerRadius = UDim.new(0.25, 0) -- Squircle effect
+            iconCorner.CornerRadius = UDim.new(0.25, 0)
             iconCorner.Parent = iconImage
             
             iconImage.Parent = tabContent
@@ -499,9 +499,9 @@ function UILibrary:Create(title)
         textLabel.Text = name
         textLabel.TextColor3 = Colors.SubText
         textLabel.Font = Enum.Font.GothamSemibold
-            textLabel.TextSize = 14
-            textLabel.AutomaticSize = Enum.AutomaticSize.X
-            textLabel.Parent = tabContent
+        textLabel.TextSize = 14
+        textLabel.AutomaticSize = Enum.AutomaticSize.X
+        textLabel.Parent = tabContent
         
         tabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
             local contentSize = tabLayout.AbsoluteContentSize
@@ -625,7 +625,6 @@ function UILibrary:Create(title)
             btnLayout.Padding = UDim.new(0, 8)
             btnLayout.Parent = btnContent
             
-            -- Only add icon if provided
             if btnIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
@@ -633,9 +632,8 @@ function UILibrary:Create(title)
                 iconImage.Image = btnIcon
                 iconImage.ImageColor3 = Colors.Text
                 
-                -- Add squircle corners to icon
                 local iconCorner = Instance.new("UICorner")
-                iconCorner.CornerRadius = UDim.new(0.25, 0) -- Squircle effect
+                iconCorner.CornerRadius = UDim.new(0.25, 0)
                 iconCorner.Parent = iconImage
                 
                 iconImage.Parent = btnContent
@@ -702,7 +700,6 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = toggleFrame
             
-            -- Only add icon if provided
             if toggleIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
@@ -711,9 +708,8 @@ function UILibrary:Create(title)
                 iconImage.Image = toggleIcon
                 iconImage.ImageColor3 = Colors.Text
                 
-                -- Add squircle corners to icon
                 local iconCorner = Instance.new("UICorner")
-                iconCorner.CornerRadius = UDim.new(0.25, 0) -- Squircle effect
+                iconCorner.CornerRadius = UDim.new(0.25, 0)
                 iconCorner.Parent = iconImage
                 
                 iconImage.Parent = toggleFrame
@@ -809,7 +805,6 @@ function UILibrary:Create(title)
             leftSide.BackgroundTransparency = 1
             leftSide.Parent = dropdownFrame
             
-            -- Only add icon if provided
             if dropdownIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
@@ -818,9 +813,8 @@ function UILibrary:Create(title)
                 iconImage.Image = dropdownIcon
                 iconImage.ImageColor3 = Colors.Text
                 
-                -- Add squircle corners to icon
                 local iconCorner = Instance.new("UICorner")
-                iconCorner.CornerRadius = UDim.new(0.25, 0) -- Squircle effect
+                iconCorner.CornerRadius = UDim.new(0.25, 0)
                 iconCorner.Parent = iconImage
                 
                 iconImage.Parent = leftSide
@@ -837,7 +831,6 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = leftSide
             
-            -- Only add icon if provided
             if dropdownIcon then
                 label.Position = UDim2.new(0,44,0,0)
                 label.Size = UDim2.new(1,-90,1,0)
@@ -858,19 +851,14 @@ function UILibrary:Create(title)
             arrowCorner.CornerRadius = UDim.new(0,8)
             arrowCorner.Parent = arrowBtn
             
-            -- CHANGED: Scrolling frame height now dynamically adjusts based on number of options
-            local optionsFrame = Instance.new("ScrollingFrame")
+            local optionsFrame = Instance.new("Frame")
             optionsFrame.Size = UDim2.new(1,0,0,0)
             optionsFrame.Position = UDim2.new(0,0,1,4)
             optionsFrame.BackgroundColor3 = Colors.Foreground
             optionsFrame.ClipsDescendants = true
             optionsFrame.Visible = false
             optionsFrame.ZIndex = 1000
-            optionsFrame.ScrollBarThickness = 6
-            optionsFrame.ScrollBarImageColor3 = Colors.Primary
-            optionsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-            optionsFrame.CanvasSize = UDim2.new(0,0,0,0)
-            optionsFrame.Parent = dropdownFrame
+            optionsFrame.Parent = self.ScreenGui
             
             local optionsCorner = Instance.new("UICorner")
             optionsCorner.CornerRadius = UDim.new(0,8)
@@ -881,16 +869,30 @@ function UILibrary:Create(title)
             optionsStroke.Color = Colors.Border
             optionsStroke.Parent = optionsFrame
             
+            local optionsScrolling = Instance.new("ScrollingFrame")
+            optionsScrolling.Size = UDim2.new(1,0,1,0)
+            optionsScrolling.BackgroundTransparency = 1
+            optionsScrolling.BorderSizePixel = 0
+            optionsScrolling.ScrollBarThickness = 6
+            optionsScrolling.ScrollBarImageColor3 = Colors.Primary
+            optionsScrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+            optionsScrolling.CanvasSize = UDim2.new(0,0,0,0)
+            optionsScrolling.Parent = optionsFrame
+            
             local optionsLayout = Instance.new("UIListLayout")
             optionsLayout.Padding = UDim.new(0, 4)
-            optionsLayout.Parent = optionsFrame
+            optionsLayout.Parent = optionsScrolling
             
             local optionsPadding = Instance.new("UIPadding")
             optionsPadding.PaddingTop = UDim.new(0, 4)
             optionsPadding.PaddingBottom = UDim.new(0, 4)
             optionsPadding.PaddingLeft = UDim.new(0, 4)
             optionsPadding.PaddingRight = UDim.new(0, 4)
-            optionsPadding.Parent = optionsFrame
+            optionsPadding.Parent = optionsScrolling
+            
+            optionsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                optionsScrolling.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + 8)
+            end)
             
             local open = false
             local selectedOption = nil
@@ -900,7 +902,6 @@ function UILibrary:Create(title)
                 local optData = opt
                 local optText, optIcon = opt, nil
                 
-                -- Check if option is a table with Text and Icon properties
                 if type(opt) == "table" then
                     optText = opt.Text or opt[1] or ""
                     optIcon = opt.Icon
@@ -913,13 +914,12 @@ function UILibrary:Create(title)
                 optBtn.Text = ""
                 optBtn.ZIndex = 1001
                 optBtn.LayoutOrder = i
-                optBtn.Parent = optionsFrame
+                optBtn.Parent = optionsScrolling
                 
                 local optCorner = Instance.new("UICorner")
                 optCorner.CornerRadius = UDim.new(0,6)
                 optCorner.Parent = optBtn
                 
-                -- Create content frame for icon and text
                 local optContent = Instance.new("Frame")
                 optContent.Size = UDim2.new(1, -8, 1, -8)
                 optContent.Position = UDim2.new(0, 4, 0, 4)
@@ -937,7 +937,6 @@ function UILibrary:Create(title)
                 optPadding.PaddingLeft = UDim.new(0, 8)
                 optPadding.Parent = optContent
                 
-                -- Add icon if provided
                 if optIcon then
                     local iconImage = Instance.new("ImageLabel")
                     iconImage.Size = UDim2.new(0, 16, 0, 16)
@@ -983,8 +982,8 @@ function UILibrary:Create(title)
                     selectedOption = optText
                     label.Text = text .. ": " .. optText
                     
-                    for _, btn in ipairs(optionButtons) do
-                        Tween(btn, {BackgroundColor3 = Colors.Button})
+                    for _, btnData in ipairs(optionButtons) do
+                        Tween(btnData.Button, {BackgroundColor3 = Colors.Button})
                     end
                     
                     Tween(optBtn, {BackgroundColor3 = Colors.Selected})
@@ -1006,9 +1005,17 @@ function UILibrary:Create(title)
                 table.insert(optionButtons, {Button = optBtn, Text = optText})
             end
             
-            optionsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                optionsFrame.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + 8)
-            end)
+            local function updateOptionsPosition()
+                local dropdownAbsolutePos = dropdownFrame.AbsolutePosition
+                local dropdownAbsoluteSize = dropdownFrame.AbsoluteSize
+                local screenSize = self.ScreenGui.AbsoluteSize
+                
+                optionsFrame.Position = UDim2.new(
+                    0, dropdownAbsolutePos.X,
+                    0, dropdownAbsolutePos.Y + dropdownAbsoluteSize.Y + 4
+                )
+                optionsFrame.Size = UDim2.new(0, dropdownAbsoluteSize.X, 0, 0)
+            end
             
             local isRunning = false
             arrowBtn.MouseButton1Click:Connect(function()
@@ -1017,15 +1024,16 @@ function UILibrary:Create(title)
                 
                 open = not open
                 if open then
+                    updateOptionsPosition()
                     optionsFrame.Visible = true
-                    -- CHANGED: Calculate height based on number of options
+                    
                     local optionCount = #options
-                    local maxVisibleOptions = 6 -- Maximum options to show before scrolling
                     local optionHeight = 32
                     local padding = 8
-                    local height = math.min(optionCount, maxVisibleOptions) * (optionHeight + 4) + padding
+                    local maxHeight = 200
+                    local totalHeight = math.min(optionCount * (optionHeight + 4) + padding, maxHeight)
                     
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,height)})
+                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,totalHeight)})
                     Tween(arrowBtn, {Rotation = 180})
                     
                     if selectedOption then
@@ -1072,10 +1080,21 @@ function UILibrary:Create(title)
                 end
             end)
             
+            local updateConnection
+            updateConnection = RunService.Heartbeat:Connect(function()
+                if open then
+                    updateOptionsPosition()
+                end
+            end)
+            
             dropdownFrame.Destroying:Connect(function()
                 if dropdownConnection then
                     dropdownConnection:Disconnect()
                 end
+                if updateConnection then
+                    updateConnection:Disconnect()
+                end
+                optionsFrame:Destroy()
             end)
             
             local dropdownObj = {}
@@ -1102,7 +1121,6 @@ function UILibrary:Create(title)
             return dropdownObj
         end
         
-        -- NEW: Multi-select dropdown function
         function tabData:AddMultiDropdown(text, options, callback, dropdownIcon)
             local dropdownFrame = Instance.new("Frame")
             dropdownFrame.Size = UDim2.new(1,0,0,38)
@@ -1123,7 +1141,6 @@ function UILibrary:Create(title)
             leftSide.BackgroundTransparency = 1
             leftSide.Parent = dropdownFrame
             
-            -- Only add icon if provided
             if dropdownIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
@@ -1132,7 +1149,6 @@ function UILibrary:Create(title)
                 iconImage.Image = dropdownIcon
                 iconImage.ImageColor3 = Colors.Text
                 
-                -- Add squircle corners to icon
                 local iconCorner = Instance.new("UICorner")
                 iconCorner.CornerRadius = UDim.new(0.25, 0)
                 iconCorner.Parent = iconImage
@@ -1151,7 +1167,6 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = leftSide
             
-            -- Only add icon if provided
             if dropdownIcon then
                 label.Position = UDim2.new(0,44,0,0)
                 label.Size = UDim2.new(1,-90,1,0)
@@ -1172,19 +1187,14 @@ function UILibrary:Create(title)
             arrowCorner.CornerRadius = UDim.new(0,8)
             arrowCorner.Parent = arrowBtn
             
-            -- Scrolling frame with dynamic height based on options
-            local optionsFrame = Instance.new("ScrollingFrame")
+            local optionsFrame = Instance.new("Frame")
             optionsFrame.Size = UDim2.new(1,0,0,0)
             optionsFrame.Position = UDim2.new(0,0,1,4)
             optionsFrame.BackgroundColor3 = Colors.Foreground
             optionsFrame.ClipsDescendants = true
             optionsFrame.Visible = false
             optionsFrame.ZIndex = 1000
-            optionsFrame.ScrollBarThickness = 6
-            optionsFrame.ScrollBarImageColor3 = Colors.Primary
-            optionsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-            optionsFrame.CanvasSize = UDim2.new(0,0,0,0)
-            optionsFrame.Parent = dropdownFrame
+            optionsFrame.Parent = self.ScreenGui
             
             local optionsCorner = Instance.new("UICorner")
             optionsCorner.CornerRadius = UDim.new(0,8)
@@ -1195,16 +1205,30 @@ function UILibrary:Create(title)
             optionsStroke.Color = Colors.Border
             optionsStroke.Parent = optionsFrame
             
+            local optionsScrolling = Instance.new("ScrollingFrame")
+            optionsScrolling.Size = UDim2.new(1,0,1,0)
+            optionsScrolling.BackgroundTransparency = 1
+            optionsScrolling.BorderSizePixel = 0
+            optionsScrolling.ScrollBarThickness = 6
+            optionsScrolling.ScrollBarImageColor3 = Colors.Primary
+            optionsScrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+            optionsScrolling.CanvasSize = UDim2.new(0,0,0,0)
+            optionsScrolling.Parent = optionsFrame
+            
             local optionsLayout = Instance.new("UIListLayout")
             optionsLayout.Padding = UDim.new(0, 4)
-            optionsLayout.Parent = optionsFrame
+            optionsLayout.Parent = optionsScrolling
             
             local optionsPadding = Instance.new("UIPadding")
             optionsPadding.PaddingTop = UDim.new(0, 4)
             optionsPadding.PaddingBottom = UDim.new(0, 4)
             optionsPadding.PaddingLeft = UDim.new(0, 4)
             optionsPadding.PaddingRight = UDim.new(0, 4)
-            optionsPadding.Parent = optionsFrame
+            optionsPadding.Parent = optionsScrolling
+            
+            optionsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                optionsScrolling.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + 8)
+            end)
             
             local open = false
             local selectedOptions = {}
@@ -1214,7 +1238,6 @@ function UILibrary:Create(title)
                 local optData = opt
                 local optText, optIcon = opt, nil
                 
-                -- Check if option is a table with Text and Icon properties
                 if type(opt) == "table" then
                     optText = opt.Text or opt[1] or ""
                     optIcon = opt.Icon
@@ -1227,13 +1250,12 @@ function UILibrary:Create(title)
                 optBtn.Text = ""
                 optBtn.ZIndex = 1001
                 optBtn.LayoutOrder = i
-                optBtn.Parent = optionsFrame
+                optBtn.Parent = optionsScrolling
                 
                 local optCorner = Instance.new("UICorner")
                 optCorner.CornerRadius = UDim.new(0,6)
                 optCorner.Parent = optBtn
                 
-                -- Create content frame for checkbox, icon and text
                 local optContent = Instance.new("Frame")
                 optContent.Size = UDim2.new(1, -8, 1, -8)
                 optContent.Position = UDim2.new(0, 4, 0, 4)
@@ -1251,7 +1273,6 @@ function UILibrary:Create(title)
                 optPadding.PaddingLeft = UDim.new(0, 8)
                 optPadding.Parent = optContent
                 
-                -- Checkbox for multi-select
                 local checkbox = Instance.new("Frame")
                 checkbox.Size = UDim2.new(0, 16, 0, 16)
                 checkbox.BackgroundColor3 = Colors.Button
@@ -1275,7 +1296,6 @@ function UILibrary:Create(title)
                 checkIcon.Visible = false
                 checkIcon.Parent = checkbox
                 
-                -- Add icon if provided
                 if optIcon then
                     local iconImage = Instance.new("ImageLabel")
                     iconImage.Size = UDim2.new(0, 16, 0, 16)
@@ -1371,9 +1391,17 @@ function UILibrary:Create(title)
                 })
             end
             
-            optionsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                optionsFrame.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + 8)
-            end)
+            local function updateOptionsPosition()
+                local dropdownAbsolutePos = dropdownFrame.AbsolutePosition
+                local dropdownAbsoluteSize = dropdownFrame.AbsoluteSize
+                local screenSize = self.ScreenGui.AbsoluteSize
+                
+                optionsFrame.Position = UDim2.new(
+                    0, dropdownAbsolutePos.X,
+                    0, dropdownAbsolutePos.Y + dropdownAbsoluteSize.Y + 4
+                )
+                optionsFrame.Size = UDim2.new(0, dropdownAbsoluteSize.X, 0, 0)
+            end
             
             local isRunning = false
             arrowBtn.MouseButton1Click:Connect(function()
@@ -1382,18 +1410,18 @@ function UILibrary:Create(title)
                 
                 open = not open
                 if open then
+                    updateOptionsPosition()
                     optionsFrame.Visible = true
-                    -- Calculate height based on number of options
+                    
                     local optionCount = #options
-                    local maxVisibleOptions = 6
                     local optionHeight = 32
                     local padding = 8
-                    local height = math.min(optionCount, maxVisibleOptions) * (optionHeight + 4) + padding
+                    local maxHeight = 200
+                    local totalHeight = math.min(optionCount * (optionHeight + 4) + padding, maxHeight)
                     
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,height)})
+                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,totalHeight)})
                     Tween(arrowBtn, {Rotation = 180})
                     
-                    -- Update button states based on selection
                     for _, btnData in ipairs(optionButtons) do
                         if selectedOptions[btnData.Text] then
                             Tween(btnData.Button, {BackgroundColor3 = Colors.Selected})
@@ -1442,10 +1470,21 @@ function UILibrary:Create(title)
                 end
             end)
             
+            local updateConnection
+            updateConnection = RunService.Heartbeat:Connect(function()
+                if open then
+                    updateOptionsPosition()
+                end
+            end)
+            
             dropdownFrame.Destroying:Connect(function()
                 if dropdownConnection then
                     dropdownConnection:Disconnect()
                 end
+                if updateConnection then
+                    updateConnection:Disconnect()
+                end
+                optionsFrame:Destroy()
             end)
             
             local dropdownObj = {}
@@ -1462,7 +1501,6 @@ function UILibrary:Create(title)
                 
                 updateSelectionDisplay()
                 
-                -- Update button states
                 for _, btnData in ipairs(optionButtons) do
                     if selectedOptions[btnData.Text] then
                         Tween(btnData.Button, {BackgroundColor3 = Colors.Selected})
@@ -1540,7 +1578,6 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = textboxFrame
             
-            -- Only add icon if provided
             if textboxIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
@@ -1549,9 +1586,8 @@ function UILibrary:Create(title)
                 iconImage.Image = textboxIcon
                 iconImage.ImageColor3 = Colors.Text
                 
-                -- Add squircle corners to icon
                 local iconCorner = Instance.new("UICorner")
-                iconCorner.CornerRadius = UDim.new(0.25, 0) -- Squircle effect
+                iconCorner.CornerRadius = UDim.new(0.25, 0)
                 iconCorner.Parent = iconImage
                 
                 iconImage.Parent = textboxFrame
@@ -1634,7 +1670,6 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = sliderFrame
             
-            -- Only add icon if provided
             if sliderIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
@@ -1643,9 +1678,8 @@ function UILibrary:Create(title)
                 iconImage.Image = sliderIcon
                 iconImage.ImageColor3 = Colors.Text
                 
-                -- Add squircle corners to icon
                 local iconCorner = Instance.new("UICorner")
-                iconCorner.CornerRadius = UDim.new(0.25, 0) -- Squircle effect
+                iconCorner.CornerRadius = UDim.new(0.25, 0)
                 iconCorner.Parent = iconImage
                 
                 iconImage.Parent = sliderFrame
@@ -1713,7 +1747,6 @@ function UILibrary:Create(title)
                 end
             end
             
-            -- Mouse input
             sliderButton.MouseButton1Down:Connect(function()
                 dragging = true
             end)
@@ -1772,7 +1805,6 @@ function UILibrary:Create(title)
             labelLayout.Padding = UDim.new(0, 8)
             labelLayout.Parent = labelFrame
             
-            -- Only add icon if provided
             if labelIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
@@ -1780,9 +1812,8 @@ function UILibrary:Create(title)
                 iconImage.Image = labelIcon
                 iconImage.ImageColor3 = Colors.Text
                 
-                -- Add squircle corners to icon
                 local iconCorner = Instance.new("UICorner")
-                iconCorner.CornerRadius = UDim.new(0.25, 0) -- Squircle effect
+                iconCorner.CornerRadius = UDim.new(0.25, 0)
                 iconCorner.Parent = iconImage
                 
                 iconImage.Parent = labelFrame
@@ -1828,7 +1859,6 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = keybindFrame
             
-            -- Only add icon if provided
             if keybindIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
@@ -1837,9 +1867,8 @@ function UILibrary:Create(title)
                 iconImage.Image = keybindIcon
                 iconImage.ImageColor3 = Colors.Text
                 
-                -- Add squircle corners to icon
                 local iconCorner = Instance.new("UICorner")
-                iconCorner.CornerRadius = UDim.new(0.25, 0) -- Squircle effect
+                iconCorner.CornerRadius = UDim.new(0.25, 0)
                 iconCorner.Parent = iconImage
                 
                 iconImage.Parent = keybindFrame
@@ -1954,7 +1983,6 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = colorFrame
             
-            -- Only add icon if provided
             if colorIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
@@ -1963,9 +1991,8 @@ function UILibrary:Create(title)
                 iconImage.Image = colorIcon
                 iconImage.ImageColor3 = Colors.Text
                 
-                -- Add squircle corners to icon
                 local iconCorner = Instance.new("UICorner")
-                iconCorner.CornerRadius = UDim.new(0.25, 0) -- Squircle effect
+                iconCorner.CornerRadius = UDim.new(0.25, 0)
                 iconCorner.Parent = iconImage
                 
                 iconImage.Parent = colorFrame
