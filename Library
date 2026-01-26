@@ -355,7 +355,7 @@ function UILibrary:Create(title)
     contentPadding.Parent = self.Content
     
     contentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        self.Content.CanvasSize = UDim2.new(0, 0, 0, contentList.AbsoluteContentSize.Y + 10000)
+        self.Content.CanvasSize = UDim2.new(0, 0, 0, contentList.AbsoluteContentSize.Y + 50)
     end)
     
     local dragEnabled = false
@@ -533,7 +533,7 @@ function UILibrary:Create(title)
         tabContentPadding.Parent = contentFrame
         
         tabContentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            contentFrame.CanvasSize = UDim2.new(0, 0, 0, tabContentList.AbsoluteContentSize.Y + 24)
+            contentFrame.CanvasSize = UDim2.new(0, 0, 0, tabContentList.AbsoluteContentSize.Y + 50)
         end)
         
         tabBtn.MouseEnter:Connect(function()
@@ -657,16 +657,21 @@ function UILibrary:Create(title)
                 btnContent.Position = UDim2.new(0.5, -contentSize.X/2, 0, 0)
             end)
             
-            local function handleClick()
+            local isRunning = false
+            btn.MouseButton1Click:Connect(function()
+                if isRunning then return end
+                isRunning = true
+                
                 Tween(btn, {BackgroundColor3 = Color3.fromRGB(50,50,55)})
                 task.wait(0.1)
                 Tween(btn, {BackgroundColor3 = Colors.Button})
+                
                 if callback then 
                     callback() 
                 end
-            end
-            
-            btn.MouseButton1Click:Connect(handleClick)
+                
+                isRunning = false
+            end)
             
             return btn
         end
@@ -739,7 +744,11 @@ function UILibrary:Create(title)
             
             local state = default
             
+            local isRunning = false
             local function toggle()
+                if isRunning then return end
+                isRunning = true
+                
                 state = not state
                 if state then
                     Tween(dot, {
@@ -753,6 +762,8 @@ function UILibrary:Create(title)
                     })
                 end
                 if callback then callback(state) end
+                
+                isRunning = false
             end
             
             local clickBtn = Instance.new("TextButton")
@@ -761,9 +772,7 @@ function UILibrary:Create(title)
             clickBtn.Text = ""
             clickBtn.Parent = toggleFrame
             
-            clickBtn.MouseButton1Click:Connect(function()
-                toggle()
-            end)
+            clickBtn.MouseButton1Click:Connect(toggle)
             
             local toggleObj = {}
             
@@ -795,16 +804,10 @@ function UILibrary:Create(title)
             dropdownStroke.Color = Colors.Border
             dropdownStroke.Parent = dropdownFrame
             
-            local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,-60,1,0)
-            label.Position = UDim2.new(0,14,0,0)
-            label.BackgroundTransparency = 1
-            label.Text = text
-            label.TextColor3 = Colors.Text
-            label.TextSize = 14
-            label.Font = Enum.Font.GothamSemibold
-            label.TextXAlignment = Enum.TextXAlignment.Left
-            label.Parent = dropdownFrame
+            local leftSide = Instance.new("Frame")
+            leftSide.Size = UDim2.new(0.7,0,1,0)
+            leftSide.BackgroundTransparency = 1
+            leftSide.Parent = dropdownFrame
             
             -- Only add icon if provided
             if dropdownIcon then
@@ -820,8 +823,22 @@ function UILibrary:Create(title)
                 iconCorner.CornerRadius = UDim.new(0.25, 0) -- Squircle effect
                 iconCorner.Parent = iconImage
                 
-                iconImage.Parent = dropdownFrame
-                
+                iconImage.Parent = leftSide
+            end
+            
+            local label = Instance.new("TextLabel")
+            label.Size = UDim2.new(1,-60,1,0)
+            label.Position = UDim2.new(0,14,0,0)
+            label.BackgroundTransparency = 1
+            label.Text = text
+            label.TextColor3 = Colors.Text
+            label.TextSize = 14
+            label.Font = Enum.Font.GothamSemibold
+            label.TextXAlignment = Enum.TextXAlignment.Left
+            label.Parent = leftSide
+            
+            -- Only add icon if provided
+            if dropdownIcon then
                 label.Position = UDim2.new(0,44,0,0)
                 label.Size = UDim2.new(1,-90,1,0)
             end
@@ -841,7 +858,7 @@ function UILibrary:Create(title)
             arrowCorner.CornerRadius = UDim.new(0,8)
             arrowCorner.Parent = arrowBtn
             
-            -- Fixed: Now using ScrollingFrame for options with auto-extend
+            -- FIXED: Scrolling frame with larger height (300px)
             local optionsFrame = Instance.new("ScrollingFrame")
             optionsFrame.Size = UDim2.new(1,0,0,0)
             optionsFrame.Position = UDim2.new(0,0,1,4)
@@ -908,7 +925,11 @@ function UILibrary:Create(title)
                     end
                 end)
                 
+                local isRunning = false
                 optBtn.MouseButton1Click:Connect(function()
+                    if isRunning then return end
+                    isRunning = true
+                    
                     selectedOption = opt
                     label.Text = text .. ": " .. opt
                     
@@ -928,6 +949,8 @@ function UILibrary:Create(title)
                     if callback then
                         callback(opt)
                     end
+                    
+                    isRunning = false
                 end)
                 
                 table.insert(optionButtons, optBtn)
@@ -937,11 +960,15 @@ function UILibrary:Create(title)
                 optionsFrame.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + 8)
             end)
             
+            local isRunning = false
             arrowBtn.MouseButton1Click:Connect(function()
+                if isRunning then return end
+                isRunning = true
+                
                 open = not open
                 if open then
                     optionsFrame.Visible = true
-                    local height = math.min(optionsLayout.AbsoluteContentSize.Y + 12, 200)
+                    local height = math.min(optionsLayout.AbsoluteContentSize.Y + 12, 300) -- FIXED: Larger height (300px)
                     Tween(optionsFrame, {Size = UDim2.new(1,0,0,height)})
                     Tween(arrowBtn, {Rotation = 180})
                     
@@ -960,6 +987,8 @@ function UILibrary:Create(title)
                     task.wait(0.2)
                     optionsFrame.Visible = false
                 end
+                
+                isRunning = false
             end)
             
             local dropdownConnection
@@ -1216,21 +1245,14 @@ function UILibrary:Create(title)
                 end
             end
             
-            local function onInputBegan(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                    dragging = true
-                    
-                    -- Update value immediately on touch start
-                    local mousePos = input.Position.X
-                    local sliderAbsolutePos = sliderBar.AbsolutePosition.X
-                    local sliderAbsoluteSize = sliderBar.AbsoluteSize.X
-                    
-                    local percentage = math.clamp((mousePos - sliderAbsolutePos) / sliderAbsoluteSize, 0, 1)
-                    local value = min + (percentage * (max - min))
-                    
-                    updateValue(value)
-                end
-            end
+            -- Mouse input
+            sliderButton.MouseButton1Down:Connect(function()
+                dragging = true
+            end)
+            
+            sliderBar.MouseButton1Down:Connect(function()
+                dragging = true
+            end)
             
             local function onInputChanged(input)
                 if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
@@ -1250,10 +1272,6 @@ function UILibrary:Create(title)
                     dragging = false
                 end
             end
-            
-            -- Connect events
-            sliderButton.InputBegan:Connect(onInputBegan)
-            sliderBar.InputBegan:Connect(onInputBegan)
             
             UserInputService.InputChanged:Connect(onInputChanged)
             UserInputService.InputEnded:Connect(onInputEnded)
@@ -1380,50 +1398,54 @@ function UILibrary:Create(title)
             local currentKey = defaultKey
             local listening = false
             
+            local isRunning = false
             local function updateKey(key)
+                if isRunning then return end
+                isRunning = true
+                
                 currentKey = key
                 keyBtn.Text = key and key.Name or "..."
                 if callback then
                     callback(key)
                 end
-            end
-            
-            local function startListening()
-                listening = true
-                keyBtn.Text = "..."
-                Tween(keyBtn, {BackgroundColor3 = Colors.Primary})
-            end
-            
-            local function stopListening()
-                listening = false
-                Tween(keyBtn, {BackgroundColor3 = Colors.Button})
+                
+                isRunning = false
             end
             
             keyBtn.MouseButton1Click:Connect(function()
+                if isRunning then return end
+                isRunning = true
+                
+                listening = not listening
                 if listening then
-                    stopListening()
+                    keyBtn.Text = "..."
+                    Tween(keyBtn, {BackgroundColor3 = Colors.Primary})
+                    
+                    local connection
+                    connection = UserInputService.InputBegan:Connect(function(input)
+                        if input.UserInputType == Enum.UserInputType.Keyboard then
+                            listening = false
+                            updateKey(input.KeyCode)
+                            Tween(keyBtn, {BackgroundColor3 = Colors.Button})
+                            connection:Disconnect()
+                        end
+                    end)
                 else
-                    startListening()
+                    Tween(keyBtn, {BackgroundColor3 = Colors.Button})
                 end
+                
+                isRunning = false
             end)
             
-            local keybindConnection
-            keybindConnection = UserInputService.InputBegan:Connect(function(input)
-                if listening and input.UserInputType == Enum.UserInputType.Keyboard then
-                    updateKey(input.KeyCode)
-                    stopListening()
-                elseif not listening and defaultKey and input.KeyCode == currentKey then
-                    if callback then
-                        callback(currentKey, true)
+            if defaultKey then
+                UserInputService.InputBegan:Connect(function(input)
+                    if input.KeyCode == currentKey then
+                        if callback then
+                            callback(currentKey, true)
+                        end
                     end
-                end
-            end)
-            
-            keybindFrame.Destroying:Connect(function()
-                if keybindConnection then
-                    keybindConnection:Disconnect()
-                end
-            end)
+                end)
+            end
             
             local keybindObj = {}
             
@@ -1503,7 +1525,11 @@ function UILibrary:Create(title)
             
             local currentColor = defaultColor or Color3.new(1, 1, 1)
             
+            local isRunning = false
             colorBtn.MouseButton1Click:Connect(function()
+                if isRunning then return end
+                isRunning = true
+                
                 local colors = {
                     Color3.new(1, 0, 0),
                     Color3.new(0, 1, 0),
@@ -1531,6 +1557,8 @@ function UILibrary:Create(title)
                 if callback then
                     callback(currentColor)
                 end
+                
+                isRunning = false
             end)
             
             local colorpickerObj = {}
