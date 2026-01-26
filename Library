@@ -55,7 +55,7 @@ function NotificationManager:Init(screenGui)
     return self
 end
 
-function NotificationManager:CreateNotification(title, content, notificationType, duration)
+function NotificationManager:CreateNotification(title, content, notificationType, duration, icon)
     duration = duration or 5
     notificationType = notificationType or "Info"
     
@@ -97,15 +97,32 @@ function NotificationManager:CreateNotification(title, content, notificationType
     contentContainer.BackgroundTransparency = 1
     contentContainer.Parent = notification
     
+    -- Icon support for notifications
+    local titleContainer = Instance.new("Frame")
+    titleContainer.Size = UDim2.new(1, 0, 0, 24)
+    titleContainer.BackgroundTransparency = 1
+    titleContainer.Parent = contentContainer
+    
     local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, 0, 0, 24)
+    titleLabel.Size = UDim2.new(1, -30, 1, 0)
+    titleLabel.Position = UDim2.new(0, icon and 30 or 0, 0, 0)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = title
     titleLabel.TextColor3 = Colors.Text
     titleLabel.TextSize = 14
     titleLabel.Font = Enum.Font.GothamBold
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    titleLabel.Parent = contentContainer
+    titleLabel.Parent = titleContainer
+    
+    if icon then
+        local iconImage = Instance.new("ImageLabel")
+        iconImage.Size = UDim2.new(0, 20, 0, 20)
+        iconImage.Position = UDim2.new(0, 0, 0.5, -10)
+        iconImage.BackgroundTransparency = 1
+        iconImage.Image = icon
+        iconImage.ImageColor3 = Colors[notificationType]
+        iconImage.Parent = titleContainer
+    end
     
     local contentLabel = Instance.new("TextLabel")
     contentLabel.Size = UDim2.new(1, 0, 0, 0)
@@ -446,12 +463,12 @@ function UILibrary:Create(title)
     self.CurrentTab = nil
     self.CurrentTabButton = nil
     
-    function self:Tab(name)
+    function self:Tab(name, icon)
         local tabBtn = Instance.new("TextButton")
         tabBtn.Size = UDim2.new(1,0,0,36)
         tabBtn.BackgroundColor3 = Colors.Button
         tabBtn.AutoButtonColor = false
-        tabBtn.Text = name
+        tabBtn.Text = icon and "" or name
         tabBtn.TextColor3 = Colors.SubText
         tabBtn.Font = Enum.Font.GothamSemibold
         tabBtn.TextSize = 14
@@ -465,6 +482,62 @@ function UILibrary:Create(title)
         tabStroke.Thickness = 1
         tabStroke.Color = Colors.Border
         tabStroke.Parent = tabBtn
+        
+        if icon then
+            local iconImage = Instance.new("ImageLabel")
+            iconImage.Size = UDim2.new(0,20,0,20)
+            iconImage.Position = UDim2.new(0.5,-10,0.5,-10)
+            iconImage.BackgroundTransparency = 1
+            iconImage.Image = icon
+            iconImage.ImageColor3 = Colors.SubText
+            iconImage.Parent = tabBtn
+            
+            tabBtn.MouseEnter:Connect(function()
+                if self.CurrentTabButton ~= tabBtn then
+                    Tween(iconImage, {ImageColor3 = Colors.Text})
+                end
+            end)
+            
+            tabBtn.MouseLeave:Connect(function()
+                if self.CurrentTabButton ~= tabBtn then
+                    Tween(iconImage, {ImageColor3 = Colors.SubText})
+                end
+            end)
+            
+            tabBtn.MouseButton1Click:Connect(function()
+                if self.CurrentTabButton then
+                    local prevIcon = self.CurrentTabButton:FindFirstChildWhichIsA("ImageLabel")
+                    if prevIcon then
+                        Tween(prevIcon, {ImageColor3 = Colors.SubText})
+                    end
+                end
+                
+                Tween(iconImage, {ImageColor3 = Colors.Text})
+            end)
+        else
+            local tabLabel = Instance.new("TextLabel")
+            tabLabel.Size = UDim2.new(1,-20,1,0)
+            tabLabel.Position = UDim2.new(0,10,0,0)
+            tabLabel.BackgroundTransparency = 1
+            tabLabel.Text = name
+            tabLabel.TextColor3 = Colors.SubText
+            tabLabel.Font = Enum.Font.GothamSemibold
+            tabLabel.TextSize = 14
+            tabLabel.TextXAlignment = Enum.TextXAlignment.Left
+            tabLabel.Parent = tabBtn
+            
+            tabBtn.MouseEnter:Connect(function()
+                if self.CurrentTabButton ~= tabBtn then
+                    Tween(tabLabel, {TextColor3 = Colors.Text})
+                end
+            end)
+            
+            tabBtn.MouseLeave:Connect(function()
+                if self.CurrentTabButton ~= tabBtn then
+                    Tween(tabLabel, {TextColor3 = Colors.SubText})
+                end
+            end)
+        end
         
         local contentFrame = Instance.new("ScrollingFrame")
         contentFrame.Size = UDim2.new(1,0,1,0)
@@ -493,20 +566,6 @@ function UILibrary:Create(title)
             contentFrame.CanvasSize = UDim2.new(0, 0, 0, tabContentList.AbsoluteContentSize.Y + 10000)
         end)
         
-        tabBtn.MouseEnter:Connect(function()
-            if self.CurrentTabButton ~= tabBtn then
-                Tween(tabBtn, {BackgroundColor3 = Color3.fromRGB(40,40,45)})
-                Tween(tabBtn, {TextColor3 = Colors.Text})
-            end
-        end)
-        
-        tabBtn.MouseLeave:Connect(function()
-            if self.CurrentTabButton ~= tabBtn then
-                Tween(tabBtn, {BackgroundColor3 = Colors.Button})
-                Tween(tabBtn, {TextColor3 = Colors.SubText})
-            end
-        end)
-        
         tabBtn.MouseButton1Click:Connect(function()
             if self.CurrentTab then 
                 self.CurrentTab.Visible = false 
@@ -514,17 +573,25 @@ function UILibrary:Create(title)
             
             if self.CurrentTabButton then
                 Tween(self.CurrentTabButton, {
-                    BackgroundColor3 = Colors.Button,
-                    TextColor3 = Colors.SubText
+                    BackgroundColor3 = Colors.Button
                 })
-                Tween(self.CurrentTabButton.UIStroke, {Color = Colors.Border})
+                
+                if icon then
+                    local prevIcon = self.CurrentTabButton:FindFirstChildWhichIsA("ImageLabel")
+                    if prevIcon then
+                        Tween(prevIcon, {ImageColor3 = Colors.SubText})
+                    end
+                else
+                    local prevLabel = self.CurrentTabButton:FindFirstChildWhichIsA("TextLabel")
+                    if prevLabel then
+                        Tween(prevLabel, {TextColor3 = Colors.SubText})
+                    end
+                end
             end
             
             Tween(tabBtn, {
-                BackgroundColor3 = Colors.Selected,
-                TextColor3 = Colors.Text
+                BackgroundColor3 = Colors.Selected
             })
-            Tween(tabBtn.UIStroke, {Color = Colors.Primary})
             
             contentFrame.Visible = true
             self.CurrentTab = contentFrame
@@ -533,15 +600,12 @@ function UILibrary:Create(title)
         
         local tabData = {}
         
-        function tabData:AddButton(text, callback)
+        function tabData:AddButton(text, callback, btnIcon)
             local btn = Instance.new("TextButton")
             btn.Size = UDim2.new(1,0,0,38)
             btn.BackgroundColor3 = Colors.Button
             btn.AutoButtonColor = false
-            btn.Text = text
-            btn.TextColor3 = Colors.Text
-            btn.Font = Enum.Font.GothamBold
-            btn.TextSize = 14
+            btn.Text = ""
             btn.Parent = contentFrame
             
             local btnCorner = Instance.new("UICorner")
@@ -552,6 +616,43 @@ function UILibrary:Create(title)
             btnStroke.Thickness = 1
             btnStroke.Color = Colors.Border
             btnStroke.Parent = btn
+            
+            local btnContent = Instance.new("Frame")
+            btnContent.Size = UDim2.new(1,-20,1,0)
+            btnContent.Position = UDim2.new(0,10,0,0)
+            btnContent.BackgroundTransparency = 1
+            btnContent.Parent = btn
+            
+            if btnIcon then
+                local iconImage = Instance.new("ImageLabel")
+                iconImage.Size = UDim2.new(0,20,0,20)
+                iconImage.Position = UDim2.new(0,0,0.5,-10)
+                iconImage.BackgroundTransparency = 1
+                iconImage.Image = btnIcon
+                iconImage.ImageColor3 = Colors.Text
+                iconImage.Parent = btnContent
+                
+                local textLabel = Instance.new("TextLabel")
+                textLabel.Size = UDim2.new(1,-30,1,0)
+                textLabel.Position = UDim2.new(0,30,0,0)
+                textLabel.BackgroundTransparency = 1
+                textLabel.Text = text
+                textLabel.TextColor3 = Colors.Text
+                textLabel.Font = Enum.Font.GothamBold
+                textLabel.TextSize = 14
+                textLabel.TextXAlignment = Enum.TextXAlignment.Left
+                textLabel.Parent = btnContent
+            else
+                local textLabel = Instance.new("TextLabel")
+                textLabel.Size = UDim2.new(1,0,1,0)
+                textLabel.BackgroundTransparency = 1
+                textLabel.Text = text
+                textLabel.TextColor3 = Colors.Text
+                textLabel.Font = Enum.Font.GothamBold
+                textLabel.TextSize = 14
+                textLabel.TextXAlignment = Enum.TextXAlignment.Center
+                textLabel.Parent = btnContent
+            end
             
             btn.MouseButton1Click:Connect(function()
                 Tween(btn, {BackgroundColor3 = Color3.fromRGB(50,50,55)})
@@ -565,7 +666,7 @@ function UILibrary:Create(title)
             return btn
         end
         
-        function tabData:AddToggle(text, default, callback)
+        function tabData:AddToggle(text, default, callback, toggleIcon)
             local toggleFrame = Instance.new("Frame")
             toggleFrame.Size = UDim2.new(1,0,0,38)
             toggleFrame.BackgroundColor3 = Colors.Foreground
@@ -580,20 +681,46 @@ function UILibrary:Create(title)
             toggleStroke.Color = Colors.Border
             toggleStroke.Parent = toggleFrame
             
-            local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,-60,1,0)
-            label.Position = UDim2.new(0,14,0,0)
-            label.BackgroundTransparency = 1
-            label.Text = text
-            label.TextColor3 = Colors.Text
-            label.TextSize = 14
-            label.Font = Enum.Font.GothamSemibold
-            label.TextXAlignment = Enum.TextXAlignment.Left
-            label.Parent = toggleFrame
+            local leftContent = Instance.new("Frame")
+            leftContent.Size = UDim2.new(0.6,0,1,0)
+            leftContent.BackgroundTransparency = 1
+            leftContent.Parent = toggleFrame
+            
+            if toggleIcon then
+                local iconImage = Instance.new("ImageLabel")
+                iconImage.Size = UDim2.new(0,20,0,20)
+                iconImage.Position = UDim2.new(0,14,0.5,-10)
+                iconImage.BackgroundTransparency = 1
+                iconImage.Image = toggleIcon
+                iconImage.ImageColor3 = Colors.Text
+                iconImage.Parent = leftContent
+                
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-44,1,0)
+                label.Position = UDim2.new(0,44,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamSemibold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = leftContent
+            else
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-28,1,0)
+                label.Position = UDim2.new(0,14,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamSemibold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = leftContent
+            end
             
             local switch = Instance.new("Frame")
             switch.Size = UDim2.new(0,44,0,24)
-            switch.Position = UDim2.new(1,-48,0.5,-12)
+            switch.Position = UDim2.new(1,-54,0.5,-12)
             switch.BackgroundColor3 = Colors.Button
             switch.Parent = toggleFrame
             
@@ -649,7 +776,7 @@ function UILibrary:Create(title)
             }
         end
         
-        function tabData:AddDropdown(text, options, callback)
+        function tabData:AddDropdown(text, options, callback, dropdownIcon)
             local dropdownFrame = Instance.new("Frame")
             dropdownFrame.Size = UDim2.new(1,0,0,38)
             dropdownFrame.BackgroundColor3 = Colors.Foreground
@@ -664,16 +791,42 @@ function UILibrary:Create(title)
             dropdownStroke.Color = Colors.Border
             dropdownStroke.Parent = dropdownFrame
             
-            local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,-60,1,0)
-            label.Position = UDim2.new(0,14,0,0)
-            label.BackgroundTransparency = 1
-            label.Text = text
-            label.TextColor3 = Colors.Text
-            label.TextSize = 14
-            label.Font = Enum.Font.GothamSemibold
-            label.TextXAlignment = Enum.TextXAlignment.Left
-            label.Parent = dropdownFrame
+            local leftContent = Instance.new("Frame")
+            leftContent.Size = UDim2.new(0.6,0,1,0)
+            leftContent.BackgroundTransparency = 1
+            leftContent.Parent = dropdownFrame
+            
+            if dropdownIcon then
+                local iconImage = Instance.new("ImageLabel")
+                iconImage.Size = UDim2.new(0,20,0,20)
+                iconImage.Position = UDim2.new(0,14,0.5,-10)
+                iconImage.BackgroundTransparency = 1
+                iconImage.Image = dropdownIcon
+                iconImage.ImageColor3 = Colors.Text
+                iconImage.Parent = leftContent
+                
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-44,1,0)
+                label.Position = UDim2.new(0,44,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamSemibold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = leftContent
+            else
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-28,1,0)
+                label.Position = UDim2.new(0,14,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamSemibold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = leftContent
+            end
             
             local arrowBtn = Instance.new("TextButton")
             arrowBtn.Size = UDim2.new(0,36,0,36)
@@ -855,7 +1008,7 @@ function UILibrary:Create(title)
             }
         end
         
-        function tabData:AddTextbox(text, placeholder, callback)
+        function tabData:AddTextbox(text, placeholder, callback, textboxIcon)
             local textboxFrame = Instance.new("Frame")
             textboxFrame.Size = UDim2.new(1,0,0,38)
             textboxFrame.BackgroundColor3 = Colors.Foreground
@@ -870,16 +1023,42 @@ function UILibrary:Create(title)
             textboxStroke.Color = Colors.Border
             textboxStroke.Parent = textboxFrame
             
-            local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(0,100,1,0)
-            label.Position = UDim2.new(0,14,0,0)
-            label.BackgroundTransparency = 1
-            label.Text = text
-            label.TextColor3 = Colors.Text
-            label.TextSize = 14
-            label.Font = Enum.Font.GothamSemibold
-            label.TextXAlignment = Enum.TextXAlignment.Left
-            label.Parent = textboxFrame
+            local leftContent = Instance.new("Frame")
+            leftContent.Size = UDim2.new(0,100,1,0)
+            leftContent.BackgroundTransparency = 1
+            leftContent.Parent = textboxFrame
+            
+            if textboxIcon then
+                local iconImage = Instance.new("ImageLabel")
+                iconImage.Size = UDim2.new(0,20,0,20)
+                iconImage.Position = UDim2.new(0,14,0.5,-10)
+                iconImage.BackgroundTransparency = 1
+                iconImage.Image = textboxIcon
+                iconImage.ImageColor3 = Colors.Text
+                iconImage.Parent = leftContent
+                
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-34,1,0)
+                label.Position = UDim2.new(0,34,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamSemibold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = leftContent
+            else
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-28,1,0)
+                label.Position = UDim2.new(0,14,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamSemibold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = leftContent
+            end
             
             local textbox = Instance.new("TextBox")
             textbox.Size = UDim2.new(1,-120,1,-12)
@@ -926,7 +1105,7 @@ function UILibrary:Create(title)
             }
         end
         
-        function tabData:AddSlider(text, min, max, default, callback)
+        function tabData:AddSlider(text, min, max, default, callback, sliderIcon)
             local sliderFrame = Instance.new("Frame")
             sliderFrame.Size = UDim2.new(1,0,0,38)
             sliderFrame.BackgroundColor3 = Colors.Foreground
@@ -941,16 +1120,42 @@ function UILibrary:Create(title)
             sliderStroke.Color = Colors.Border
             sliderStroke.Parent = sliderFrame
             
-            local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,-70,1,0)
-            label.Position = UDim2.new(0,14,0,0)
-            label.BackgroundTransparency = 1
-            label.Text = text
-            label.TextColor3 = Colors.Text
-            label.TextSize = 14
-            label.Font = Enum.Font.GothamSemibold
-            label.TextXAlignment = Enum.TextXAlignment.Left
-            label.Parent = sliderFrame
+            local leftContent = Instance.new("Frame")
+            leftContent.Size = UDim2.new(0.6,0,1,0)
+            leftContent.BackgroundTransparency = 1
+            leftContent.Parent = sliderFrame
+            
+            if sliderIcon then
+                local iconImage = Instance.new("ImageLabel")
+                iconImage.Size = UDim2.new(0,20,0,20)
+                iconImage.Position = UDim2.new(0,14,0.5,-10)
+                iconImage.BackgroundTransparency = 1
+                iconImage.Image = sliderIcon
+                iconImage.ImageColor3 = Colors.Text
+                iconImage.Parent = leftContent
+                
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-44,1,0)
+                label.Position = UDim2.new(0,44,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamSemibold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = leftContent
+            else
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-28,1,0)
+                label.Position = UDim2.new(0,14,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamSemibold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = leftContent
+            end
             
             local valueLabel = Instance.new("TextLabel")
             valueLabel.Size = UDim2.new(0,60,0,38)
@@ -1050,26 +1255,47 @@ function UILibrary:Create(title)
             }
         end
         
-        function tabData:AddLabel(text)
+        function tabData:AddLabel(text, labelIcon)
             local labelFrame = Instance.new("Frame")
             labelFrame.Size = UDim2.new(1,0,0,32)
             labelFrame.BackgroundTransparency = 1
             labelFrame.Parent = contentFrame
             
-            local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,0,1,0)
-            label.BackgroundTransparency = 1
-            label.Text = text
-            label.TextColor3 = Colors.Text
-            label.TextSize = 14
-            label.Font = Enum.Font.GothamBold
-            label.TextXAlignment = Enum.TextXAlignment.Left
-            label.Parent = labelFrame
+            if labelIcon then
+                local iconImage = Instance.new("ImageLabel")
+                iconImage.Size = UDim2.new(0,20,0,20)
+                iconImage.Position = UDim2.new(0,0,0.5,-10)
+                iconImage.BackgroundTransparency = 1
+                iconImage.Image = labelIcon
+                iconImage.ImageColor3 = Colors.Text
+                iconImage.Parent = labelFrame
+                
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-30,1,0)
+                label.Position = UDim2.new(0,30,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamBold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = labelFrame
+            else
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,0,1,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamBold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = labelFrame
+            end
             
             return label
         end
         
-        function tabData:AddKeybind(text, defaultKey, callback)
+        function tabData:AddKeybind(text, defaultKey, callback, keybindIcon)
             local keybindFrame = Instance.new("Frame")
             keybindFrame.Size = UDim2.new(1,0,0,38)
             keybindFrame.BackgroundColor3 = Colors.Foreground
@@ -1084,16 +1310,42 @@ function UILibrary:Create(title)
             keybindStroke.Color = Colors.Border
             keybindStroke.Parent = keybindFrame
             
-            local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,-100,1,0)
-            label.Position = UDim2.new(0,14,0,0)
-            label.BackgroundTransparency = 1
-            label.Text = text
-            label.TextColor3 = Colors.Text
-            label.TextSize = 14
-            label.Font = Enum.Font.GothamSemibold
-            label.TextXAlignment = Enum.TextXAlignment.Left
-            label.Parent = keybindFrame
+            local leftContent = Instance.new("Frame")
+            leftContent.Size = UDim2.new(0.6,0,1,0)
+            leftContent.BackgroundTransparency = 1
+            leftContent.Parent = keybindFrame
+            
+            if keybindIcon then
+                local iconImage = Instance.new("ImageLabel")
+                iconImage.Size = UDim2.new(0,20,0,20)
+                iconImage.Position = UDim2.new(0,14,0.5,-10)
+                iconImage.BackgroundTransparency = 1
+                iconImage.Image = keybindIcon
+                iconImage.ImageColor3 = Colors.Text
+                iconImage.Parent = leftContent
+                
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-44,1,0)
+                label.Position = UDim2.new(0,44,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamSemibold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = leftContent
+            else
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-28,1,0)
+                label.Position = UDim2.new(0,14,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamSemibold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = leftContent
+            end
             
             local keyBtn = Instance.new("TextButton")
             keyBtn.Size = UDim2.new(0,80,0,30)
@@ -1161,7 +1413,7 @@ function UILibrary:Create(title)
             }
         end
         
-        function tabData:AddColorpicker(text, defaultColor, callback)
+        function tabData:AddColorpicker(text, defaultColor, callback, colorIcon)
             local colorFrame = Instance.new("Frame")
             colorFrame.Size = UDim2.new(1,0,0,38)
             colorFrame.BackgroundColor3 = Colors.Foreground
@@ -1176,16 +1428,42 @@ function UILibrary:Create(title)
             colorStroke.Color = Colors.Border
             colorStroke.Parent = colorFrame
             
-            local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1,-70,1,0)
-            label.Position = UDim2.new(0,14,0,0)
-            label.BackgroundTransparency = 1
-            label.Text = text
-            label.TextColor3 = Colors.Text
-            label.TextSize = 14
-            label.Font = Enum.Font.GothamSemibold
-            label.TextXAlignment = Enum.TextXAlignment.Left
-            label.Parent = colorFrame
+            local leftContent = Instance.new("Frame")
+            leftContent.Size = UDim2.new(0.6,0,1,0)
+            leftContent.BackgroundTransparency = 1
+            leftContent.Parent = colorFrame
+            
+            if colorIcon then
+                local iconImage = Instance.new("ImageLabel")
+                iconImage.Size = UDim2.new(0,20,0,20)
+                iconImage.Position = UDim2.new(0,14,0.5,-10)
+                iconImage.BackgroundTransparency = 1
+                iconImage.Image = colorIcon
+                iconImage.ImageColor3 = Colors.Text
+                iconImage.Parent = leftContent
+                
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-44,1,0)
+                label.Position = UDim2.new(0,44,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamSemibold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = leftContent
+            else
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1,-28,1,0)
+                label.Position = UDim2.new(0,14,0,0)
+                label.BackgroundTransparency = 1
+                label.Text = text
+                label.TextColor3 = Colors.Text
+                label.TextSize = 14
+                label.Font = Enum.Font.GothamSemibold
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = leftContent
+            end
             
             local colorBtn = Instance.new("TextButton")
             colorBtn.Size = UDim2.new(0,50,0,30)
@@ -1250,16 +1528,16 @@ function UILibrary:Create(title)
             }
         end
         
-        function tabData:Notify(title, content, notificationType, duration)
-            return self.Notifications:CreateNotification(title, content, notificationType, duration)
+        function tabData:Notify(title, content, notificationType, duration, icon)
+            return self.Notifications:CreateNotification(title, content, notificationType, duration, icon)
         end
         
         self.Tabs[name] = tabData
         return tabData
     end
     
-    function self:Notify(title, content, notificationType, duration)
-        return self.Notifications:CreateNotification(title, content, notificationType, duration)
+    function self:Notify(title, content, notificationType, duration, icon)
+        return self.Notifications:CreateNotification(title, content, notificationType, duration, icon)
     end
     
     task.spawn(function()
