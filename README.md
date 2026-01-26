@@ -2,21 +2,21 @@
 
 A modern, customizable Roblox UI library with complete components, advanced dropdowns, and optional icon support.
 
-Installation
+## Installation
 
 ```lua
 local UILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/LuauExploiter/uiLibrary/refs/heads/main/Library"))()
 ```
 
-Basic Usage
+## Basic Usage
 
-Create Window
+### Create Window
 
 ```lua
 local UI = UILibrary:Create("Window Title")
 ```
 
-Create Tab with Optional Icon
+### Create Tab with Optional Icon
 
 ```lua
 -- Tab without icon
@@ -26,11 +26,13 @@ local Tab1 = UI:Tab("Main")
 local Tab2 = UI:Tab("Settings", "rbxassetid://6031307514")
 ```
 
-Components with Optional Icons
+## Components
+
+### Components with Optional Icons
 
 All components support an optional icon parameter as the last argument. Icons are completely optional!
 
-Button
+### Button
 
 ```lua
 -- Button without icon
@@ -44,7 +46,7 @@ Tab:AddButton("Execute", function()
 end, "rbxassetid://6031280882")
 ```
 
-Toggle
+### Toggle
 
 ```lua
 -- Toggle without icon
@@ -62,7 +64,7 @@ toggle:Set(true)
 print(toggle:Get())
 ```
 
-Dropdown (Single Select)
+### Dropdown (Single Select)
 
 ```lua
 -- Dropdown without icon
@@ -89,7 +91,7 @@ dropdown:Set("A")
 print(dropdown:Get())
 ```
 
-Multi-Select Dropdown (NEW!)
+### Multi-Select Dropdown (NEW!)
 
 ```lua
 -- Multi-dropdown without icon
@@ -118,7 +120,7 @@ local selectedItems = multiDropdown:Get() -- Returns table of selected items
 multiDropdown:Clear() -- Clear all selections
 ```
 
-Textbox
+### Textbox
 
 ```lua
 -- Textbox without icon
@@ -136,7 +138,7 @@ textbox:Set("Player1")
 print(textbox:Get())
 ```
 
-Slider
+### Slider
 
 ```lua
 -- Slider without icon
@@ -154,7 +156,7 @@ slider:Set(75)
 print(slider:Get())
 ```
 
-Label
+### Label
 
 ```lua
 -- Label without icon
@@ -164,7 +166,7 @@ Tab:AddLabel("Welcome!")
 Tab:AddLabel("Settings", "rbxassetid://6031307514")
 ```
 
-Keybind
+### Keybind
 
 ```lua
 -- Keybind without icon
@@ -182,7 +184,7 @@ keybind:Set(Enum.KeyCode.F)
 print(keybind:Get())
 ```
 
-Colorpicker
+### Colorpicker
 
 ```lua
 -- Colorpicker without icon
@@ -200,7 +202,7 @@ colorpicker:Set(Color3.new(0, 1, 0))
 print(colorpicker:Get())
 ```
 
-Notifications
+### Notifications
 
 ```lua
 -- Create notification
@@ -215,7 +217,7 @@ task.wait(3)
 notif:Close() -- Manually close notification
 ```
 
-Full Example
+## Full Example
 
 ```lua
 local UILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/LuauExploiter/uiLibrary/refs/heads/main/Library"))()
@@ -275,25 +277,25 @@ end, "rbxassetid://6031307544")
 UI:Notify("Welcome", "UI loaded successfully!", "Success", 4)
 ```
 
-Advanced Features
+## Advanced Features
 
-Dynamic Dropdown Heights
+### Dynamic Dropdown Heights
 
 Dropdowns now automatically adjust their height based on the number of options:
 
-· Shows up to 6 options visible at once
-· Automatically enables scrolling for more than 6 options
-· Smooth animations when opening/closing
+- Shows up to 6 options visible at once
+- Automatically enables scrolling for more than 6 options
+- Smooth animations when opening/closing
 
-Multi-Select Dropdown Methods
+### Multi-Select Dropdown Methods
 
 The new multi-select dropdown includes several useful methods:
 
-· :Set(selected) - Set selected items (can be a table or single string)
-· :Get() - Returns table of selected items
-· :Clear() - Clear all selections
+- `:Set(selected)` - Set selected items (can be a table or single string)
+- `:Get()` - Returns table of selected items
+- `:Clear()` - Clear all selections
 
-Option Icons for Dropdowns
+### Option Icons for Dropdowns
 
 Both single and multi-select dropdowns support icons in options:
 
@@ -306,27 +308,28 @@ Both single and multi-select dropdowns support icons in options:
 }
 ```
 
-Features
+## Features
 
-✅ Modern dark theme with smooth animations
-✅ Drag & drop window with minimize/close buttons
-✅ Tabbed interface with auto-scrolling content
-✅ Responsive notifications with progress bars
-✅ Optional icon support for all components
-✅ Advanced dropdowns with dynamic heights
-✅ Multi-select dropdowns with checkboxes
-✅ Mobile-friendly and responsive design
-✅ 100% backward compatible
+| Feature | Status | Description |
+| :--- | :--- | :--- |
+| **Modern Design** | ✅ | Dark theme with smooth animations. |
+| **Window Management** | ✅ | Drag & drop, minimize/close buttons. |
+| **Tabbed Interface** | ✅ | Tabbed layout with auto-scrolling content. |
+| **Notifications** | ✅ | Responsive notifications with progress bars. |
+| **Icon Support** | ✅ | Optional icon support for all components (Tabs, Dropdowns, Labels, etc.). |
+| **Advanced Dropdowns** | ✅ | Dynamic height adjustment and scrolling. |
+| **Multi-Select** | ✅ | Multi-select dropdowns with selection methods. |
+| **Compatibility** | ✅ | 100% backward compatible with original functions. |
 
-Icon Requirements
+## Icon Requirements
 
-· Icons are completely optional for all components
-· Use Roblox asset IDs: "rbxassetid://123456789"
-· Recommended size: 20x20 pixels
-· PNG format with transparent background works best
-· Can be used in dropdown options as well as component icons
+- Icons are completely optional for all components.
+- Use Roblox asset IDs: `"rbxassetid://123456789"`.
+- Recommended size: 20x20 pixels.
+- PNG format with transparent background works best.
+- Can be used in dropdown options as well as component icons.
 
-Backward Compatibility
+## Backward Compatibility
 
 The library maintains 100% backward compatibility. All original functions work exactly as before. New features are additive and can be completely ignored.
 
@@ -342,30 +345,22 @@ Tab:AddDropdown("Options", {"A", "B", "C"}, function(selected)
 end)
 ```
 
-Example Icons (Roblox Asset IDs)
+## Example Icons (Roblox Asset IDs)
 
-· Home: 6031075938
-· Check: 6031302931
-· Play: 6031280882
-· Info: 6031307514
-· Shield: 6031307514
-· Speed: 6031307539
-· Sword: 6031307548
-· Settings: 6031307514
-· Teleport: 6031307545
-· Error: 6031307552
-· Bird: 6031307537
-· Paint: 6031307544
-· Potion: 6031307567
-· Coin: 6031307578
-
-Notes
-
-· All icons are positioned next to text automatically
-· Layout adjusts dynamically when icons are present/absent
-· Tab icons appear next to tab names
-· Component icons appear next to labels
-· Dropdown option icons appear with checkbox (multi-select) or plain (single-select)
+| Icon Name | Asset ID |
+| :--- | :--- |
+| Home | `6031075938` |
+| Check | `6031302931` |
+| Play | `6031280882` |
+| Info/Shield/Settings | `6031307514` |
+| Speed | `6031307539` |
+| Sword | `6031307548` |
+| Teleport | `6031307545` |
+| Error | `6031307552` |
+| Bird | `6031307537` |
+| Paint | `6031307544` |
+| Potion | `6031307567` |
+| Coin | `6031307578` |
 
 ---
 
