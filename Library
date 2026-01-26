@@ -476,8 +476,10 @@ function UILibrary:Create(title)
         tabLayout.Padding = UDim.new(0, 5)
         tabLayout.Parent = tabContent
         
+        -- Only add icon if provided
+        local iconImage = nil
         if icon then
-            local iconImage = Instance.new("ImageLabel")
+            iconImage = Instance.new("ImageLabel")
             iconImage.Size = UDim2.new(0, 20, 0, 20)
             iconImage.BackgroundTransparency = 1
             iconImage.Image = icon
@@ -528,14 +530,12 @@ function UILibrary:Create(title)
             contentFrame.CanvasSize = UDim2.new(0, 0, 0, tabContentList.AbsoluteContentSize.Y + 24)
         end)
         
-        local tabIconImage = icon and tabContent:FindFirstChildWhichIsA("ImageLabel")
-        
         tabBtn.MouseEnter:Connect(function()
             if self.CurrentTabButton ~= tabBtn then
                 Tween(tabBtn, {BackgroundColor3 = Color3.fromRGB(40,40,45)})
                 Tween(textLabel, {TextColor3 = Colors.Text})
-                if tabIconImage then
-                    Tween(tabIconImage, {ImageColor3 = Colors.Text})
+                if iconImage then
+                    Tween(iconImage, {ImageColor3 = Colors.Text})
                 end
             end
         end)
@@ -544,8 +544,8 @@ function UILibrary:Create(title)
             if self.CurrentTabButton ~= tabBtn then
                 Tween(tabBtn, {BackgroundColor3 = Colors.Button})
                 Tween(textLabel, {TextColor3 = Colors.SubText})
-                if tabIconImage then
-                    Tween(tabIconImage, {ImageColor3 = Colors.SubText})
+                if iconImage then
+                    Tween(iconImage, {ImageColor3 = Colors.SubText})
                 end
             end
         end)
@@ -556,14 +556,14 @@ function UILibrary:Create(title)
             end
             
             if self.CurrentTabButton then
-                Tween(self.CurrentTabButton, {
-                    BackgroundColor3 = Colors.Button
-                })
-                
                 local prevContent = self.CurrentTabButton:FindFirstChild("Frame")
                 if prevContent then
                     local prevLabel = prevContent:FindFirstChildWhichIsA("TextLabel")
                     local prevIcon = prevContent:FindFirstChildWhichIsA("ImageLabel")
+                    
+                    Tween(self.CurrentTabButton, {
+                        BackgroundColor3 = Colors.Button
+                    })
                     
                     if prevLabel then
                         Tween(prevLabel, {TextColor3 = Colors.SubText})
@@ -578,8 +578,8 @@ function UILibrary:Create(title)
                 BackgroundColor3 = Colors.Selected
             })
             Tween(textLabel, {TextColor3 = Colors.Text})
-            if tabIconImage then
-                Tween(tabIconImage, {ImageColor3 = Colors.Text})
+            if iconImage then
+                Tween(iconImage, {ImageColor3 = Colors.Text})
             end
             
             contentFrame.Visible = true
@@ -619,6 +619,7 @@ function UILibrary:Create(title)
             btnLayout.Padding = UDim.new(0, 8)
             btnLayout.Parent = btnContent
             
+            -- Only add icon if provided
             if btnIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
@@ -682,16 +683,17 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = toggleFrame
             
-            -- Add icon if provided
+            -- Only add icon if provided
             if toggleIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
-                iconImage.Position = UDim2.new(1,-44,0.5,-10)
+                iconImage.Position = UDim2.new(0,14,0.5,-10)
                 iconImage.BackgroundTransparency = 1
                 iconImage.Image = toggleIcon
                 iconImage.ImageColor3 = Colors.Text
                 iconImage.Parent = toggleFrame
                 
+                label.Position = UDim2.new(0,44,0,0)
                 label.Size = UDim2.new(1,-90,1,0)
             end
             
@@ -739,9 +741,7 @@ function UILibrary:Create(title)
             clickBtn.Text = ""
             clickBtn.Parent = toggleFrame
             
-            clickBtn.MouseButton1Click:Connect(function()
-                toggle()
-            end)
+            clickBtn.MouseButton1Click:Connect(toggle)
             
             local toggleObj = {}
             
@@ -784,16 +784,17 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = dropdownFrame
             
-            -- Add icon if provided
+            -- Only add icon if provided
             if dropdownIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
-                iconImage.Position = UDim2.new(1,-44,0.5,-10)
+                iconImage.Position = UDim2.new(0,14,0.5,-10)
                 iconImage.BackgroundTransparency = 1
                 iconImage.Image = dropdownIcon
                 iconImage.ImageColor3 = Colors.Text
                 iconImage.Parent = dropdownFrame
                 
+                label.Position = UDim2.new(0,44,0,0)
                 label.Size = UDim2.new(1,-90,1,0)
             end
             
@@ -812,13 +813,18 @@ function UILibrary:Create(title)
             arrowCorner.CornerRadius = UDim.new(0,8)
             arrowCorner.Parent = arrowBtn
             
-            local optionsFrame = Instance.new("Frame")
+            -- Fixed: Now using ScrollingFrame for options
+            local optionsFrame = Instance.new("ScrollingFrame")
             optionsFrame.Size = UDim2.new(1,0,0,0)
             optionsFrame.Position = UDim2.new(0,0,1,4)
             optionsFrame.BackgroundColor3 = Colors.Foreground
             optionsFrame.ClipsDescendants = true
             optionsFrame.Visible = false
             optionsFrame.ZIndex = 1000
+            optionsFrame.ScrollBarThickness = 6
+            optionsFrame.ScrollBarImageColor3 = Colors.Primary
+            optionsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+            optionsFrame.CanvasSize = UDim2.new(0,0,0,0)
             optionsFrame.Parent = dropdownFrame
             
             local optionsCorner = Instance.new("UICorner")
@@ -899,7 +905,11 @@ function UILibrary:Create(title)
                 table.insert(optionButtons, optBtn)
             end
             
-            local totalHeight = #options * 36 + 8
+            local totalHeight = math.min(#options * 36 + 8, 200)
+            
+            optionsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                optionsFrame.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + 8)
+            end)
             
             arrowBtn.MouseButton1Click:Connect(function()
                 open = not open
@@ -1006,7 +1016,7 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = textboxFrame
             
-            -- Add icon if provided
+            -- Only add icon if provided
             if textboxIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
@@ -1094,16 +1104,17 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = sliderFrame
             
-            -- Add icon if provided
+            -- Only add icon if provided
             if sliderIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
-                iconImage.Position = UDim2.new(1,-44,0.5,-10)
+                iconImage.Position = UDim2.new(0,14,0.5,-10)
                 iconImage.BackgroundTransparency = 1
                 iconImage.Image = sliderIcon
                 iconImage.ImageColor3 = Colors.Text
                 iconImage.Parent = sliderFrame
                 
+                label.Position = UDim2.new(0,44,0,0)
                 label.Size = UDim2.new(1,-100,1,0)
             end
             
@@ -1221,6 +1232,7 @@ function UILibrary:Create(title)
             labelLayout.Padding = UDim.new(0, 8)
             labelLayout.Parent = labelFrame
             
+            -- Only add icon if provided
             if labelIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
@@ -1270,16 +1282,17 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = keybindFrame
             
-            -- Add icon if provided
+            -- Only add icon if provided
             if keybindIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
-                iconImage.Position = UDim2.new(1,-44,0.5,-10)
+                iconImage.Position = UDim2.new(0,14,0.5,-10)
                 iconImage.BackgroundTransparency = 1
                 iconImage.Image = keybindIcon
                 iconImage.ImageColor3 = Colors.Text
                 iconImage.Parent = keybindFrame
                 
+                label.Position = UDim2.new(0,44,0,0)
                 label.Size = UDim2.new(1,-130,1,0)
             end
             
@@ -1378,16 +1391,17 @@ function UILibrary:Create(title)
             label.TextXAlignment = Enum.TextXAlignment.Left
             label.Parent = colorFrame
             
-            -- Add icon if provided
+            -- Only add icon if provided
             if colorIcon then
                 local iconImage = Instance.new("ImageLabel")
                 iconImage.Size = UDim2.new(0,20,0,20)
-                iconImage.Position = UDim2.new(1,-44,0.5,-10)
+                iconImage.Position = UDim2.new(0,14,0.5,-10)
                 iconImage.BackgroundTransparency = 1
                 iconImage.Image = colorIcon
                 iconImage.ImageColor3 = Colors.Text
                 iconImage.Parent = colorFrame
                 
+                label.Position = UDim2.new(0,44,0,0)
                 label.Size = UDim2.new(1,-100,1,0)
             end
             
