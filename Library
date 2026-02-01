@@ -355,7 +355,7 @@ function UILibrary:Create(title)
     contentPadding.Parent = self.Content
     
     contentList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        self.Content.CanvasSize = UDim2.new(0, 0, 0, contentList.AbsoluteContentSize.Y + 10000)
+        self.Content.CanvasSize = UDim2.new(0, 0, 0, contentList.AbsoluteContentSize.Y + 24)
     end)
     
     local dragEnabled = false
@@ -780,10 +780,12 @@ function UILibrary:Create(title)
             return toggleObj
         end
         
+        -- FIXED DROPDOWN FUNCTION
         function tabData:AddDropdown(text, options, callback, dropdownIcon)
             local dropdownFrame = Instance.new("Frame")
             dropdownFrame.Size = UDim2.new(1,0,0,38)
             dropdownFrame.BackgroundColor3 = Colors.Foreground
+            dropdownFrame.ClipsDescendants = false
             dropdownFrame.Parent = contentFrame
             
             local dropdownCorner = Instance.new("UICorner")
@@ -815,9 +817,8 @@ function UILibrary:Create(title)
                 iconImage.Image = dropdownIcon
                 iconImage.ImageColor3 = Colors.Text
                 
-                -- Add squircle corners to icon
                 local iconCorner = Instance.new("UICorner")
-                iconCorner.CornerRadius = UDim.new(0.25, 0) -- Squircle effect
+                iconCorner.CornerRadius = UDim.new(0.25, 0)
                 iconCorner.Parent = iconImage
                 
                 iconImage.Parent = dropdownFrame
@@ -841,19 +842,16 @@ function UILibrary:Create(title)
             arrowCorner.CornerRadius = UDim.new(0,8)
             arrowCorner.Parent = arrowBtn
             
-            -- Fixed: Now using ScrollingFrame for options with auto-extend
-            local optionsFrame = Instance.new("ScrollingFrame")
-            optionsFrame.Size = UDim2.new(1,0,0,0)
-            optionsFrame.Position = UDim2.new(0,0,1,4)
+            -- Create dropdown options frame as ScreenGui child for proper z-index
+            local optionsFrame = Instance.new("Frame")
+            optionsFrame.Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, 0)
+            optionsFrame.Position = UDim2.new(0, dropdownFrame.AbsolutePosition.X - self.Window.AbsolutePosition.X, 
+                                               0, dropdownFrame.AbsolutePosition.Y - self.Window.AbsolutePosition.Y + dropdownFrame.AbsoluteSize.Y + 4)
             optionsFrame.BackgroundColor3 = Colors.Foreground
             optionsFrame.ClipsDescendants = true
             optionsFrame.Visible = false
-            optionsFrame.ZIndex = 1000
-            optionsFrame.ScrollBarThickness = 6
-            optionsFrame.ScrollBarImageColor3 = Colors.Primary
-            optionsFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-            optionsFrame.CanvasSize = UDim2.new(0,0,0,0)
-            optionsFrame.Parent = dropdownFrame
+            optionsFrame.ZIndex = 100
+            optionsFrame.Parent = self.Window
             
             local optionsCorner = Instance.new("UICorner")
             optionsCorner.CornerRadius = UDim.new(0,8)
@@ -864,90 +862,165 @@ function UILibrary:Create(title)
             optionsStroke.Color = Colors.Border
             optionsStroke.Parent = optionsFrame
             
+            local optionsScrolling = Instance.new("ScrollingFrame")
+            optionsScrolling.Size = UDim2.new(1, 0, 1, 0)
+            optionsScrolling.BackgroundTransparency = 1
+            optionsScrolling.BorderSizePixel = 0
+            optionsScrolling.ScrollBarThickness = 6
+            optionsScrolling.ScrollBarImageColor3 = Colors.Primary
+            optionsScrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+            optionsScrolling.Parent = optionsFrame
+            
             local optionsLayout = Instance.new("UIListLayout")
             optionsLayout.Padding = UDim.new(0, 4)
-            optionsLayout.Parent = optionsFrame
+            optionsLayout.Parent = optionsScrolling
             
             local optionsPadding = Instance.new("UIPadding")
             optionsPadding.PaddingTop = UDim.new(0, 4)
             optionsPadding.PaddingBottom = UDim.new(0, 4)
             optionsPadding.PaddingLeft = UDim.new(0, 4)
             optionsPadding.PaddingRight = UDim.new(0, 4)
-            optionsPadding.Parent = optionsFrame
+            optionsPadding.Parent = optionsScrolling
             
             local open = false
             local selectedOption = nil
-            
             local optionButtons = {}
-            for i, opt in ipairs(options) do
+            
+            local function updateOptionsPosition()
+                if optionsFrame and dropdownFrame and self.Window then
+                    local relativeX = dropdownFrame.AbsolutePosition.X - self.Window.AbsolutePosition.X
+                    local relativeY = dropdownFrame.AbsolutePosition.Y - self.Window.AbsolutePosition.Y
+                    
+                    -- Calculate available space below
+                    local windowHeight = self.Window.AbsoluteSize.Y
+                    local spaceBelow = windowHeight - (relativeY + dropdownFrame.AbsoluteSize.Y)
+                    local spaceAbove = relativeY
+                    
+                    local maxHeight = math.min(optionsLayout.AbsoluteContentSize.Y + 12, 200)
+                    
+                    if spaceBelow < maxHeight and spaceAbove > maxHeight then
+                        -- Open upwards
+                        optionsFrame.Position = UDim2.new(0, relativeX, 0, relativeY - maxHeight - 4)
+                    else
+                        -- Open downwards
+                        optionsFrame.Position = UDim2.new(0, relativeX, 0, relativeY + dropdownFrame.AbsoluteSize.Y + 4)
+                    end
+                    
+                    optionsFrame.Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, maxHeight)
+                end
+            end
+            
+            local function createOption(optionText, optionIcon)
+                local optText = type(optionText) == "table" and optionText.Text or optionText
+                local optIcon = type(optionText) == "table" and optionText.Icon or nil
+                
                 local optBtn = Instance.new("TextButton")
                 optBtn.Size = UDim2.new(1, -8, 0, 32)
                 optBtn.BackgroundColor3 = Colors.Button
                 optBtn.AutoButtonColor = false
-                optBtn.Text = opt
-                optBtn.TextColor3 = Colors.Text
-                optBtn.Font = Enum.Font.GothamSemibold
-                optBtn.TextSize = 13
-                optBtn.ZIndex = 1001
-                optBtn.LayoutOrder = i
-                optBtn.Parent = optionsFrame
+                optBtn.Text = ""
+                optBtn.ZIndex = 101
+                optBtn.Parent = optionsScrolling
                 
                 local optCorner = Instance.new("UICorner")
                 optCorner.CornerRadius = UDim.new(0,6)
                 optCorner.Parent = optBtn
                 
+                local optContent = Instance.new("Frame")
+                optContent.Size = UDim2.new(1, -10, 1, -6)
+                optContent.Position = UDim2.new(0, 5, 0, 3)
+                optContent.BackgroundTransparency = 1
+                optContent.ZIndex = 102
+                optContent.Parent = optBtn
+                
+                local optLayout = Instance.new("UIListLayout")
+                optLayout.FillDirection = Enum.FillDirection.Horizontal
+                optLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+                optLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+                optLayout.Padding = UDim.new(0, 6)
+                optLayout.Parent = optContent
+                
+                -- Add icon if provided
+                if optIcon then
+                    local iconImg = Instance.new("ImageLabel")
+                    iconImg.Size = UDim2.new(0, 18, 0, 18)
+                    iconImg.BackgroundTransparency = 1
+                    iconImg.Image = optIcon
+                    iconImg.ImageColor3 = Colors.Text
+                    iconImg.ZIndex = 103
+                    iconImg.Parent = optContent
+                end
+                
+                local textLabel = Instance.new("TextLabel")
+                textLabel.Size = UDim2.new(0, 0, 1, 0)
+                textLabel.BackgroundTransparency = 1
+                textLabel.Text = optText
+                textLabel.TextColor3 = Colors.Text
+                textLabel.Font = Enum.Font.GothamSemibold
+                textLabel.TextSize = 13
+                textLabel.TextXAlignment = Enum.TextXAlignment.Left
+                textLabel.AutomaticSize = Enum.AutomaticSize.X
+                textLabel.ZIndex = 103
+                textLabel.Parent = optContent
+                
                 optBtn.MouseEnter:Connect(function()
-                    if selectedOption ~= opt then
+                    if selectedOption ~= optText then
                         Tween(optBtn, {BackgroundColor3 = Color3.fromRGB(45,45,50)})
                     end
                 end)
                 
                 optBtn.MouseLeave:Connect(function()
-                    if selectedOption ~= opt then
+                    if selectedOption ~= optText then
                         Tween(optBtn, {BackgroundColor3 = Colors.Button})
                     end
                 end)
                 
                 optBtn.MouseButton1Click:Connect(function()
-                    selectedOption = opt
-                    label.Text = text .. ": " .. opt
+                    selectedOption = optText
+                    label.Text = text .. ": " .. optText
                     
                     for _, btn in ipairs(optionButtons) do
-                        Tween(btn, {BackgroundColor3 = Colors.Button})
+                        local btnText = btn:GetAttribute("OptionText")
+                        if btnText == optText then
+                            Tween(btn, {BackgroundColor3 = Colors.Selected})
+                        else
+                            Tween(btn, {BackgroundColor3 = Colors.Button})
+                        end
                     end
                     
-                    Tween(optBtn, {BackgroundColor3 = Colors.Selected})
-                    
                     open = false
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
+                    Tween(optionsFrame, {Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, 0)})
                     Tween(arrowBtn, {Rotation = 0})
                     
                     task.wait(0.2)
                     optionsFrame.Visible = false
                     
                     if callback then
-                        callback(opt)
+                        callback(optText)
                     end
                 end)
                 
+                optBtn:SetAttribute("OptionText", optText)
                 table.insert(optionButtons, optBtn)
             end
             
-            optionsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-                optionsFrame.CanvasSize = UDim2.new(0, 0, 0, optionsLayout.AbsoluteContentSize.Y + 8)
-            end)
+            -- Create options
+            for _, opt in ipairs(options) do
+                createOption(opt)
+            end
             
             arrowBtn.MouseButton1Click:Connect(function()
                 open = not open
                 if open then
                     optionsFrame.Visible = true
-                    local height = math.min(optionsLayout.AbsoluteContentSize.Y + 12, 200)
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,height)})
+                    updateOptionsPosition()
                     Tween(arrowBtn, {Rotation = 180})
                     
+                    -- Highlight selected option if any
                     if selectedOption then
                         for _, btn in ipairs(optionButtons) do
-                            if btn.Text == selectedOption then
+                            local btnText = btn:GetAttribute("OptionText")
+                            if btnText == selectedOption then
                                 Tween(btn, {BackgroundColor3 = Colors.Selected})
                             else
                                 Tween(btn, {BackgroundColor3 = Colors.Button})
@@ -955,13 +1028,14 @@ function UILibrary:Create(title)
                         end
                     end
                 else
-                    Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
+                    Tween(optionsFrame, {Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, 0)})
                     Tween(arrowBtn, {Rotation = 0})
                     task.wait(0.2)
                     optionsFrame.Visible = false
                 end
             end)
             
+            -- Close dropdown when clicking outside
             local dropdownConnection
             dropdownConnection = UserInputService.InputBegan:Connect(function(input)
                 if open and input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -979,7 +1053,7 @@ function UILibrary:Create(title)
                     
                     if not isInDropdown and not isInOptions then
                         open = false
-                        Tween(optionsFrame, {Size = UDim2.new(1,0,0,0)})
+                        Tween(optionsFrame, {Size = UDim2.new(0, dropdownFrame.AbsoluteSize.X, 0, 0)})
                         Tween(arrowBtn, {Rotation = 0})
                         task.wait(0.2)
                         optionsFrame.Visible = false
@@ -991,17 +1065,22 @@ function UILibrary:Create(title)
                 if dropdownConnection then
                     dropdownConnection:Disconnect()
                 end
+                if optionsFrame then
+                    optionsFrame:Destroy()
+                end
             end)
             
             local dropdownObj = {}
             
             function dropdownObj:Set(opt)
-                if table.find(options, opt) then
-                    selectedOption = opt
-                    label.Text = text .. ": " .. opt
+                if table.find(options, opt) or (type(opt) == "table" and table.find(options, opt.Text)) then
+                    local optText = type(opt) == "table" and opt.Text or opt
+                    selectedOption = optText
+                    label.Text = text .. ": " .. optText
                     
                     for _, btn in ipairs(optionButtons) do
-                        if btn.Text == opt then
+                        local btnText = btn:GetAttribute("OptionText")
+                        if btnText == optText then
                             Tween(btn, {BackgroundColor3 = Colors.Selected})
                         else
                             Tween(btn, {BackgroundColor3 = Colors.Button})
@@ -1015,6 +1094,364 @@ function UILibrary:Create(title)
             end
             
             return dropdownObj
+        end
+        
+        -- FIXED MULTI-DROPDOWN FUNCTION
+        function tabData:AddMultiDropdown(text, options, callback, multiIcon)
+            local multiFrame = Instance.new("Frame")
+            multiFrame.Size = UDim2.new(1,0,0,38)
+            multiFrame.BackgroundColor3 = Colors.Foreground
+            multiFrame.ClipsDescendants = false
+            multiFrame.Parent = contentFrame
+            
+            local multiCorner = Instance.new("UICorner")
+            multiCorner.CornerRadius = UDim.new(0,8)
+            multiCorner.Parent = multiFrame
+            
+            local multiStroke = Instance.new("UIStroke")
+            multiStroke.Thickness = 1
+            multiStroke.Color = Colors.Border
+            multiStroke.Parent = multiFrame
+            
+            local label = Instance.new("TextLabel")
+            label.Size = UDim2.new(1,-60,1,0)
+            label.Position = UDim2.new(0,14,0,0)
+            label.BackgroundTransparency = 1
+            label.Text = text
+            label.TextColor3 = Colors.Text
+            label.TextSize = 14
+            label.Font = Enum.Font.GothamSemibold
+            label.TextXAlignment = Enum.TextXAlignment.Left
+            label.Parent = multiFrame
+            
+            if multiIcon then
+                local iconImage = Instance.new("ImageLabel")
+                iconImage.Size = UDim2.new(0,20,0,20)
+                iconImage.Position = UDim2.new(0,14,0.5,-10)
+                iconImage.BackgroundTransparency = 1
+                iconImage.Image = multiIcon
+                iconImage.ImageColor3 = Colors.Text
+                
+                local iconCorner = Instance.new("UICorner")
+                iconCorner.CornerRadius = UDim.new(0.25, 0)
+                iconCorner.Parent = iconImage
+                
+                iconImage.Parent = multiFrame
+                
+                label.Position = UDim2.new(0,44,0,0)
+                label.Size = UDim2.new(1,-90,1,0)
+            end
+            
+            local arrowBtn = Instance.new("TextButton")
+            arrowBtn.Size = UDim2.new(0,36,0,36)
+            arrowBtn.Position = UDim2.new(1,-42,0.5,-18)
+            arrowBtn.BackgroundColor3 = Colors.Button
+            arrowBtn.AutoButtonColor = false
+            arrowBtn.Text = "▼"
+            arrowBtn.TextColor3 = Colors.Text
+            arrowBtn.Font = Enum.Font.GothamBold
+            arrowBtn.TextSize = 14
+            arrowBtn.Parent = multiFrame
+            
+            local arrowCorner = Instance.new("UICorner")
+            arrowCorner.CornerRadius = UDim.new(0,8)
+            arrowCorner.Parent = arrowBtn
+            
+            -- Create multi options frame
+            local optionsFrame = Instance.new("Frame")
+            optionsFrame.Size = UDim2.new(0, multiFrame.AbsoluteSize.X, 0, 0)
+            optionsFrame.Position = UDim2.new(0, multiFrame.AbsolutePosition.X - self.Window.AbsolutePosition.X, 
+                                               0, multiFrame.AbsolutePosition.Y - self.Window.AbsolutePosition.Y + multiFrame.AbsoluteSize.Y + 4)
+            optionsFrame.BackgroundColor3 = Colors.Foreground
+            optionsFrame.ClipsDescendants = true
+            optionsFrame.Visible = false
+            optionsFrame.ZIndex = 100
+            optionsFrame.Parent = self.Window
+            
+            local optionsCorner = Instance.new("UICorner")
+            optionsCorner.CornerRadius = UDim.new(0,8)
+            optionsCorner.Parent = optionsFrame
+            
+            local optionsStroke = Instance.new("UIStroke")
+            optionsStroke.Thickness = 1
+            optionsStroke.Color = Colors.Border
+            optionsStroke.Parent = optionsFrame
+            
+            local optionsScrolling = Instance.new("ScrollingFrame")
+            optionsScrolling.Size = UDim2.new(1, 0, 1, 0)
+            optionsScrolling.BackgroundTransparency = 1
+            optionsScrolling.BorderSizePixel = 0
+            optionsScrolling.ScrollBarThickness = 6
+            optionsScrolling.ScrollBarImageColor3 = Colors.Primary
+            optionsScrolling.AutomaticCanvasSize = Enum.AutomaticSize.Y
+            optionsScrolling.Parent = optionsFrame
+            
+            local optionsLayout = Instance.new("UIListLayout")
+            optionsLayout.Padding = UDim.new(0, 4)
+            optionsLayout.Parent = optionsScrolling
+            
+            local optionsPadding = Instance.new("UIPadding")
+            optionsPadding.PaddingTop = UDim.new(0, 4)
+            optionsPadding.PaddingBottom = UDim.new(0, 4)
+            optionsPadding.PaddingLeft = UDim.new(0, 4)
+            optionsPadding.PaddingRight = UDim.new(0, 4)
+            optionsPadding.Parent = optionsScrolling
+            
+            local open = false
+            local selectedOptions = {}
+            local optionToggles = {}
+            
+            local function updateMultiPosition()
+                if optionsFrame and multiFrame and self.Window then
+                    local relativeX = multiFrame.AbsolutePosition.X - self.Window.AbsolutePosition.X
+                    local relativeY = multiFrame.AbsolutePosition.Y - self.Window.AbsolutePosition.Y
+                    
+                    local windowHeight = self.Window.AbsoluteSize.Y
+                    local spaceBelow = windowHeight - (relativeY + multiFrame.AbsoluteSize.Y)
+                    local spaceAbove = relativeY
+                    
+                    local maxHeight = math.min(optionsLayout.AbsoluteContentSize.Y + 12, 200)
+                    
+                    if spaceBelow < maxHeight and spaceAbove > maxHeight then
+                        optionsFrame.Position = UDim2.new(0, relativeX, 0, relativeY - maxHeight - 4)
+                    else
+                        optionsFrame.Position = UDim2.new(0, relativeX, 0, relativeY + multiFrame.AbsoluteSize.Y + 4)
+                    end
+                    
+                    optionsFrame.Size = UDim2.new(0, multiFrame.AbsoluteSize.X, 0, maxHeight)
+                end
+            end
+            
+            local function updateLabel()
+                local count = 0
+                for _ in pairs(selectedOptions) do
+                    count = count + 1
+                end
+                
+                if count == 0 then
+                    label.Text = text
+                else
+                    label.Text = text .. ": " .. count .. " selected"
+                end
+            end
+            
+            local function createMultiOption(optionData)
+                local optText = type(optionData) == "table" and optionData.Text or optionData
+                local optIcon = type(optionData) == "table" and optionData.Icon or nil
+                
+                local optionFrame = Instance.new("Frame")
+                optionFrame.Size = UDim2.new(1, -8, 0, 32)
+                optionFrame.BackgroundColor3 = Colors.Button
+                optionFrame.ZIndex = 101
+                optionFrame.Parent = optionsScrolling
+                
+                local optionCorner = Instance.new("UICorner")
+                optionCorner.CornerRadius = UDim.new(0,6)
+                optionCorner.Parent = optionFrame
+                
+                local content = Instance.new("Frame")
+                content.Size = UDim2.new(1, -40, 1, -6)
+                content.Position = UDim2.new(0, 34, 0, 3)
+                content.BackgroundTransparency = 1
+                content.ZIndex = 102
+                content.Parent = optionFrame
+                
+                local layout = Instance.new("UIListLayout")
+                layout.FillDirection = Enum.FillDirection.Horizontal
+                layout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+                layout.VerticalAlignment = Enum.VerticalAlignment.Center
+                layout.Padding = UDim.new(0, 6)
+                layout.Parent = content
+                
+                if optIcon then
+                    local iconImg = Instance.new("ImageLabel")
+                    iconImg.Size = UDim2.new(0, 18, 0, 18)
+                    iconImg.BackgroundTransparency = 1
+                    iconImg.Image = optIcon
+                    iconImg.ImageColor3 = Colors.Text
+                    iconImg.ZIndex = 103
+                    iconImg.Parent = content
+                end
+                
+                local textLabel = Instance.new("TextLabel")
+                textLabel.Size = UDim2.new(0, 0, 1, 0)
+                textLabel.BackgroundTransparency = 1
+                textLabel.Text = optText
+                textLabel.TextColor3 = Colors.Text
+                textLabel.Font = Enum.Font.GothamSemibold
+                textLabel.TextSize = 13
+                textLabel.TextXAlignment = Enum.TextXAlignment.Left
+                textLabel.AutomaticSize = Enum.AutomaticSize.X
+                textLabel.ZIndex = 103
+                textLabel.Parent = content
+                
+                local toggle = Instance.new("Frame")
+                toggle.Size = UDim2.new(0, 20, 0, 20)
+                toggle.Position = UDim2.new(0, 8, 0.5, -10)
+                toggle.BackgroundColor3 = Colors.Button
+                toggle.ZIndex = 102
+                toggle.Parent = optionFrame
+                
+                local toggleCorner = Instance.new("UICorner")
+                toggleCorner.CornerRadius = UDim.new(0,4)
+                toggleCorner.Parent = toggle
+                
+                local check = Instance.new("Frame")
+                check.Size = UDim2.new(0, 12, 0, 12)
+                check.Position = UDim2.new(0.5, -6, 0.5, -6)
+                check.BackgroundColor3 = Colors.Selected
+                check.Visible = false
+                check.ZIndex = 103
+                check.Parent = toggle
+                
+                local checkCorner = Instance.new("UICorner")
+                checkCorner.CornerRadius = UDim.new(0,2)
+                checkCorner.Parent = check
+                
+                local clickBtn = Instance.new("TextButton")
+                clickBtn.Size = UDim2.new(1,0,1,0)
+                clickBtn.BackgroundTransparency = 1
+                clickBtn.Text = ""
+                clickBtn.ZIndex = 104
+                clickBtn.Parent = optionFrame
+                
+                local isSelected = false
+                
+                local function updateToggle()
+                    check.Visible = isSelected
+                    if isSelected then
+                        selectedOptions[optText] = true
+                    else
+                        selectedOptions[optText] = nil
+                    end
+                    updateLabel()
+                    if callback then
+                        callback(selectedOptions)
+                    end
+                end
+                
+                clickBtn.MouseButton1Click:Connect(function()
+                    isSelected = not isSelected
+                    updateToggle()
+                end)
+                
+                optionFrame.MouseEnter:Connect(function()
+                    Tween(optionFrame, {BackgroundColor3 = Color3.fromRGB(45,45,50)})
+                end)
+                
+                optionFrame.MouseLeave:Connect(function()
+                    Tween(optionFrame, {BackgroundColor3 = Colors.Button})
+                end)
+                
+                table.insert(optionToggles, {
+                    Frame = optionFrame,
+                    Text = optText,
+                    Set = function(state)
+                        isSelected = state
+                        updateToggle()
+                    end,
+                    Get = function()
+                        return isSelected
+                    end
+                })
+            end
+            
+            -- Create options
+            for _, opt in ipairs(options) do
+                createMultiOption(opt)
+            end
+            
+            arrowBtn.MouseButton1Click:Connect(function()
+                open = not open
+                if open then
+                    optionsFrame.Visible = true
+                    updateMultiPosition()
+                    Tween(arrowBtn, {Rotation = 180})
+                else
+                    Tween(optionsFrame, {Size = UDim2.new(0, multiFrame.AbsoluteSize.X, 0, 0)})
+                    Tween(arrowBtn, {Rotation = 0})
+                    task.wait(0.2)
+                    optionsFrame.Visible = false
+                end
+            end)
+            
+            local multiConnection
+            multiConnection = UserInputService.InputBegan:Connect(function(input)
+                if open and input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    local mousePos = input.Position
+                    local multiAbsolutePos = multiFrame.AbsolutePosition
+                    local multiAbsoluteSize = multiFrame.AbsoluteSize
+                    local optionsAbsolutePos = optionsFrame.AbsolutePosition
+                    local optionsAbsoluteSize = optionsFrame.AbsoluteSize
+                    
+                    local isInMulti = mousePos.X >= multiAbsolutePos.X and mousePos.X <= multiAbsolutePos.X + multiAbsoluteSize.X and
+                                     mousePos.Y >= multiAbsolutePos.Y and mousePos.Y <= multiAbsolutePos.Y + multiAbsoluteSize.Y
+                    
+                    local isInOptions = mousePos.X >= optionsAbsolutePos.X and mousePos.X <= optionsAbsolutePos.X + optionsAbsoluteSize.X and
+                                       mousePos.Y >= optionsAbsolutePos.Y and mousePos.Y <= optionsAbsolutePos.Y + optionsAbsoluteSize.Y
+                    
+                    if not isInMulti and not isInOptions then
+                        open = false
+                        Tween(optionsFrame, {Size = UDim2.new(0, multiFrame.AbsoluteSize.X, 0, 0)})
+                        Tween(arrowBtn, {Rotation = 0})
+                        task.wait(0.2)
+                        optionsFrame.Visible = false
+                    end
+                end
+            end)
+            
+            multiFrame.Destroying:Connect(function()
+                if multiConnection then
+                    multiConnection:Disconnect()
+                end
+                if optionsFrame then
+                    optionsFrame:Destroy()
+                end
+            end)
+            
+            local multiObj = {}
+            
+            function multiObj:Set(selected)
+                if type(selected) == "table" then
+                    for _, toggle in ipairs(optionToggles) do
+                        local shouldBeSelected = false
+                        for _, sel in ipairs(selected) do
+                            local selText = type(sel) == "table" and sel.Text or sel
+                            if toggle.Text == selText then
+                                shouldBeSelected = true
+                                break
+                            end
+                        end
+                        toggle.Set(shouldBeSelected)
+                    end
+                else
+                    local toggleText = type(selected) == "table" and selected.Text or selected
+                    for _, toggle in ipairs(optionToggles) do
+                        if toggle.Text == toggleText then
+                            toggle.Set(not toggle.Get())
+                            break
+                        end
+                    end
+                end
+            end
+            
+            function multiObj:Get()
+                local result = {}
+                for _, toggle in ipairs(optionToggles) do
+                    if toggle.Get() then
+                        table.insert(result, toggle.Text)
+                    end
+                end
+                return result
+            end
+            
+            function multiObj:Clear()
+                for _, toggle in ipairs(optionToggles) do
+                    toggle.Set(false)
+                end
+            end
+            
+            return multiObj
         end
         
         function tabData:AddTextbox(text, placeholder, callback, textboxIcon)
